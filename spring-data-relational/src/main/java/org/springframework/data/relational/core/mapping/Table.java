@@ -33,8 +33,8 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Table {
 
-	/**
-	 * The mapping table name.
-	 */
-	String value();
+    /**
+     * The mapping table name.
+     */
+    String value();
 }

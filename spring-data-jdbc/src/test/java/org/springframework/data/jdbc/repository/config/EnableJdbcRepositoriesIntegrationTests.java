@@ -49,62 +49,65 @@ import org.springframework.util.ReflectionUtils;
 @ContextConfiguration(classes = TestConfiguration.class)
 public class EnableJdbcRepositoriesIntegrationTests {
 
-	static final Field ROW_MAPPER_MAP = ReflectionUtils.findField(JdbcRepositoryFactoryBean.class, "rowMapperMap");
-	public static final RowMapper DUMMY_ENTITY_ROW_MAPPER = mock(RowMapper.class);
-	public static final RowMapper STRING_ROW_MAPPER = mock(RowMapper.class);
+    static final Field ROW_MAPPER_MAP = ReflectionUtils.findField(JdbcRepositoryFactoryBean.class, "rowMapperMap");
+    public static final RowMapper DUMMY_ENTITY_ROW_MAPPER = mock(RowMapper.class);
+    public static final RowMapper STRING_ROW_MAPPER = mock(RowMapper.class);
 
-	@Autowired JdbcRepositoryFactoryBean factoryBean;
-	@Autowired DummyRepository repository;
+    @Autowired
+    JdbcRepositoryFactoryBean factoryBean;
+    @Autowired
+    DummyRepository repository;
 
-	@BeforeClass
-	public static void setup() {
-		ROW_MAPPER_MAP.setAccessible(true);
-	}
+    @BeforeClass
+    public static void setup() {
+        ROW_MAPPER_MAP.setAccessible(true);
+    }
 
-	@Test // DATAJDBC-100
-	public void repositoryGetsPickedUp() {
+    @Test // DATAJDBC-100
+    public void repositoryGetsPickedUp() {
 
-		assertThat(repository).isNotNull();
+        assertThat(repository).isNotNull();
 
-		Iterable<DummyEntity> all = repository.findAll();
+        Iterable<DummyEntity> all = repository.findAll();
 
-		assertThat(all).isNotNull();
-	}
+        assertThat(all).isNotNull();
+    }
 
-	@Test // DATAJDBC-166
-	public void customRowMapperConfigurationGetsPickedUp() {
+    @Test // DATAJDBC-166
+    public void customRowMapperConfigurationGetsPickedUp() {
 
-		RowMapperMap mapping = (RowMapperMap) ReflectionUtils.getField(ROW_MAPPER_MAP, factoryBean);
+        RowMapperMap mapping = (RowMapperMap) ReflectionUtils.getField(ROW_MAPPER_MAP, factoryBean);
 
-		assertThat(mapping.rowMapperFor(String.class)).isEqualTo(STRING_ROW_MAPPER);
-		assertThat(mapping.rowMapperFor(DummyEntity.class)).isEqualTo(DUMMY_ENTITY_ROW_MAPPER);
-	}
+        assertThat(mapping.rowMapperFor(String.class)).isEqualTo(STRING_ROW_MAPPER);
+        assertThat(mapping.rowMapperFor(DummyEntity.class)).isEqualTo(DUMMY_ENTITY_ROW_MAPPER);
+    }
 
-	interface DummyRepository extends CrudRepository<DummyEntity, Long> {
+    interface DummyRepository extends CrudRepository<DummyEntity, Long> {
 
-	}
+    }
 
-	@Data
-	static class DummyEntity {
-		@Id private Long id;
-	}
+    @Data
+    static class DummyEntity {
+        @Id
+        private Long id;
+    }
 
-	@ComponentScan("org.springframework.data.jdbc.testing")
-	@EnableJdbcRepositories(considerNestedRepositories = true,
-			includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = DummyRepository.class))
-	static class TestConfiguration {
+    @ComponentScan("org.springframework.data.jdbc.testing")
+    @EnableJdbcRepositories(considerNestedRepositories = true,
+            includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = DummyRepository.class))
+    static class TestConfiguration {
 
-		@Bean
-		Class<?> testClass() {
-			return EnableJdbcRepositoriesIntegrationTests.class;
-		}
+        @Bean
+        Class<?> testClass() {
+            return EnableJdbcRepositoriesIntegrationTests.class;
+        }
 
-		@Bean
-		RowMapperMap rowMappers() {
-			return new ConfigurableRowMapperMap() //
-					.register(DummyEntity.class, DUMMY_ENTITY_ROW_MAPPER) //
-					.register(String.class, STRING_ROW_MAPPER);
-		}
+        @Bean
+        RowMapperMap rowMappers() {
+            return new ConfigurableRowMapperMap() //
+                    .register(DummyEntity.class, DUMMY_ENTITY_ROW_MAPPER) //
+                    .register(String.class, STRING_ROW_MAPPER);
+        }
 
-	}
+    }
 }

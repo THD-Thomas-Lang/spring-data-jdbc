@@ -49,97 +49,107 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 @ContextConfiguration
 public class JdbcRepositoryIdGenerationIntegrationTests {
 
-	@Configuration
-	@Import(TestConfiguration.class)
-	static class Config {
+    @Configuration
+    @Import(TestConfiguration.class)
+    static class Config {
 
-		@Autowired JdbcRepositoryFactory factory;
+        @Autowired
+        JdbcRepositoryFactory factory;
 
-		@Bean
-		Class<?> testClass() {
-			return JdbcRepositoryIdGenerationIntegrationTests.class;
-		}
-	}
+        @Bean
+        Class<?> testClass() {
+            return JdbcRepositoryIdGenerationIntegrationTests.class;
+        }
+    }
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
 
-	@Autowired NamedParameterJdbcTemplate template;
-	@Autowired ReadOnlyIdEntityRepository readOnlyIdrepository;
-	@Autowired PrimitiveIdEntityRepository primitiveIdRepository;
+    @Autowired
+    NamedParameterJdbcTemplate template;
+    @Autowired
+    ReadOnlyIdEntityRepository readOnlyIdrepository;
+    @Autowired
+    PrimitiveIdEntityRepository primitiveIdRepository;
 
-	@Test // DATAJDBC-98
-	public void idWithoutSetterGetsSet() {
+    @Test // DATAJDBC-98
+    public void idWithoutSetterGetsSet() {
 
-		ReadOnlyIdEntity entity = readOnlyIdrepository.save(new ReadOnlyIdEntity(null, "Entity Name"));
+        ReadOnlyIdEntity entity = readOnlyIdrepository.save(new ReadOnlyIdEntity(null, "Entity Name"));
 
-		assertThat(entity.getId()).isNotNull();
+        assertThat(entity.getId()).isNotNull();
 
-		assertThat(readOnlyIdrepository.findById(entity.getId())).hasValueSatisfying(it -> {
+        assertThat(readOnlyIdrepository.findById(entity.getId())).hasValueSatisfying(it -> {
 
-			assertThat(it.getId()).isEqualTo(entity.getId());
-			assertThat(it.getName()).isEqualTo(entity.getName());
-		});
-	}
+            assertThat(it.getId()).isEqualTo(entity.getId());
+            assertThat(it.getName()).isEqualTo(entity.getName());
+        });
+    }
 
-	@Test // DATAJDBC-98
-	public void primitiveIdGetsSet() {
+    @Test // DATAJDBC-98
+    public void primitiveIdGetsSet() {
 
-		PrimitiveIdEntity entity = new PrimitiveIdEntity();
-		entity.setName("Entity Name");
+        PrimitiveIdEntity entity = new PrimitiveIdEntity();
+        entity.setName("Entity Name");
 
-		PrimitiveIdEntity saved = primitiveIdRepository.save(entity);
+        PrimitiveIdEntity saved = primitiveIdRepository.save(entity);
 
-		assertThat(saved.getId()).isNotEqualTo(0L);
+        assertThat(saved.getId()).isNotEqualTo(0L);
 
-		assertThat(primitiveIdRepository.findById(saved.getId())).hasValueSatisfying(it -> {
+        assertThat(primitiveIdRepository.findById(saved.getId())).hasValueSatisfying(it -> {
 
-			assertThat(it.getId()).isEqualTo(saved.getId());
-			assertThat(it.getName()).isEqualTo(saved.getName());
-		});
-	}
+            assertThat(it.getId()).isEqualTo(saved.getId());
+            assertThat(it.getName()).isEqualTo(saved.getName());
+        });
+    }
 
-	private interface PrimitiveIdEntityRepository extends CrudRepository<PrimitiveIdEntity, Long> {}
+    private interface PrimitiveIdEntityRepository extends CrudRepository<PrimitiveIdEntity, Long> {
+    }
 
-	public interface ReadOnlyIdEntityRepository extends CrudRepository<ReadOnlyIdEntity, Long> {}
+    public interface ReadOnlyIdEntityRepository extends CrudRepository<ReadOnlyIdEntity, Long> {
+    }
 
-	@Value
-	@FieldDefaults(makeFinal = false)
-	static class ReadOnlyIdEntity {
+    @Value
+    @FieldDefaults(makeFinal = false)
+    static class ReadOnlyIdEntity {
 
-		@Id Long id;
-		String name;
-	}
+        @Id
+        Long id;
+        String name;
+    }
 
-	@Data
-	static class PrimitiveIdEntity {
+    @Data
+    static class PrimitiveIdEntity {
 
-		@Id private long id;
-		String name;
-	}
+        @Id
+        private long id;
+        String name;
+    }
 
-	@Configuration
-	@ComponentScan("org.springframework.data.jdbc.testing")
-	@EnableJdbcRepositories(considerNestedRepositories = true)
-	static class TestConfiguration {
+    @Configuration
+    @ComponentScan("org.springframework.data.jdbc.testing")
+    @EnableJdbcRepositories(considerNestedRepositories = true)
+    static class TestConfiguration {
 
-		@Bean
-		Class<?> testClass() {
-			return JdbcRepositoryIdGenerationIntegrationTests.class;
-		}
+        @Bean
+        Class<?> testClass() {
+            return JdbcRepositoryIdGenerationIntegrationTests.class;
+        }
 
-		/**
-		 * {@link NamingStrategy} that harmlessly uppercases the table name, demonstrating how to inject one while not
-		 * breaking existing SQL operations.
-		 */
-		@Bean
-		NamingStrategy namingStrategy() {
-			return new NamingStrategy() {
-				@Override
-				public String getTableName(Class<?> type) {
-					return type.getSimpleName().toUpperCase();
-				}
-			};
-		}
-	}
+        /**
+         * {@link NamingStrategy} that harmlessly uppercases the table name, demonstrating how to inject one while not
+         * breaking existing SQL operations.
+         */
+        @Bean
+        NamingStrategy namingStrategy() {
+            return new NamingStrategy() {
+                @Override
+                public String getTableName(Class<?> type) {
+                    return type.getSimpleName().toUpperCase();
+                }
+            };
+        }
+    }
 }

@@ -23,10 +23,10 @@ package org.springframework.data.relational.core.mapping.event;
  */
 public interface WithEntity extends RelationalEvent {
 
-	/**
-	 * @return will never be {@literal null}.
-	 */
-	default Object getEntity() {
-		return getOptionalEntity().orElseThrow(() -> new IllegalStateException("Entity must not be NULL"));
-	}
+    /**
+     * @return will never be {@literal null}.
+     */
+    default Object getEntity() {
+        return getOptionalEntity().orElseThrow(() -> new IllegalStateException("Entity must not be NULL"));
+    }
 }

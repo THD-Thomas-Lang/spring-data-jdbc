@@ -34,40 +34,40 @@ import org.springframework.core.convert.TypeDescriptor;
  */
 public class IterableOfEntryToMapConverterUnitTests {
 
-	IterableOfEntryToMapConverter converter = new IterableOfEntryToMapConverter();
+    IterableOfEntryToMapConverter converter = new IterableOfEntryToMapConverter();
 
-	@Test
-	public void testConversions() {
+    @Test
+    public void testConversions() {
 
-		Map<Object, Object> map = new HashMap<>();
-		map.put("key", "value");
-		List<Object[]> testValues = asList( //
-				new Object[] { emptySet(), emptyMap() }, //
-				new Object[] { emptyList(), emptyMap() }, //
-				new Object[] { "string", false }, //
-				new Object[] { asList(new SimpleEntry<>("key", "value")), map }, //
-				new Object[] { asList("string"), IllegalArgumentException.class } //
-		);
+        Map<Object, Object> map = new HashMap<>();
+        map.put("key", "value");
+        List<Object[]> testValues = asList( //
+                new Object[]{emptySet(), emptyMap()}, //
+                new Object[]{emptyList(), emptyMap()}, //
+                new Object[]{"string", false}, //
+                new Object[]{asList(new SimpleEntry<>("key", "value")), map}, //
+                new Object[]{asList("string"), IllegalArgumentException.class} //
+        );
 
-		SoftAssertions softly = new SoftAssertions();
-		testValues.forEach(array -> softly.assertThat(tryToConvert(array[0])).isEqualTo(array[1]));
-		softly.assertAll();
-	}
+        SoftAssertions softly = new SoftAssertions();
+        testValues.forEach(array -> softly.assertThat(tryToConvert(array[0])).isEqualTo(array[1]));
+        softly.assertAll();
+    }
 
-	private Object tryToConvert(Object input) {
+    private Object tryToConvert(Object input) {
 
-		try {
-			if (converter.matches( //
-					TypeDescriptor.valueOf(input.getClass()), //
-					TypeDescriptor.valueOf(Map.class)) //
-			) {
-				return converter.convert((Iterable) input);
-			} else {
-				return false;
-			}
+        try {
+            if (converter.matches( //
+                    TypeDescriptor.valueOf(input.getClass()), //
+                    TypeDescriptor.valueOf(Map.class)) //
+            ) {
+                return converter.convert((Iterable) input);
+            } else {
+                return false;
+            }
 
-		} catch (Exception e) {
-			return e.getClass();
-		}
-	}
+        } catch (Exception e) {
+            return e.getClass();
+        }
+    }
 }

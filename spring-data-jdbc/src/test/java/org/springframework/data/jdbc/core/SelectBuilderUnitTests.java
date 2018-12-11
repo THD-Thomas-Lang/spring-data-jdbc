@@ -26,64 +26,64 @@ import org.junit.Test;
  */
 public class SelectBuilderUnitTests {
 
-	@Test // DATAJDBC-112
-	public void simplestSelect() {
+    @Test // DATAJDBC-112
+    public void simplestSelect() {
 
-		String sql = new SelectBuilder("mytable") //
-				.column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
-				.build();
+        String sql = new SelectBuilder("mytable") //
+                .column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
+                .build();
 
-		assertThat(sql).isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable");
-	}
+        assertThat(sql).isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable");
+    }
 
-	@Test // DATAJDBC-112
-	public void columnWithoutTableAlias() {
+    @Test // DATAJDBC-112
+    public void columnWithoutTableAlias() {
 
-		String sql = new SelectBuilder("mytable") //
-				.column(cb -> cb.column("mycolumn").as("myalias")) //
-				.build();
+        String sql = new SelectBuilder("mytable") //
+                .column(cb -> cb.column("mycolumn").as("myalias")) //
+                .build();
 
-		assertThat(sql).isEqualTo("SELECT mycolumn AS myalias FROM mytable");
-	}
+        assertThat(sql).isEqualTo("SELECT mycolumn AS myalias FROM mytable");
+    }
 
-	@Test // DATAJDBC-112
-	public void whereClause() {
+    @Test // DATAJDBC-112
+    public void whereClause() {
 
-		String sql = new SelectBuilder("mytable") //
-				.column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
-				.where(cb -> cb.tableAlias("mytable").column("mycolumn").eq().variable("var")).build();
+        String sql = new SelectBuilder("mytable") //
+                .column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
+                .where(cb -> cb.tableAlias("mytable").column("mycolumn").eq().variable("var")).build();
 
-		assertThat(sql).isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable WHERE mytable.mycolumn = :var");
-	}
+        assertThat(sql).isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable WHERE mytable.mycolumn = :var");
+    }
 
-	@Test // DATAJDBC-112
-	public void multipleColumnsSelect() {
+    @Test // DATAJDBC-112
+    public void multipleColumnsSelect() {
 
-		String sql = new SelectBuilder("mytable") //
-				.column(cb -> cb.tableAlias("mytable").column("one").as("oneAlias")) //
-				.column(cb -> cb.tableAlias("mytable").column("two").as("twoAlias")) //
-				.build();
+        String sql = new SelectBuilder("mytable") //
+                .column(cb -> cb.tableAlias("mytable").column("one").as("oneAlias")) //
+                .column(cb -> cb.tableAlias("mytable").column("two").as("twoAlias")) //
+                .build();
 
-		assertThat(sql).isEqualTo("SELECT mytable.one AS oneAlias, mytable.two AS twoAlias FROM mytable");
-	}
+        assertThat(sql).isEqualTo("SELECT mytable.one AS oneAlias, mytable.two AS twoAlias FROM mytable");
+    }
 
-	@Test // DATAJDBC-112
-	public void join() {
-		String sql = new SelectBuilder("mytable") //
-				.column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
-				.join(jb -> jb.table("other").as("o").where("oid").eq().column("mytable", "id")).build();
+    @Test // DATAJDBC-112
+    public void join() {
+        String sql = new SelectBuilder("mytable") //
+                .column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
+                .join(jb -> jb.table("other").as("o").where("oid").eq().column("mytable", "id")).build();
 
-		assertThat(sql).isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable JOIN other AS o ON o.oid = mytable.id");
-	}
+        assertThat(sql).isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable JOIN other AS o ON o.oid = mytable.id");
+    }
 
-	@Test // DATAJDBC-112
-	public void outerJoin() {
-		String sql = new SelectBuilder("mytable") //
-				.column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
-				.join(jb -> jb.rightOuter().table("other").as("o").where("oid").eq().column("mytable", "id")).build();
+    @Test // DATAJDBC-112
+    public void outerJoin() {
+        String sql = new SelectBuilder("mytable") //
+                .column(cb -> cb.tableAlias("mytable").column("mycolumn").as("myalias")) //
+                .join(jb -> jb.rightOuter().table("other").as("o").where("oid").eq().column("mytable", "id")).build();
 
-		assertThat(sql)
-				.isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable RIGHT OUTER JOIN other AS o ON o.oid = mytable.id");
-	}
+        assertThat(sql)
+                .isEqualTo("SELECT mytable.mycolumn AS myalias FROM mytable RIGHT OUTER JOIN other AS o ON o.oid = mytable.id");
+    }
 
 }

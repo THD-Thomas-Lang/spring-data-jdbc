@@ -29,83 +29,84 @@ import org.springframework.lang.Nullable;
  * @author Mark Paluch
  */
 public class MappingRelationalEntityInformation<T, ID> extends PersistentEntityInformation<T, ID>
-		implements RelationalEntityInformation<T, ID> {
+        implements RelationalEntityInformation<T, ID> {
 
-	private final RelationalPersistentEntity<T> entityMetadata;
-	private final @Nullable String customTableName;
-	private final Class<ID> fallbackIdType;
+    private final RelationalPersistentEntity<T> entityMetadata;
+    private final @Nullable
+    String customTableName;
+    private final Class<ID> fallbackIdType;
 
-	/**
-	 * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity}.
-	 *
-	 * @param entity must not be {@literal null}.
-	 */
-	public MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity) {
-		this(entity, null, null);
-	}
+    /**
+     * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity}.
+     *
+     * @param entity must not be {@literal null}.
+     */
+    public MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity) {
+        this(entity, null, null);
+    }
 
-	/**
-	 * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity} and
-	 * fallback identifier type.
-	 *
-	 * @param entity must not be {@literal null}.
-	 * @param fallbackIdType can be {@literal null}.
-	 */
-	public MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity, @Nullable Class<ID> fallbackIdType) {
-		this(entity, null, fallbackIdType);
-	}
+    /**
+     * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity} and
+     * fallback identifier type.
+     *
+     * @param entity         must not be {@literal null}.
+     * @param fallbackIdType can be {@literal null}.
+     */
+    public MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity, @Nullable Class<ID> fallbackIdType) {
+        this(entity, null, fallbackIdType);
+    }
 
-	/**
-	 * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity} and
-	 * custom table name.
-	 *
-	 * @param entity must not be {@literal null}.
-	 * @param customTableName can be {@literal null}.
-	 */
-	public MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity, String customTableName) {
-		this(entity, customTableName, null);
-	}
+    /**
+     * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity} and
+     * custom table name.
+     *
+     * @param entity          must not be {@literal null}.
+     * @param customTableName can be {@literal null}.
+     */
+    public MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity, String customTableName) {
+        this(entity, customTableName, null);
+    }
 
-	/**
-	 * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity},
-	 * collection name and identifier type.
-	 *
-	 * @param entity must not be {@literal null}.
-	 * @param customTableName can be {@literal null}.
-	 * @param idType can be {@literal null}.
-	 */
-	@SuppressWarnings("unchecked")
-	private MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity, @Nullable String customTableName,
-											   @Nullable Class<ID> idType) {
+    /**
+     * Creates a new {@link MappingRelationalEntityInformation} for the given {@link RelationalPersistentEntity},
+     * collection name and identifier type.
+     *
+     * @param entity          must not be {@literal null}.
+     * @param customTableName can be {@literal null}.
+     * @param idType          can be {@literal null}.
+     */
+    @SuppressWarnings("unchecked")
+    private MappingRelationalEntityInformation(RelationalPersistentEntity<T> entity, @Nullable String customTableName,
+                                               @Nullable Class<ID> idType) {
 
-		super(entity);
+        super(entity);
 
-		this.entityMetadata = entity;
-		this.customTableName = customTableName;
-		this.fallbackIdType = idType != null ? idType : (Class<ID>) Long.class;
-	}
+        this.entityMetadata = entity;
+        this.customTableName = customTableName;
+        this.fallbackIdType = idType != null ? idType : (Class<ID>) Long.class;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.relational.repository.query.RelationalEntityInformation#getTableName()
-	 */
-	public String getTableName() {
-		return customTableName == null ? entityMetadata.getTableName() : customTableName;
-	}
+    /* (non-Javadoc)
+     * @see org.springframework.data.relational.repository.query.RelationalEntityInformation#getTableName()
+     */
+    public String getTableName() {
+        return customTableName == null ? entityMetadata.getTableName() : customTableName;
+    }
 
-	public String getIdAttribute() {
-		return entityMetadata.getRequiredIdProperty().getName();
-	}
+    public String getIdAttribute() {
+        return entityMetadata.getRequiredIdProperty().getName();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.PersistentEntityInformation#getIdType()
-	 */
-	@Override
-	public Class<ID> getIdType() {
+    /* (non-Javadoc)
+     * @see org.springframework.data.repository.core.support.PersistentEntityInformation#getIdType()
+     */
+    @Override
+    public Class<ID> getIdType() {
 
-		if (this.entityMetadata.hasIdProperty()) {
-			return super.getIdType();
-		}
+        if (this.entityMetadata.hasIdProperty()) {
+            return super.getIdType();
+        }
 
-		return fallbackIdType;
-	}
+        return fallbackIdType;
+    }
 }

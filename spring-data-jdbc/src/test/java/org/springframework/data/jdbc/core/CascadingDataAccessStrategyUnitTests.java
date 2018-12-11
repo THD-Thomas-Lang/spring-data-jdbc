@@ -34,53 +34,53 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
  */
 public class CascadingDataAccessStrategyUnitTests {
 
-	int errorIndex = 1;
-	String[] errorMessages = { "Sorry I don't support this method. Please try again later", "Still no luck" };
+    int errorIndex = 1;
+    String[] errorMessages = {"Sorry I don't support this method. Please try again later", "Still no luck"};
 
-	DataAccessStrategy alwaysFails = mock(DataAccessStrategy.class, i -> {
-		errorIndex++;
-		errorIndex %= 2;
-		throw new UnsupportedOperationException(errorMessages[errorIndex]);
-	});
-	DataAccessStrategy succeeds = mock(DataAccessStrategy.class);
-	DataAccessStrategy mayNotCall = mock(DataAccessStrategy.class, i -> {
-		throw new AssertionFailedError("this shouldn't have get called");
-	});
+    DataAccessStrategy alwaysFails = mock(DataAccessStrategy.class, i -> {
+        errorIndex++;
+        errorIndex %= 2;
+        throw new UnsupportedOperationException(errorMessages[errorIndex]);
+    });
+    DataAccessStrategy succeeds = mock(DataAccessStrategy.class);
+    DataAccessStrategy mayNotCall = mock(DataAccessStrategy.class, i -> {
+        throw new AssertionFailedError("this shouldn't have get called");
+    });
 
-	@Test // DATAJDBC-123
-	public void findByReturnsFirstSuccess() {
+    @Test // DATAJDBC-123
+    public void findByReturnsFirstSuccess() {
 
-		doReturn("success").when(succeeds).findById(23L, String.class);
-		CascadingDataAccessStrategy access = new CascadingDataAccessStrategy(asList(alwaysFails, succeeds, mayNotCall));
+        doReturn("success").when(succeeds).findById(23L, String.class);
+        CascadingDataAccessStrategy access = new CascadingDataAccessStrategy(asList(alwaysFails, succeeds, mayNotCall));
 
-		String byId = access.findById(23L, String.class);
+        String byId = access.findById(23L, String.class);
 
-		assertThat(byId).isEqualTo("success");
-	}
+        assertThat(byId).isEqualTo("success");
+    }
 
-	@Test // DATAJDBC-123
-	public void findByFailsIfAllStrategiesFail() {
+    @Test // DATAJDBC-123
+    public void findByFailsIfAllStrategiesFail() {
 
-		CascadingDataAccessStrategy access = new CascadingDataAccessStrategy(asList(alwaysFails, alwaysFails));
+        CascadingDataAccessStrategy access = new CascadingDataAccessStrategy(asList(alwaysFails, alwaysFails));
 
-		assertThatExceptionOfType(CombinedDataAccessException.class) //
-				.isThrownBy(() -> access.findById(23L, String.class)) //
-				.withMessageContaining("Failed to perform data access with all available strategies") //
-				.withMessageContaining("Sorry I don't support this method") //
-				.withMessageContaining("Still no luck");
+        assertThatExceptionOfType(CombinedDataAccessException.class) //
+                .isThrownBy(() -> access.findById(23L, String.class)) //
+                .withMessageContaining("Failed to perform data access with all available strategies") //
+                .withMessageContaining("Sorry I don't support this method") //
+                .withMessageContaining("Still no luck");
 
-	}
+    }
 
-	@Test // DATAJDBC-123
-	public void findByPropertyReturnsFirstSuccess() {
+    @Test // DATAJDBC-123
+    public void findByPropertyReturnsFirstSuccess() {
 
-		doReturn(Collections.singletonList("success")).when(succeeds).findAllByProperty(eq(23L),
-				any(RelationalPersistentProperty.class));
-		CascadingDataAccessStrategy access = new CascadingDataAccessStrategy(asList(alwaysFails, succeeds, mayNotCall));
+        doReturn(Collections.singletonList("success")).when(succeeds).findAllByProperty(eq(23L),
+                any(RelationalPersistentProperty.class));
+        CascadingDataAccessStrategy access = new CascadingDataAccessStrategy(asList(alwaysFails, succeeds, mayNotCall));
 
-		Iterable<Object> findAll = access.findAllByProperty(23L, mock(RelationalPersistentProperty.class));
+        Iterable<Object> findAll = access.findAllByProperty(23L, mock(RelationalPersistentProperty.class));
 
-		assertThat(findAll).containsExactly("success");
-	}
+        assertThat(findAll).containsExactly("success");
+    }
 
 }

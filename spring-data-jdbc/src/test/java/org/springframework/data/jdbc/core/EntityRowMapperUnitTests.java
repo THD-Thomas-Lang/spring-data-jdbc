@@ -62,398 +62,406 @@ import org.springframework.util.Assert;
  */
 public class EntityRowMapperUnitTests {
 
-	public static final long ID_FOR_ENTITY_REFERENCING_MAP = 42L;
-	public static final long ID_FOR_ENTITY_REFERENCING_LIST = 4711L;
-	public static final long ID_FOR_ENTITY_NOT_REFERENCING_MAP = 23L;
-	public static final NamingStrategy X_APPENDING_NAMINGSTRATEGY = new NamingStrategy() {
-		@Override
-		public String getColumnName(RelationalPersistentProperty property) {
-			return NamingStrategy.super.getColumnName(property) + "x";
-		}
-	};
+    public static final long ID_FOR_ENTITY_REFERENCING_MAP = 42L;
+    public static final long ID_FOR_ENTITY_REFERENCING_LIST = 4711L;
+    public static final long ID_FOR_ENTITY_NOT_REFERENCING_MAP = 23L;
+    public static final NamingStrategy X_APPENDING_NAMINGSTRATEGY = new NamingStrategy() {
+        @Override
+        public String getColumnName(RelationalPersistentProperty property) {
+            return NamingStrategy.super.getColumnName(property) + "x";
+        }
+    };
 
-	@Test // DATAJDBC-113
-	public void simpleEntitiesGetProperlyExtracted() throws SQLException {
+    @Test // DATAJDBC-113
+    public void simpleEntitiesGetProperlyExtracted() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("id", "name"), //
-				ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("id", "name"), //
+                ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
+        rs.next();
 
-		Trivial extracted = createRowMapper(Trivial.class).mapRow(rs, 1);
+        Trivial extracted = createRowMapper(Trivial.class).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name) //
-				.containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name) //
+                .containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
+    }
 
-	@Test // DATAJDBC-181
-	public void namingStrategyGetsHonored() throws SQLException {
+    @Test // DATAJDBC-181
+    public void namingStrategyGetsHonored() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("idx", "namex"), //
-				ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("idx", "namex"), //
+                ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
+        rs.next();
 
-		Trivial extracted = createRowMapper(Trivial.class, X_APPENDING_NAMINGSTRATEGY).mapRow(rs, 1);
+        Trivial extracted = createRowMapper(Trivial.class, X_APPENDING_NAMINGSTRATEGY).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name) //
-				.containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name) //
+                .containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
+    }
 
-	@Test // DATAJDBC-181
-	public void namingStrategyGetsHonoredForConstructor() throws SQLException {
+    @Test // DATAJDBC-181
+    public void namingStrategyGetsHonoredForConstructor() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("idx", "namex"), //
-				ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("idx", "namex"), //
+                ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
+        rs.next();
 
-		TrivialImmutable extracted = createRowMapper(TrivialImmutable.class, X_APPENDING_NAMINGSTRATEGY).mapRow(rs, 1);
+        TrivialImmutable extracted = createRowMapper(TrivialImmutable.class, X_APPENDING_NAMINGSTRATEGY).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name) //
-				.containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name) //
+                .containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
+    }
 
-	@Test // DATAJDBC-113
-	public void simpleOneToOneGetsProperlyExtracted() throws SQLException {
+    @Test // DATAJDBC-113
+    public void simpleOneToOneGetsProperlyExtracted() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("id", "name", "child_id", "child_name"), //
-				ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("id", "name", "child_id", "child_name"), //
+                ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
+        rs.next();
 
-		OneToOne extracted = createRowMapper(OneToOne.class).mapRow(rs, 1);
+        OneToOne extracted = createRowMapper(OneToOne.class).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name, e -> e.child.id, e -> e.child.name) //
-				.containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name, e -> e.child.id, e -> e.child.name) //
+                .containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
+    }
 
-	@Test // DATAJDBC-286
-	public void immutableOneToOneGetsProperlyExtracted() throws SQLException {
+    @Test // DATAJDBC-286
+    public void immutableOneToOneGetsProperlyExtracted() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("id", "name", "child_id", "child_name"), //
-				ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("id", "name", "child_id", "child_name"), //
+                ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
+        rs.next();
 
-		OneToOneImmutable extracted = createRowMapper(OneToOneImmutable.class).mapRow(rs, 1);
+        OneToOneImmutable extracted = createRowMapper(OneToOneImmutable.class).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name, e -> e.child.id, e -> e.child.name) //
-				.containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name, e -> e.child.id, e -> e.child.name) //
+                .containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 24L, "beta");
+    }
 
-	@Test // DATAJDBC-113
-	public void collectionReferenceGetsLoadedWithAdditionalSelect() throws SQLException {
+    @Test // DATAJDBC-113
+    public void collectionReferenceGetsLoadedWithAdditionalSelect() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("id", "name"), //
-				ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("id", "name"), //
+                ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha");
+        rs.next();
 
-		OneToSet extracted = createRowMapper(OneToSet.class).mapRow(rs, 1);
+        OneToSet extracted = createRowMapper(OneToSet.class).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name, e -> e.children.size()) //
-				.containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 2);
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name, e -> e.children.size()) //
+                .containsExactly(ID_FOR_ENTITY_NOT_REFERENCING_MAP, "alpha", 2);
+    }
 
-	@Test // DATAJDBC-131
-	public void mapReferenceGetsLoadedWithAdditionalSelect() throws SQLException {
+    @Test // DATAJDBC-131
+    public void mapReferenceGetsLoadedWithAdditionalSelect() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("id", "name"), //
-				ID_FOR_ENTITY_REFERENCING_MAP, "alpha");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("id", "name"), //
+                ID_FOR_ENTITY_REFERENCING_MAP, "alpha");
+        rs.next();
 
-		OneToMap extracted = createRowMapper(OneToMap.class).mapRow(rs, 1);
+        OneToMap extracted = createRowMapper(OneToMap.class).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name, e -> e.children.size()) //
-				.containsExactly(ID_FOR_ENTITY_REFERENCING_MAP, "alpha", 2);
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name, e -> e.children.size()) //
+                .containsExactly(ID_FOR_ENTITY_REFERENCING_MAP, "alpha", 2);
+    }
 
-	@Test // DATAJDBC-130
-	public void listReferenceGetsLoadedWithAdditionalSelect() throws SQLException {
+    @Test // DATAJDBC-130
+    public void listReferenceGetsLoadedWithAdditionalSelect() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("id", "name"), //
-				ID_FOR_ENTITY_REFERENCING_LIST, "alpha");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("id", "name"), //
+                ID_FOR_ENTITY_REFERENCING_LIST, "alpha");
+        rs.next();
 
-		OneToMap extracted = createRowMapper(OneToMap.class).mapRow(rs, 1);
+        OneToMap extracted = createRowMapper(OneToMap.class).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.isNotNull() //
-				.extracting(e -> e.id, e -> e.name, e -> e.children.size()) //
-				.containsExactly(ID_FOR_ENTITY_REFERENCING_LIST, "alpha", 2);
-	}
+        assertThat(extracted) //
+                .isNotNull() //
+                .extracting(e -> e.id, e -> e.name, e -> e.children.size()) //
+                .containsExactly(ID_FOR_ENTITY_REFERENCING_LIST, "alpha", 2);
+    }
 
-	@Test // DATAJDBC-252
-	public void doesNotTryToSetPropertiesThatAreSetViaConstructor() throws SQLException {
+    @Test // DATAJDBC-252
+    public void doesNotTryToSetPropertiesThatAreSetViaConstructor() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("value"), //
-				"value-from-resultSet");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("value"), //
+                "value-from-resultSet");
+        rs.next();
 
-		DontUseSetter extracted = createRowMapper(DontUseSetter.class).mapRow(rs, 1);
+        DontUseSetter extracted = createRowMapper(DontUseSetter.class).mapRow(rs, 1);
 
-		assertThat(extracted.value) //
-				.isEqualTo("setThroughConstructor:value-from-resultSet");
-	}
+        assertThat(extracted.value) //
+                .isEqualTo("setThroughConstructor:value-from-resultSet");
+    }
 
-	@Test // DATAJDBC-252
-	public void handlesMixedProperties() throws SQLException {
+    @Test // DATAJDBC-252
+    public void handlesMixedProperties() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("one", "two", "three"), //
-				"111", "222", "333");
-		rs.next();
+        ResultSet rs = mockResultSet(asList("one", "two", "three"), //
+                "111", "222", "333");
+        rs.next();
 
-		MixedProperties extracted = createRowMapper(MixedProperties.class).mapRow(rs, 1);
+        MixedProperties extracted = createRowMapper(MixedProperties.class).mapRow(rs, 1);
 
-		assertThat(extracted) //
-				.extracting(e -> e.one, e -> e.two, e -> e.three) //
-				.isEqualTo(new String[] { "111", "222", "333" });
-	}
+        assertThat(extracted) //
+                .extracting(e -> e.one, e -> e.two, e -> e.three) //
+                .isEqualTo(new String[]{"111", "222", "333"});
+    }
 
-	@Test // DATAJDBC-273
-	public void handlesNonSimplePropertyInConstructor() throws SQLException {
+    @Test // DATAJDBC-273
+    public void handlesNonSimplePropertyInConstructor() throws SQLException {
 
-		ResultSet rs = mockResultSet(asList("id"), //
-				ID_FOR_ENTITY_REFERENCING_LIST);
-		rs.next();
+        ResultSet rs = mockResultSet(asList("id"), //
+                ID_FOR_ENTITY_REFERENCING_LIST);
+        rs.next();
 
-		EntityWithListInConstructor extracted = createRowMapper(EntityWithListInConstructor.class).mapRow(rs, 1);
+        EntityWithListInConstructor extracted = createRowMapper(EntityWithListInConstructor.class).mapRow(rs, 1);
 
-		assertThat(extracted.content).hasSize(2);
-	}
+        assertThat(extracted.content).hasSize(2);
+    }
 
-	private <T> EntityRowMapper<T> createRowMapper(Class<T> type) {
-		return createRowMapper(type, NamingStrategy.INSTANCE);
-	}
+    private <T> EntityRowMapper<T> createRowMapper(Class<T> type) {
+        return createRowMapper(type, NamingStrategy.INSTANCE);
+    }
 
-	private <T> EntityRowMapper<T> createRowMapper(Class<T> type, NamingStrategy namingStrategy) {
+    private <T> EntityRowMapper<T> createRowMapper(Class<T> type, NamingStrategy namingStrategy) {
 
-		RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
+        RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
 
-		DataAccessStrategy accessStrategy = mock(DataAccessStrategy.class);
+        DataAccessStrategy accessStrategy = mock(DataAccessStrategy.class);
 
-		// the ID of the entity is used to determine what kind of ResultSet is needed for subsequent selects.
-		doReturn(new HashSet<>(asList(new Trivial(), new Trivial()))).when(accessStrategy)
-				.findAllByProperty(eq(ID_FOR_ENTITY_NOT_REFERENCING_MAP), any(RelationalPersistentProperty.class));
+        // the ID of the entity is used to determine what kind of ResultSet is needed for subsequent selects.
+        doReturn(new HashSet<>(asList(new Trivial(), new Trivial()))).when(accessStrategy)
+                .findAllByProperty(eq(ID_FOR_ENTITY_NOT_REFERENCING_MAP), any(RelationalPersistentProperty.class));
 
-		doReturn(new HashSet<>(asList( //
-				new SimpleEntry<>("one", new Trivial()), //
-				new SimpleEntry<>("two", new Trivial()) //
-		))).when(accessStrategy).findAllByProperty(eq(ID_FOR_ENTITY_REFERENCING_MAP),
-				any(RelationalPersistentProperty.class));
+        doReturn(new HashSet<>(asList( //
+                new SimpleEntry<>("one", new Trivial()), //
+                new SimpleEntry<>("two", new Trivial()) //
+        ))).when(accessStrategy).findAllByProperty(eq(ID_FOR_ENTITY_REFERENCING_MAP),
+                any(RelationalPersistentProperty.class));
 
-		doReturn(new HashSet<>(asList( //
-				new SimpleEntry<>(1, new Trivial()), //
-				new SimpleEntry<>(2, new Trivial()) //
-		))).when(accessStrategy).findAllByProperty(eq(ID_FOR_ENTITY_REFERENCING_LIST),
-				any(RelationalPersistentProperty.class));
+        doReturn(new HashSet<>(asList( //
+                new SimpleEntry<>(1, new Trivial()), //
+                new SimpleEntry<>(2, new Trivial()) //
+        ))).when(accessStrategy).findAllByProperty(eq(ID_FOR_ENTITY_REFERENCING_LIST),
+                any(RelationalPersistentProperty.class));
 
-		RelationalConverter converter = new BasicRelationalConverter(context, new JdbcCustomConversions());
+        RelationalConverter converter = new BasicRelationalConverter(context, new JdbcCustomConversions());
 
-		return new EntityRowMapper<>( //
-				(RelationalPersistentEntity<T>) context.getRequiredPersistentEntity(type), //
-				context, //
-				converter, //
-				accessStrategy //
-		);
-	}
+        return new EntityRowMapper<>( //
+                (RelationalPersistentEntity<T>) context.getRequiredPersistentEntity(type), //
+                context, //
+                converter, //
+                accessStrategy //
+        );
+    }
 
-	private static ResultSet mockResultSet(List<String> columns, Object... values) {
+    private static ResultSet mockResultSet(List<String> columns, Object... values) {
 
-		Assert.isTrue( //
-				values.length % columns.size() == 0, //
-				String //
-						.format( //
-								"Number of values [%d] must be a multiple of the number of columns [%d]", //
-								values.length, //
-								columns.size() //
-						) //
-		);
+        Assert.isTrue( //
+                values.length % columns.size() == 0, //
+                String //
+                        .format( //
+                                "Number of values [%d] must be a multiple of the number of columns [%d]", //
+                                values.length, //
+                                columns.size() //
+                        ) //
+        );
 
-		List<Map<String, Object>> result = convertValues(columns, values);
+        List<Map<String, Object>> result = convertValues(columns, values);
 
-		return mock(ResultSet.class, new ResultSetAnswer(result));
-	}
+        return mock(ResultSet.class, new ResultSetAnswer(result));
+    }
 
-	private static List<Map<String, Object>> convertValues(List<String> columns, Object[] values) {
+    private static List<Map<String, Object>> convertValues(List<String> columns, Object[] values) {
 
-		List<Map<String, Object>> result = new ArrayList<>();
+        List<Map<String, Object>> result = new ArrayList<>();
 
-		int index = 0;
-		while (index < values.length) {
+        int index = 0;
+        while (index < values.length) {
 
-			Map<String, Object> row = new HashMap<>();
-			result.add(row);
-			for (String column : columns) {
+            Map<String, Object> row = new HashMap<>();
+            result.add(row);
+            for (String column : columns) {
 
-				row.put(column, values[index]);
-				index++;
-			}
-		}
-		return result;
-	}
+                row.put(column, values[index]);
+                index++;
+            }
+        }
+        return result;
+    }
 
-	private static class ResultSetAnswer implements Answer {
+    private static class ResultSetAnswer implements Answer {
 
-		private final List<Map<String, Object>> values;
-		private int index = -1;
+        private final List<Map<String, Object>> values;
+        private int index = -1;
 
-		public ResultSetAnswer(List<Map<String, Object>> values) {
+        public ResultSetAnswer(List<Map<String, Object>> values) {
 
-			this.values = values;
-		}
+            this.values = values;
+        }
 
-		@Override
-		public Object answer(InvocationOnMock invocation) throws Throwable {
+        @Override
+        public Object answer(InvocationOnMock invocation) throws Throwable {
 
-			switch (invocation.getMethod().getName()) {
-				case "next":
-			}
+            switch (invocation.getMethod().getName()) {
+                case "next":
+            }
 
-			if (invocation.getMethod().getName().equals("next"))
-				return next();
+            if (invocation.getMethod().getName().equals("next"))
+                return next();
 
-			if (invocation.getMethod().getName().equals("getObject"))
-				return getObject(invocation.getArgument(0));
+            if (invocation.getMethod().getName().equals("getObject"))
+                return getObject(invocation.getArgument(0));
 
-			if (invocation.getMethod().getName().equals("isAfterLast"))
-				return isAfterLast();
+            if (invocation.getMethod().getName().equals("isAfterLast"))
+                return isAfterLast();
 
-			if (invocation.getMethod().getName().equals("isBeforeFirst"))
-				return isBeforeFirst();
+            if (invocation.getMethod().getName().equals("isBeforeFirst"))
+                return isBeforeFirst();
 
-			if (invocation.getMethod().getName().equals("getRow"))
-				return isAfterLast() || isBeforeFirst() ? 0 : index + 1;
+            if (invocation.getMethod().getName().equals("getRow"))
+                return isAfterLast() || isBeforeFirst() ? 0 : index + 1;
 
-			if (invocation.getMethod().getName().equals("toString"))
-				return this.toString();
+            if (invocation.getMethod().getName().equals("toString"))
+                return this.toString();
 
-			throw new OperationNotSupportedException(invocation.getMethod().getName());
-		}
+            throw new OperationNotSupportedException(invocation.getMethod().getName());
+        }
 
-		private boolean isAfterLast() {
-			return index >= values.size() && !values.isEmpty();
-		}
+        private boolean isAfterLast() {
+            return index >= values.size() && !values.isEmpty();
+        }
 
-		private boolean isBeforeFirst() {
-			return index < 0 && !values.isEmpty();
-		}
+        private boolean isBeforeFirst() {
+            return index < 0 && !values.isEmpty();
+        }
 
-		private Object getObject(String column) throws SQLException {
+        private Object getObject(String column) throws SQLException {
 
-			Map<String, Object> rowMap = values.get(index);
+            Map<String, Object> rowMap = values.get(index);
 
-			if (!rowMap.containsKey(column)) {
-				throw new SQLException(String.format("Trying to access a column (%s) that does not exist", column));
-			}
+            if (!rowMap.containsKey(column)) {
+                throw new SQLException(String.format("Trying to access a column (%s) that does not exist", column));
+            }
 
-			return rowMap.get(column);
-		}
+            return rowMap.get(column);
+        }
 
-		private boolean next() {
+        private boolean next() {
 
-			index++;
-			return index < values.size();
-		}
-	}
+            index++;
+            return index < values.size();
+        }
+    }
 
-	@RequiredArgsConstructor
-	@Wither
-	static class TrivialImmutable {
+    @RequiredArgsConstructor
+    @Wither
+    static class TrivialImmutable {
 
-		@Id private final Long id;
-		private final String name;
-	}
+        @Id
+        private final Long id;
+        private final String name;
+    }
 
-	static class Trivial {
+    static class Trivial {
 
-		@Id Long id;
-		String name;
-	}
+        @Id
+        Long id;
+        String name;
+    }
 
-	static class OneToOne {
+    static class OneToOne {
 
-		@Id Long id;
-		String name;
-		Trivial child;
-	}
+        @Id
+        Long id;
+        String name;
+        Trivial child;
+    }
 
-	@RequiredArgsConstructor
-	@Wither
-	static class OneToOneImmutable {
+    @RequiredArgsConstructor
+    @Wither
+    static class OneToOneImmutable {
 
-		private final @Id Long id;
-		private final String name;
-		private final TrivialImmutable child;
-	}
+        private final @Id
+        Long id;
+        private final String name;
+        private final TrivialImmutable child;
+    }
 
-	static class OneToSet {
+    static class OneToSet {
 
-		@Id Long id;
-		String name;
-		Set<Trivial> children;
-	}
+        @Id
+        Long id;
+        String name;
+        Set<Trivial> children;
+    }
 
-	static class OneToMap {
+    static class OneToMap {
 
-		@Id Long id;
-		String name;
-		Map<String, Trivial> children;
-	}
+        @Id
+        Long id;
+        String name;
+        Map<String, Trivial> children;
+    }
 
-	static class OneToList {
+    static class OneToList {
 
-		@Id Long id;
-		String name;
-		List<Trivial> children;
-	}
+        @Id
+        Long id;
+        String name;
+        List<Trivial> children;
+    }
 
-	private static class DontUseSetter {
-		String value;
+    private static class DontUseSetter {
+        String value;
 
-		DontUseSetter(@Param("value") String value) {
-			this.value = "setThroughConstructor:" + value;
-		}
-	}
+        DontUseSetter(@Param("value") String value) {
+            this.value = "setThroughConstructor:" + value;
+        }
+    }
 
-	static class MixedProperties {
+    static class MixedProperties {
 
-		final String one;
-		String two;
-		final String three;
+        final String one;
+        String two;
+        final String three;
 
-		@PersistenceConstructor
-		MixedProperties(String one) {
-			this.one = one;
-			this.three = "unset";
-		}
+        @PersistenceConstructor
+        MixedProperties(String one) {
+            this.one = one;
+            this.three = "unset";
+        }
 
-		private MixedProperties(String one, String two, String three) {
+        private MixedProperties(String one, String two, String three) {
 
-			this.one = one;
-			this.two = two;
-			this.three = three;
-		}
+            this.one = one;
+            this.two = two;
+            this.three = three;
+        }
 
-		MixedProperties withThree(String three) {
-			return new MixedProperties(one, two, three);
-		}
-	}
+        MixedProperties withThree(String three) {
+            return new MixedProperties(one, two, three);
+        }
+    }
 
-	@AllArgsConstructor
-	static class EntityWithListInConstructor {
+    @AllArgsConstructor
+    static class EntityWithListInConstructor {
 
-		@Id final Long id;
+        @Id
+        final Long id;
 
-		final List<Trivial> content;
-	}
+        final List<Trivial> content;
+    }
 }

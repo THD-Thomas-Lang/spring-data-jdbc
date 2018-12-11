@@ -27,46 +27,46 @@ import org.springframework.util.StringUtils;
  */
 public class RelationalPropertyPath {
 
-	private final PropertyPath path;
-	private final Class<?> rootType;
+    private final PropertyPath path;
+    private final Class<?> rootType;
 
-	RelationalPropertyPath(PropertyPath path) {
+    RelationalPropertyPath(PropertyPath path) {
 
-		Assert.notNull(path, "path must not be null if rootType is not set");
+        Assert.notNull(path, "path must not be null if rootType is not set");
 
-		this.path = path;
-		this.rootType = null;
-	}
+        this.path = path;
+        this.rootType = null;
+    }
 
-	private RelationalPropertyPath(Class<?> type) {
+    private RelationalPropertyPath(Class<?> type) {
 
-		Assert.notNull(type, "type must not be null if path is not set");
+        Assert.notNull(type, "type must not be null if path is not set");
 
-		this.path = null;
-		this.rootType = type;
-	}
+        this.path = null;
+        this.rootType = type;
+    }
 
-	public static RelationalPropertyPath from(String source, Class<?> type) {
+    public static RelationalPropertyPath from(String source, Class<?> type) {
 
-		if (StringUtils.isEmpty(source)) {
-			return new RelationalPropertyPath(type);
-		} else {
-			return new RelationalPropertyPath(PropertyPath.from(source, type));
-		}
-	}
+        if (StringUtils.isEmpty(source)) {
+            return new RelationalPropertyPath(type);
+        } else {
+            return new RelationalPropertyPath(PropertyPath.from(source, type));
+        }
+    }
 
-	public RelationalPropertyPath nested(String name) {
+    public RelationalPropertyPath nested(String name) {
 
-		return path == null ? //
-				new RelationalPropertyPath(PropertyPath.from(name, rootType)) //
-				: new RelationalPropertyPath(path.nested(name));
-	}
+        return path == null ? //
+                new RelationalPropertyPath(PropertyPath.from(name, rootType)) //
+                : new RelationalPropertyPath(path.nested(name));
+    }
 
-	public PropertyPath getPath() {
-		return path;
-	}
+    public PropertyPath getPath() {
+        return path;
+    }
 
-	public String toDotPath() {
-		return path == null ? "" : path.toDotPath();
-	}
+    public String toDotPath() {
+        return path == null ? "" : path.toDotPath();
+    }
 }

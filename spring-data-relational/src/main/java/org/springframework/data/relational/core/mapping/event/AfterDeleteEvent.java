@@ -28,15 +28,15 @@ import org.springframework.data.relational.core.mapping.event.Identifier.Specifi
  */
 public class AfterDeleteEvent extends RelationalEventWithId {
 
-	private static final long serialVersionUID = 3594807189931141582L;
+    private static final long serialVersionUID = 3594807189931141582L;
 
-	/**
-	 * @param id of the entity.
-	 * @param instance the deleted entity if it is available.
-	 * @param change the {@link AggregateChange} encoding the actions that were performed on the database as part of the
-	 *          delete operation.
-	 */
-	public AfterDeleteEvent(Specified id, Optional<Object> instance, AggregateChange change) {
-		super(id, instance, change);
-	}
+    /**
+     * @param id       of the entity.
+     * @param instance the deleted entity if it is available.
+     * @param change   the {@link AggregateChange} encoding the actions that were performed on the database as part of the
+     *                 delete operation.
+     */
+    public AfterDeleteEvent(Specified id, Optional<Object> instance, AggregateChange change) {
+        super(id, instance, change);
+    }
 }

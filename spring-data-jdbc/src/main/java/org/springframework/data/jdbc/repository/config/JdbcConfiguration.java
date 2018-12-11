@@ -39,43 +39,43 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 @Configuration
 public class JdbcConfiguration {
 
-	/**
-	 * Register a {@link RelationalMappingContext} and apply an optional {@link NamingStrategy}.
-	 *
-	 * @param namingStrategy optional {@link NamingStrategy}. Use {@link NamingStrategy#INSTANCE} as fallback.
-	 * @return must not be {@literal null}.
-	 */
-	@Bean
-	public JdbcMappingContext jdbcMappingContext(Optional<NamingStrategy> namingStrategy) {
+    /**
+     * Register a {@link RelationalMappingContext} and apply an optional {@link NamingStrategy}.
+     *
+     * @param namingStrategy optional {@link NamingStrategy}. Use {@link NamingStrategy#INSTANCE} as fallback.
+     * @return must not be {@literal null}.
+     */
+    @Bean
+    public JdbcMappingContext jdbcMappingContext(Optional<NamingStrategy> namingStrategy) {
 
-		JdbcMappingContext mappingContext = new JdbcMappingContext(namingStrategy.orElse(NamingStrategy.INSTANCE));
-		mappingContext.setSimpleTypeHolder(jdbcCustomConversions().getSimpleTypeHolder());
+        JdbcMappingContext mappingContext = new JdbcMappingContext(namingStrategy.orElse(NamingStrategy.INSTANCE));
+        mappingContext.setSimpleTypeHolder(jdbcCustomConversions().getSimpleTypeHolder());
 
-		return mappingContext;
-	}
+        return mappingContext;
+    }
 
-	/**
-	 * Creates a {@link RelationalConverter} using the configured {@link #jdbcMappingContext(Optional)}. Will get
-	 * {@link #jdbcCustomConversions()} applied.
-	 *
-	 * @see #jdbcMappingContext(Optional)
-	 * @see #jdbcCustomConversions()
-	 * @return must not be {@literal null}.
-	 */
-	@Bean
-	public RelationalConverter relationalConverter(RelationalMappingContext mappingContext) {
-		return new BasicJdbcConverter(mappingContext, jdbcCustomConversions());
-	}
+    /**
+     * Creates a {@link RelationalConverter} using the configured {@link #jdbcMappingContext(Optional)}. Will get
+     * {@link #jdbcCustomConversions()} applied.
+     *
+     * @return must not be {@literal null}.
+     * @see #jdbcMappingContext(Optional)
+     * @see #jdbcCustomConversions()
+     */
+    @Bean
+    public RelationalConverter relationalConverter(RelationalMappingContext mappingContext) {
+        return new BasicJdbcConverter(mappingContext, jdbcCustomConversions());
+    }
 
-	/**
-	 * Register custom {@link Converter}s in a {@link JdbcCustomConversions} object if required. These
-	 * {@link JdbcCustomConversions} will be registered with the {@link #relationalConverter(RelationalMappingContext)}.
-	 * Returns an empty {@link JdbcCustomConversions} instance by default.
-	 *
-	 * @return must not be {@literal null}.
-	 */
-	@Bean
-	public JdbcCustomConversions jdbcCustomConversions() {
-		return new JdbcCustomConversions();
-	}
+    /**
+     * Register custom {@link Converter}s in a {@link JdbcCustomConversions} object if required. These
+     * {@link JdbcCustomConversions} will be registered with the {@link #relationalConverter(RelationalMappingContext)}.
+     * Returns an empty {@link JdbcCustomConversions} instance by default.
+     *
+     * @return must not be {@literal null}.
+     */
+    @Bean
+    public JdbcCustomConversions jdbcCustomConversions() {
+        return new JdbcCustomConversions();
+    }
 }

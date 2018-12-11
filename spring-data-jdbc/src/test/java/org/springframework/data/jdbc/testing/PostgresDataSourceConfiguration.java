@@ -34,33 +34,33 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @Profile("postgres")
 public class PostgresDataSourceConfiguration extends DataSourceConfiguration {
 
-	private static final PostgreSQLContainer POSTGRESQL_CONTAINER = new PostgreSQLContainer();
+    private static final PostgreSQLContainer POSTGRESQL_CONTAINER = new PostgreSQLContainer();
 
-	static {
-		POSTGRESQL_CONTAINER.start();
-	}
+    static {
+        POSTGRESQL_CONTAINER.start();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.testing.DataSourceConfiguration#createDataSource()
-	 */
-	@Override
-	protected DataSource createDataSource() {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.testing.DataSourceConfiguration#createDataSource()
+     */
+    @Override
+    protected DataSource createDataSource() {
 
-		PGSimpleDataSource dataSource = new PGSimpleDataSource();
-		dataSource.setUrl(POSTGRESQL_CONTAINER.getJdbcUrl());
-		dataSource.setUser(POSTGRESQL_CONTAINER.getUsername());
-		dataSource.setPassword(POSTGRESQL_CONTAINER.getPassword());
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setUrl(POSTGRESQL_CONTAINER.getJdbcUrl());
+        dataSource.setUser(POSTGRESQL_CONTAINER.getUsername());
+        dataSource.setPassword(POSTGRESQL_CONTAINER.getPassword());
 
-		return dataSource;
-	}
+        return dataSource;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.testing.DataSourceFactoryBean#customizePopulator(org.springframework.jdbc.datasource.init.ResourceDatabasePopulator)
-	 */
-	@Override
-	protected void customizePopulator(ResourceDatabasePopulator populator) {
-		populator.setIgnoreFailedDrops(true);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.testing.DataSourceFactoryBean#customizePopulator(org.springframework.jdbc.datasource.init.ResourceDatabasePopulator)
+     */
+    @Override
+    protected void customizePopulator(ResourceDatabasePopulator populator) {
+        populator.setIgnoreFailedDrops(true);
+    }
 }

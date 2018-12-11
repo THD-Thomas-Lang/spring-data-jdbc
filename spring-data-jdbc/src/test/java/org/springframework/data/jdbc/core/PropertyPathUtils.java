@@ -31,12 +31,12 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
 @UtilityClass
 class PropertyPathUtils {
 
-	static PersistentPropertyPath<RelationalPersistentProperty> toPath(String path, Class source,
-			RelationalMappingContext context) {
+    static PersistentPropertyPath<RelationalPersistentProperty> toPath(String path, Class source,
+                                                                       RelationalMappingContext context) {
 
-		PersistentPropertyPaths<?, RelationalPersistentProperty> persistentPropertyPaths = context
-				.findPersistentPropertyPaths(source, p -> true);
+        PersistentPropertyPaths<?, RelationalPersistentProperty> persistentPropertyPaths = context
+                .findPersistentPropertyPaths(source, p -> true);
 
-		return persistentPropertyPaths.filter(p -> p.toDotPath().equals(path)).stream().findFirst().orElse(null);
-	}
+        return persistentPropertyPaths.filter(p -> p.toDotPath().equals(path)).stream().findFirst().orElse(null);
+    }
 }

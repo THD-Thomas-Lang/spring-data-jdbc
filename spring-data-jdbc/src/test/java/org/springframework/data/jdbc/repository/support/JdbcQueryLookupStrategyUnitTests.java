@@ -51,59 +51,59 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
  */
 public class JdbcQueryLookupStrategyUnitTests {
 
-	ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
-	RelationalMappingContext mappingContext = mock(RelationalMappingContext.class, RETURNS_DEEP_STUBS);
-	RelationalConverter converter = mock(BasicRelationalConverter.class);
-	DataAccessStrategy accessStrategy = mock(DataAccessStrategy.class);
-	ProjectionFactory projectionFactory = mock(ProjectionFactory.class);
-	RepositoryMetadata metadata;
-	NamedQueries namedQueries = mock(NamedQueries.class);
-	NamedParameterJdbcOperations operations = mock(NamedParameterJdbcOperations.class);
+    ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+    RelationalMappingContext mappingContext = mock(RelationalMappingContext.class, RETURNS_DEEP_STUBS);
+    RelationalConverter converter = mock(BasicRelationalConverter.class);
+    DataAccessStrategy accessStrategy = mock(DataAccessStrategy.class);
+    ProjectionFactory projectionFactory = mock(ProjectionFactory.class);
+    RepositoryMetadata metadata;
+    NamedQueries namedQueries = mock(NamedQueries.class);
+    NamedParameterJdbcOperations operations = mock(NamedParameterJdbcOperations.class);
 
-	@Before
-	public void setup() {
+    @Before
+    public void setup() {
 
-		this.metadata = mock(RepositoryMetadata.class);
+        this.metadata = mock(RepositoryMetadata.class);
 
-		doReturn(NumberFormat.class).when(metadata).getReturnedDomainClass(any(Method.class));
+        doReturn(NumberFormat.class).when(metadata).getReturnedDomainClass(any(Method.class));
 
-	}
+    }
 
-	@Test // DATAJDBC-166
-	@SuppressWarnings("unchecked")
-	public void typeBasedRowMapperGetsUsedForQuery() {
+    @Test // DATAJDBC-166
+    @SuppressWarnings("unchecked")
+    public void typeBasedRowMapperGetsUsedForQuery() {
 
-		RowMapper<? extends NumberFormat> numberFormatMapper = mock(RowMapper.class);
-		RowMapperMap rowMapperMap = new ConfigurableRowMapperMap().register(NumberFormat.class, numberFormatMapper);
+        RowMapper<? extends NumberFormat> numberFormatMapper = mock(RowMapper.class);
+        RowMapperMap rowMapperMap = new ConfigurableRowMapperMap().register(NumberFormat.class, numberFormatMapper);
 
-		RepositoryQuery repositoryQuery = getRepositoryQuery("returningNumberFormat", rowMapperMap);
+        RepositoryQuery repositoryQuery = getRepositoryQuery("returningNumberFormat", rowMapperMap);
 
-		repositoryQuery.execute(new Object[] {});
+        repositoryQuery.execute(new Object[]{});
 
-		verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(numberFormatMapper));
-	}
+        verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(numberFormatMapper));
+    }
 
-	private RepositoryQuery getRepositoryQuery(String name, RowMapperMap rowMapperMap) {
+    private RepositoryQuery getRepositoryQuery(String name, RowMapperMap rowMapperMap) {
 
-		JdbcQueryLookupStrategy queryLookupStrategy = new JdbcQueryLookupStrategy(publisher, mappingContext, converter, accessStrategy,
-				rowMapperMap, operations);
+        JdbcQueryLookupStrategy queryLookupStrategy = new JdbcQueryLookupStrategy(publisher, mappingContext, converter, accessStrategy,
+                rowMapperMap, operations);
 
-		return queryLookupStrategy.resolveQuery(getMethod(name), metadata, projectionFactory, namedQueries);
-	}
+        return queryLookupStrategy.resolveQuery(getMethod(name), metadata, projectionFactory, namedQueries);
+    }
 
-	// NumberFormat is just used as an arbitrary non simple type.
-	@Query("some SQL")
-	private NumberFormat returningNumberFormat() {
-		return null;
-	}
+    // NumberFormat is just used as an arbitrary non simple type.
+    @Query("some SQL")
+    private NumberFormat returningNumberFormat() {
+        return null;
+    }
 
-	private static Method getMethod(String name) {
+    private static Method getMethod(String name) {
 
-		try {
-			return JdbcQueryLookupStrategyUnitTests.class.getDeclaredMethod(name);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
+            return JdbcQueryLookupStrategyUnitTests.class.getDeclaredMethod(name);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

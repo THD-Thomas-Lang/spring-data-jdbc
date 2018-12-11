@@ -63,144 +63,150 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class JdbcRepositoryPropertyConversionIntegrationTests {
 
-	@Configuration
-	@Import(TestConfiguration.class)
-	static class Config {
+    @Configuration
+    @Import(TestConfiguration.class)
+    static class Config {
 
-		@Autowired JdbcRepositoryFactory factory;
+        @Autowired
+        JdbcRepositoryFactory factory;
 
-		@Bean
-		Class<?> testClass() {
-			return JdbcRepositoryPropertyConversionIntegrationTests.class;
-		}
+        @Bean
+        Class<?> testClass() {
+            return JdbcRepositoryPropertyConversionIntegrationTests.class;
+        }
 
-		@Bean
-		DummyEntityRepository dummyEntityRepository() {
-			return factory.getRepository(DummyEntityRepository.class);
-		}
+        @Bean
+        DummyEntityRepository dummyEntityRepository() {
+            return factory.getRepository(DummyEntityRepository.class);
+        }
 
-		@Bean
-		ApplicationListener<?> applicationListener() {
-			return (ApplicationListener<BeforeSaveEvent>) beforeInsert -> ((EntityWithColumnsRequiringConversions) beforeInsert
-					.getEntity()).setIdTimestamp(getNow());
-		}
+        @Bean
+        ApplicationListener<?> applicationListener() {
+            return (ApplicationListener<BeforeSaveEvent>) beforeInsert -> ((EntityWithColumnsRequiringConversions) beforeInsert
+                    .getEntity()).setIdTimestamp(getNow());
+        }
 
-	}
+    }
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
 
-	@Autowired DummyEntityRepository repository;
+    @Autowired
+    DummyEntityRepository repository;
 
-	@Test // DATAJDBC-95
-	@IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
-	public void saveAndLoadAnEntity() {
+    @Test // DATAJDBC-95
+    @IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
+    public void saveAndLoadAnEntity() {
 
-		EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
+        EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
 
-		assertThat(repository.findById(entity.getIdTimestamp())).hasValueSatisfying(it -> {
-			SoftAssertions softly = new SoftAssertions();
-			softly.assertThat(it.getIdTimestamp()).isEqualTo(entity.getIdTimestamp());
-			softly.assertThat(it.getSomeEnum()).isEqualTo(entity.getSomeEnum());
-			softly.assertThat(it.getBigDecimal()).isEqualTo(entity.getBigDecimal());
-			softly.assertThat(it.isBool()).isEqualTo(entity.isBool());
-			softly.assertThat(it.getBigInteger()).isEqualTo(entity.getBigInteger());
-			softly.assertThat(it.getDate()).is(representingTheSameAs(entity.getDate()));
-			softly.assertThat(it.getLocalDateTime()).isEqualTo(entity.getLocalDateTime());
-			softly.assertAll();
-		});
-	}
+        assertThat(repository.findById(entity.getIdTimestamp())).hasValueSatisfying(it -> {
+            SoftAssertions softly = new SoftAssertions();
+            softly.assertThat(it.getIdTimestamp()).isEqualTo(entity.getIdTimestamp());
+            softly.assertThat(it.getSomeEnum()).isEqualTo(entity.getSomeEnum());
+            softly.assertThat(it.getBigDecimal()).isEqualTo(entity.getBigDecimal());
+            softly.assertThat(it.isBool()).isEqualTo(entity.isBool());
+            softly.assertThat(it.getBigInteger()).isEqualTo(entity.getBigInteger());
+            softly.assertThat(it.getDate()).is(representingTheSameAs(entity.getDate()));
+            softly.assertThat(it.getLocalDateTime()).isEqualTo(entity.getLocalDateTime());
+            softly.assertAll();
+        });
+    }
 
-	@Test // DATAJDBC-95
-	@IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
-	public void existsById() {
+    @Test // DATAJDBC-95
+    @IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
+    public void existsById() {
 
-		EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
+        EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
 
-		assertThat(repository.existsById(entity.getIdTimestamp())).isTrue();
-	}
+        assertThat(repository.existsById(entity.getIdTimestamp())).isTrue();
+    }
 
-	@Test // DATAJDBC-95
-	@IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
-	public void findAllById() {
+    @Test // DATAJDBC-95
+    @IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
+    public void findAllById() {
 
-		EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
+        EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
 
-		assertThat(repository.findAllById(Collections.singletonList(entity.getIdTimestamp()))).hasSize(1);
-	}
+        assertThat(repository.findAllById(Collections.singletonList(entity.getIdTimestamp()))).hasSize(1);
+    }
 
-	@Test // DATAJDBC-95
-	@IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
-	public void deleteAll() {
+    @Test // DATAJDBC-95
+    @IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
+    public void deleteAll() {
 
-		EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
+        EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
 
-		repository.deleteAll(singletonList(entity));
+        repository.deleteAll(singletonList(entity));
 
-		assertThat(repository.findAll()).hasSize(0);
-	}
+        assertThat(repository.findAll()).hasSize(0);
+    }
 
-	@Test // DATAJDBC-95
-	@IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
-	public void deleteById() {
+    @Test // DATAJDBC-95
+    @IfProfileValue(name = "current.database.is.not.mssql", value = "true") // DATAJDBC-278
+    public void deleteById() {
 
-		EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
+        EntityWithColumnsRequiringConversions entity = repository.save(createDummyEntity());
 
-		repository.deleteById(entity.getIdTimestamp());
+        repository.deleteById(entity.getIdTimestamp());
 
-		assertThat(repository.findAll()).hasSize(0);
-	}
+        assertThat(repository.findAll()).hasSize(0);
+    }
 
-	private static EntityWithColumnsRequiringConversions createDummyEntity() {
+    private static EntityWithColumnsRequiringConversions createDummyEntity() {
 
-		EntityWithColumnsRequiringConversions entity = new EntityWithColumnsRequiringConversions();
-		entity.setSomeEnum(SomeEnum.VALUE);
-		entity.setBigDecimal(new BigDecimal("123456789012345678901234567890123456789012345678901234567890"));
-		entity.setBool(true);
-		// Postgres doesn't seem to be able to handle BigInts larger then a Long, since the driver reads them as Long
-		entity.setBigInteger(BigInteger.valueOf(Long.MAX_VALUE));
-		entity.setDate(Date.from(getNow().toInstant(ZoneOffset.UTC)));
-		entity.setLocalDateTime(getNow());
+        EntityWithColumnsRequiringConversions entity = new EntityWithColumnsRequiringConversions();
+        entity.setSomeEnum(SomeEnum.VALUE);
+        entity.setBigDecimal(new BigDecimal("123456789012345678901234567890123456789012345678901234567890"));
+        entity.setBool(true);
+        // Postgres doesn't seem to be able to handle BigInts larger then a Long, since the driver reads them as Long
+        entity.setBigInteger(BigInteger.valueOf(Long.MAX_VALUE));
+        entity.setDate(Date.from(getNow().toInstant(ZoneOffset.UTC)));
+        entity.setLocalDateTime(getNow());
 
-		return entity;
-	}
+        return entity;
+    }
 
-	// DATAJDBC-119
-	private static LocalDateTime getNow() {
-		return LocalDateTime.now().withNano(0);
-	}
+    // DATAJDBC-119
+    private static LocalDateTime getNow() {
+        return LocalDateTime.now().withNano(0);
+    }
 
-	private Condition<Date> representingTheSameAs(Date other) {
+    private Condition<Date> representingTheSameAs(Date other) {
 
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-		String expected = format.format(other);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        String expected = format.format(other);
 
-		return new Condition<>(date -> format.format(date).equals(expected), expected);
-	}
+        return new Condition<>(date -> format.format(date).equals(expected), expected);
+    }
 
-	interface DummyEntityRepository extends CrudRepository<EntityWithColumnsRequiringConversions, LocalDateTime> {}
+    interface DummyEntityRepository extends CrudRepository<EntityWithColumnsRequiringConversions, LocalDateTime> {
+    }
 
-	@Data
-	static class EntityWithColumnsRequiringConversions {
+    @Data
+    static class EntityWithColumnsRequiringConversions {
 
-		// ensures conversion on id querying
-		@Id private LocalDateTime idTimestamp;
+        // ensures conversion on id querying
+        @Id
+        private LocalDateTime idTimestamp;
 
-		boolean bool;
+        boolean bool;
 
-		SomeEnum someEnum;
+        SomeEnum someEnum;
 
-		BigDecimal bigDecimal;
+        BigDecimal bigDecimal;
 
-		BigInteger bigInteger;
+        BigInteger bigInteger;
 
-		Date date;
+        Date date;
 
-		LocalDateTime localDateTime;
+        LocalDateTime localDateTime;
 
-	}
+    }
 
-	enum SomeEnum {
-		VALUE
-	}
+    enum SomeEnum {
+        VALUE
+    }
 }

@@ -27,50 +27,50 @@ import org.springframework.util.Assert;
  */
 public interface Identifier {
 
-	/**
-	 * Creates a new {@link Specified} identifier for the given, non-null value.
-	 *
-	 * @param identifier must not be {@literal null}.
-	 * @return will never be {@literal null}.
-	 */
-	static Specified of(Object identifier) {
+    /**
+     * Creates a new {@link Specified} identifier for the given, non-null value.
+     *
+     * @param identifier must not be {@literal null}.
+     * @return will never be {@literal null}.
+     */
+    static Specified of(Object identifier) {
 
-		Assert.notNull(identifier, "Identifier must not be null!");
+        Assert.notNull(identifier, "Identifier must not be null!");
 
-		return SpecifiedIdentifier.of(identifier);
-	}
+        return SpecifiedIdentifier.of(identifier);
+    }
 
-	/**
-	 * Produces an {@link Identifier} of appropriate type depending the argument being {@code null} or not.
-	 *
-	 * @param identifier May be {@code null}.
-	 * @return an {@link Identifier}.
-	 */
-	static Identifier ofNullable(@Nullable Object identifier) {
-		return identifier == null ? Unset.UNSET : of(identifier);
-	}
+    /**
+     * Produces an {@link Identifier} of appropriate type depending the argument being {@code null} or not.
+     *
+     * @param identifier May be {@code null}.
+     * @return an {@link Identifier}.
+     */
+    static Identifier ofNullable(@Nullable Object identifier) {
+        return identifier == null ? Unset.UNSET : of(identifier);
+    }
 
-	/**
-	 * Returns the identifier value.
-	 *
-	 * @return will never be {@code null}.
-	 */
-	Optional<?> getOptionalValue();
+    /**
+     * Returns the identifier value.
+     *
+     * @return will never be {@code null}.
+     */
+    Optional<?> getOptionalValue();
 
-	/**
-	 * A specified identifier that exposes a definitely present identifier value.
-	 *
-	 * @author Oliver Gierke
-	 */
-	interface Specified extends Identifier {
+    /**
+     * A specified identifier that exposes a definitely present identifier value.
+     *
+     * @author Oliver Gierke
+     */
+    interface Specified extends Identifier {
 
-		/**
-		 * Returns the identifier value.
-		 *
-		 * @return will never be {@literal null}.
-		 */
-		default Object getValue() {
-			return getOptionalValue().orElseThrow(() -> new IllegalStateException("Should not happen!"));
-		}
-	}
+        /**
+         * Returns the identifier value.
+         *
+         * @return will never be {@literal null}.
+         */
+        default Object getValue() {
+            return getOptionalValue().orElseThrow(() -> new IllegalStateException("Should not happen!"));
+        }
+    }
 }

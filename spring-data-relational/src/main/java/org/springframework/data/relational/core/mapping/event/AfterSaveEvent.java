@@ -25,14 +25,14 @@ import org.springframework.data.relational.core.mapping.event.Identifier.Specifi
  */
 public class AfterSaveEvent extends RelationalEventWithIdAndEntity {
 
-	private static final long serialVersionUID = 8982085767296982848L;
+    private static final long serialVersionUID = 8982085767296982848L;
 
-	/**
-	 * @param id identifier of the saved entity.
-	 * @param instance the saved entity.
-	 * @param change the {@link AggregateChange} encoding the actions performed on the database as part of the delete.
-	 */
-	public AfterSaveEvent(Specified id, Object instance, AggregateChange change) {
-		super(id, instance, change);
-	}
+    /**
+     * @param id       identifier of the saved entity.
+     * @param instance the saved entity.
+     * @param change   the {@link AggregateChange} encoding the actions performed on the database as part of the delete.
+     */
+    public AfterSaveEvent(Specified id, Object instance, AggregateChange change) {
+        super(id, instance, change);
+    }
 }

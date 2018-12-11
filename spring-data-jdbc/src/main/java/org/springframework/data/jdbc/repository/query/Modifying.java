@@ -23,11 +23,11 @@ import java.lang.annotation.Target;
 
 /**
  * Indicates a method should be regarded as modifying query.
- * 
+ *
  * @author Kazuki Shimizu
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Documented
 public @interface Modifying {
 }

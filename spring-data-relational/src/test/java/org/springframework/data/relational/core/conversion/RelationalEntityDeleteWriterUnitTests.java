@@ -39,69 +39,72 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 @RunWith(MockitoJUnitRunner.class)
 public class RelationalEntityDeleteWriterUnitTests {
 
-	RelationalEntityDeleteWriter converter = new RelationalEntityDeleteWriter(new RelationalMappingContext());
+    RelationalEntityDeleteWriter converter = new RelationalEntityDeleteWriter(new RelationalMappingContext());
 
-	private static Object dotPath(DbAction dba) {
-		if (dba instanceof DbAction.WithPropertyPath) {
-			PersistentPropertyPath propertyPath = ((DbAction.WithPropertyPath<?>) dba).getPropertyPath();
-			return propertyPath == null ? null : propertyPath.toDotPath();
-		} else {
-			return null;
-		}
-	}
+    private static Object dotPath(DbAction dba) {
+        if (dba instanceof DbAction.WithPropertyPath) {
+            PersistentPropertyPath propertyPath = ((DbAction.WithPropertyPath<?>) dba).getPropertyPath();
+            return propertyPath == null ? null : propertyPath.toDotPath();
+        } else {
+            return null;
+        }
+    }
 
-	@Test // DATAJDBC-112
-	public void deleteDeletesTheEntityAndReferencedEntities() {
+    @Test // DATAJDBC-112
+    public void deleteDeletesTheEntityAndReferencedEntities() {
 
-		SomeEntity entity = new SomeEntity(23L);
+        SomeEntity entity = new SomeEntity(23L);
 
-		AggregateChange<SomeEntity> aggregateChange = new AggregateChange<>(Kind.DELETE, SomeEntity.class, entity);
+        AggregateChange<SomeEntity> aggregateChange = new AggregateChange<>(Kind.DELETE, SomeEntity.class, entity);
 
-		converter.write(entity.id, aggregateChange);
+        converter.write(entity.id, aggregateChange);
 
-		Assertions.assertThat(aggregateChange.getActions())
-				.extracting(DbAction::getClass, DbAction::getEntityType, RelationalEntityDeleteWriterUnitTests::dotPath) //
-				.containsExactly( //
-						Tuple.tuple(Delete.class, YetAnother.class, "other.yetAnother"), //
-						Tuple.tuple(Delete.class, OtherEntity.class, "other"), //
-						Tuple.tuple(DeleteRoot.class, SomeEntity.class, null) //
-				);
-	}
+        Assertions.assertThat(aggregateChange.getActions())
+                .extracting(DbAction::getClass, DbAction::getEntityType, RelationalEntityDeleteWriterUnitTests::dotPath) //
+                .containsExactly( //
+                        Tuple.tuple(Delete.class, YetAnother.class, "other.yetAnother"), //
+                        Tuple.tuple(Delete.class, OtherEntity.class, "other"), //
+                        Tuple.tuple(DeleteRoot.class, SomeEntity.class, null) //
+                );
+    }
 
-	@Test // DATAJDBC-188
-	public void deleteAllDeletesAllEntitiesAndReferencedEntities() {
+    @Test // DATAJDBC-188
+    public void deleteAllDeletesAllEntitiesAndReferencedEntities() {
 
-		AggregateChange<SomeEntity> aggregateChange = new AggregateChange<>(Kind.DELETE, SomeEntity.class, null);
+        AggregateChange<SomeEntity> aggregateChange = new AggregateChange<>(Kind.DELETE, SomeEntity.class, null);
 
-		converter.write(null, aggregateChange);
+        converter.write(null, aggregateChange);
 
-		Assertions.assertThat(aggregateChange.getActions())
-				.extracting(DbAction::getClass, DbAction::getEntityType, RelationalEntityDeleteWriterUnitTests::dotPath) //
-				.containsExactly( //
-						Tuple.tuple(DeleteAll.class, YetAnother.class, "other.yetAnother"), //
-						Tuple.tuple(DeleteAll.class, OtherEntity.class, "other"), //
-						Tuple.tuple(DeleteAllRoot.class, SomeEntity.class, null) //
-				);
-	}
+        Assertions.assertThat(aggregateChange.getActions())
+                .extracting(DbAction::getClass, DbAction::getEntityType, RelationalEntityDeleteWriterUnitTests::dotPath) //
+                .containsExactly( //
+                        Tuple.tuple(DeleteAll.class, YetAnother.class, "other.yetAnother"), //
+                        Tuple.tuple(DeleteAll.class, OtherEntity.class, "other"), //
+                        Tuple.tuple(DeleteAllRoot.class, SomeEntity.class, null) //
+                );
+    }
 
-	@Data
-	private static class SomeEntity {
+    @Data
+    private static class SomeEntity {
 
-		@Id final Long id;
-		OtherEntity other;
-		// should not trigger own Dbaction
-		String name;
-	}
+        @Id
+        final Long id;
+        OtherEntity other;
+        // should not trigger own Dbaction
+        String name;
+    }
 
-	@Data
-	private class OtherEntity {
+    @Data
+    private class OtherEntity {
 
-		@Id final Long id;
-		YetAnother yetAnother;
-	}
+        @Id
+        final Long id;
+        YetAnother yetAnother;
+    }
 
-	@Data
-	private class YetAnother {
-		@Id final Long id;
-	}
+    @Data
+    private class YetAnother {
+        @Id
+        final Long id;
+    }
 }

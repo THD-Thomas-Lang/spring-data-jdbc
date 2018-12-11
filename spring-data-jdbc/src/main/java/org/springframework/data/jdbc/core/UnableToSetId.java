@@ -24,9 +24,9 @@ import org.springframework.dao.NonTransientDataAccessException;
  */
 public class UnableToSetId extends NonTransientDataAccessException {
 
-	private static final long serialVersionUID = 3285001352389420376L;
+    private static final long serialVersionUID = 3285001352389420376L;
 
-	UnableToSetId(String message, Throwable cause) {
-		super(message, cause);
-	}
+    UnableToSetId(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

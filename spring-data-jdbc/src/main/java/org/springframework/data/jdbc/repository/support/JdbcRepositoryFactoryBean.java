@@ -43,104 +43,104 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  */
 public class JdbcRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> //
-		extends TransactionalRepositoryFactoryBeanSupport<T, S, ID> implements ApplicationEventPublisherAware {
+        extends TransactionalRepositoryFactoryBeanSupport<T, S, ID> implements ApplicationEventPublisherAware {
 
-	private ApplicationEventPublisher publisher;
-	private RelationalMappingContext mappingContext;
-	private RelationalConverter converter;
-	private DataAccessStrategy dataAccessStrategy;
-	private RowMapperMap rowMapperMap = RowMapperMap.EMPTY;
-	private NamedParameterJdbcOperations operations;
+    private ApplicationEventPublisher publisher;
+    private RelationalMappingContext mappingContext;
+    private RelationalConverter converter;
+    private DataAccessStrategy dataAccessStrategy;
+    private RowMapperMap rowMapperMap = RowMapperMap.EMPTY;
+    private NamedParameterJdbcOperations operations;
 
-	/**
-	 * Creates a new {@link JdbcRepositoryFactoryBean} for the given repository interface.
-	 *
-	 * @param repositoryInterface must not be {@literal null}.
-	 */
-	JdbcRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
-		super(repositoryInterface);
-	}
+    /**
+     * Creates a new {@link JdbcRepositoryFactoryBean} for the given repository interface.
+     *
+     * @param repositoryInterface must not be {@literal null}.
+     */
+    JdbcRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+        super(repositoryInterface);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
-	 */
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#setApplicationEventPublisher(org.springframework.context.ApplicationEventPublisher)
+     */
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
 
-		super.setApplicationEventPublisher(publisher);
+        super.setApplicationEventPublisher(publisher);
 
-		this.publisher = publisher;
-	}
+        this.publisher = publisher;
+    }
 
-	/**
-	 * Creates the actual {@link RepositoryFactorySupport} instance.
-	 */
-	@Override
-	protected RepositoryFactorySupport doCreateRepositoryFactory() {
+    /**
+     * Creates the actual {@link RepositoryFactorySupport} instance.
+     */
+    @Override
+    protected RepositoryFactorySupport doCreateRepositoryFactory() {
 
-		JdbcRepositoryFactory jdbcRepositoryFactory = new JdbcRepositoryFactory(dataAccessStrategy, mappingContext,
-				converter, publisher, operations);
-		jdbcRepositoryFactory.setRowMapperMap(rowMapperMap);
+        JdbcRepositoryFactory jdbcRepositoryFactory = new JdbcRepositoryFactory(dataAccessStrategy, mappingContext,
+                converter, publisher, operations);
+        jdbcRepositoryFactory.setRowMapperMap(rowMapperMap);
 
-		return jdbcRepositoryFactory;
-	}
+        return jdbcRepositoryFactory;
+    }
 
-	@Autowired
-	protected void setMappingContext(RelationalMappingContext mappingContext) {
+    @Autowired
+    protected void setMappingContext(RelationalMappingContext mappingContext) {
 
-		super.setMappingContext(mappingContext);
-		this.mappingContext = mappingContext;
-	}
+        super.setMappingContext(mappingContext);
+        this.mappingContext = mappingContext;
+    }
 
-	/**
-	 * @param dataAccessStrategy can be {@literal null}.
-	 */
-	@Autowired(required = false)
-	public void setDataAccessStrategy(DataAccessStrategy dataAccessStrategy) {
-		this.dataAccessStrategy = dataAccessStrategy;
-	}
+    /**
+     * @param dataAccessStrategy can be {@literal null}.
+     */
+    @Autowired(required = false)
+    public void setDataAccessStrategy(DataAccessStrategy dataAccessStrategy) {
+        this.dataAccessStrategy = dataAccessStrategy;
+    }
 
-	/**
-	 * @param rowMapperMap can be {@literal null}. {@link #afterPropertiesSet()} defaults to {@link RowMapperMap#EMPTY} if
-	 *          {@literal null}.
-	 */
-	@Autowired(required = false)
-	public void setRowMapperMap(RowMapperMap rowMapperMap) {
-		this.rowMapperMap = rowMapperMap;
-	}
+    /**
+     * @param rowMapperMap can be {@literal null}. {@link #afterPropertiesSet()} defaults to {@link RowMapperMap#EMPTY} if
+     *                     {@literal null}.
+     */
+    @Autowired(required = false)
+    public void setRowMapperMap(RowMapperMap rowMapperMap) {
+        this.rowMapperMap = rowMapperMap;
+    }
 
-	@Autowired
-	public void setJdbcOperations(NamedParameterJdbcOperations operations) {
-		this.operations = operations;
-	}
+    @Autowired
+    public void setJdbcOperations(NamedParameterJdbcOperations operations) {
+        this.operations = operations;
+    }
 
-	@Autowired
-	public void setConverter(RelationalConverter converter) {
-		this.converter = converter;
-	}
+    @Autowired
+    public void setConverter(RelationalConverter converter) {
+        this.converter = converter;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() {
 
-		Assert.state(this.mappingContext != null, "MappingContext is required and must not be null!");
-		Assert.state(this.converter != null, "RelationalConverter is required and must not be null!");
+        Assert.state(this.mappingContext != null, "MappingContext is required and must not be null!");
+        Assert.state(this.converter != null, "RelationalConverter is required and must not be null!");
 
-		if (dataAccessStrategy == null) {
+        if (dataAccessStrategy == null) {
 
-			SqlGeneratorSource sqlGeneratorSource = new SqlGeneratorSource(mappingContext);
-			this.dataAccessStrategy = new DefaultDataAccessStrategy(sqlGeneratorSource, mappingContext, converter,
-					operations);
-		}
+            SqlGeneratorSource sqlGeneratorSource = new SqlGeneratorSource(mappingContext);
+            this.dataAccessStrategy = new DefaultDataAccessStrategy(sqlGeneratorSource, mappingContext, converter,
+                    operations);
+        }
 
-		if (rowMapperMap == null) {
-			this.rowMapperMap = RowMapperMap.EMPTY;
-		}
+        if (rowMapperMap == null) {
+            this.rowMapperMap = RowMapperMap.EMPTY;
+        }
 
-		super.afterPropertiesSet();
-	}
+        super.afterPropertiesSet();
+    }
 }

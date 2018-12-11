@@ -48,143 +48,143 @@ import org.springframework.lang.Nullable;
 @RequiredArgsConstructor
 class DefaultJdbcInterpreter implements Interpreter {
 
-	private final RelationalMappingContext context;
-	private final DataAccessStrategy accessStrategy;
+    private final RelationalMappingContext context;
+    private final DataAccessStrategy accessStrategy;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Insert)
-	 */
-	@Override
-	public <T> void interpret(Insert<T> insert) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Insert)
+     */
+    @Override
+    public <T> void interpret(Insert<T> insert) {
 
-		Object id = accessStrategy.insert(insert.getEntity(), insert.getEntityType(), createAdditionalColumnValues(insert));
+        Object id = accessStrategy.insert(insert.getEntity(), insert.getEntityType(), createAdditionalColumnValues(insert));
 
-		insert.setGeneratedId(id);
-	}
+        insert.setGeneratedId(id);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.InsertRoot)
-	 */
-	@Override
-	public <T> void interpret(InsertRoot<T> insert) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.InsertRoot)
+     */
+    @Override
+    public <T> void interpret(InsertRoot<T> insert) {
 
-		Object id = accessStrategy.insert(insert.getEntity(), insert.getEntityType(), Collections.emptyMap());
-		insert.setGeneratedId(id);
-	}
+        Object id = accessStrategy.insert(insert.getEntity(), insert.getEntityType(), Collections.emptyMap());
+        insert.setGeneratedId(id);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Update)
-	 */
-	@Override
-	public <T> void interpret(Update<T> update) {
-		accessStrategy.update(update.getEntity(), update.getEntityType());
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Update)
+     */
+    @Override
+    public <T> void interpret(Update<T> update) {
+        accessStrategy.update(update.getEntity(), update.getEntityType());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.UpdateRoot)
-	 */
-	@Override
-	public <T> void interpret(UpdateRoot<T> update) {
-		accessStrategy.update(update.getEntity(), update.getEntityType());
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.UpdateRoot)
+     */
+    @Override
+    public <T> void interpret(UpdateRoot<T> update) {
+        accessStrategy.update(update.getEntity(), update.getEntityType());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Merge)
-	 */
-	@Override
-	public <T> void interpret(Merge<T> merge) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Merge)
+     */
+    @Override
+    public <T> void interpret(Merge<T> merge) {
 
-		// temporary implementation
-		if (!accessStrategy.update(merge.getEntity(), merge.getEntityType())) {
-			accessStrategy.insert(merge.getEntity(), merge.getEntityType(), createAdditionalColumnValues(merge));
-		}
-	}
+        // temporary implementation
+        if (!accessStrategy.update(merge.getEntity(), merge.getEntityType())) {
+            accessStrategy.insert(merge.getEntity(), merge.getEntityType(), createAdditionalColumnValues(merge));
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Delete)
-	 */
-	@Override
-	public <T> void interpret(Delete<T> delete) {
-		accessStrategy.delete(delete.getRootId(), delete.getPropertyPath());
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.Delete)
+     */
+    @Override
+    public <T> void interpret(Delete<T> delete) {
+        accessStrategy.delete(delete.getRootId(), delete.getPropertyPath());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.DeleteRoot)
-	 */
-	@Override
-	public <T> void interpret(DeleteRoot<T> delete) {
-		accessStrategy.delete(delete.getRootId(), delete.getEntityType());
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.DeleteRoot)
+     */
+    @Override
+    public <T> void interpret(DeleteRoot<T> delete) {
+        accessStrategy.delete(delete.getRootId(), delete.getEntityType());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.DeleteAll)
-	 */
-	@Override
-	public <T> void interpret(DeleteAll<T> delete) {
-		accessStrategy.deleteAll(delete.getPropertyPath());
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.DeleteAll)
+     */
+    @Override
+    public <T> void interpret(DeleteAll<T> delete) {
+        accessStrategy.deleteAll(delete.getPropertyPath());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.DeleteAllRoot)
-	 */
-	@Override
-	public <T> void interpret(DeleteAllRoot<T> deleteAllRoot) {
-		accessStrategy.deleteAll(deleteAllRoot.getEntityType());
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.Interpreter#interpret(org.springframework.data.relational.core.conversion.DbAction.DeleteAllRoot)
+     */
+    @Override
+    public <T> void interpret(DeleteAllRoot<T> deleteAllRoot) {
+        accessStrategy.deleteAll(deleteAllRoot.getEntityType());
+    }
 
-	private <T> Map<String, Object> createAdditionalColumnValues(DbAction.WithDependingOn<T> action) {
+    private <T> Map<String, Object> createAdditionalColumnValues(DbAction.WithDependingOn<T> action) {
 
-		Map<String, Object> additionalColumnValues = new HashMap<>();
-		addDependingOnInformation(action, additionalColumnValues);
-		additionalColumnValues.putAll(action.getAdditionalValues());
+        Map<String, Object> additionalColumnValues = new HashMap<>();
+        addDependingOnInformation(action, additionalColumnValues);
+        additionalColumnValues.putAll(action.getAdditionalValues());
 
-		return additionalColumnValues;
-	}
+        return additionalColumnValues;
+    }
 
-	private <T> void addDependingOnInformation(DbAction.WithDependingOn<T> action,
-			Map<String, Object> additionalColumnValues) {
+    private <T> void addDependingOnInformation(DbAction.WithDependingOn<T> action,
+                                               Map<String, Object> additionalColumnValues) {
 
-		DbAction.WithEntity<?> dependingOn = action.getDependingOn();
+        DbAction.WithEntity<?> dependingOn = action.getDependingOn();
 
-		RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(dependingOn.getEntityType());
+        RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(dependingOn.getEntityType());
 
-		String columnName = getColumnNameForReverseColumn(action);
+        String columnName = getColumnNameForReverseColumn(action);
 
-		Object identifier = getIdFromEntityDependingOn(dependingOn, persistentEntity);
+        Object identifier = getIdFromEntityDependingOn(dependingOn, persistentEntity);
 
-		additionalColumnValues.put(columnName, identifier);
-	}
+        additionalColumnValues.put(columnName, identifier);
+    }
 
-	@Nullable
-	private Object getIdFromEntityDependingOn(DbAction.WithEntity<?> dependingOn,
-			RelationalPersistentEntity<?> persistentEntity) {
+    @Nullable
+    private Object getIdFromEntityDependingOn(DbAction.WithEntity<?> dependingOn,
+                                              RelationalPersistentEntity<?> persistentEntity) {
 
-		Object entity = dependingOn.getEntity();
+        Object entity = dependingOn.getEntity();
 
-		if (dependingOn instanceof DbAction.WithGeneratedId) {
+        if (dependingOn instanceof DbAction.WithGeneratedId) {
 
-			Object generatedId = ((DbAction.WithGeneratedId<?>) dependingOn).getGeneratedId();
+            Object generatedId = ((DbAction.WithGeneratedId<?>) dependingOn).getGeneratedId();
 
-			if (generatedId != null) {
-				return generatedId;
-			}
-		}
+            if (generatedId != null) {
+                return generatedId;
+            }
+        }
 
-		return persistentEntity.getIdentifierAccessor(entity).getIdentifier();
-	}
+        return persistentEntity.getIdentifierAccessor(entity).getIdentifier();
+    }
 
-	private String getColumnNameForReverseColumn(DbAction.WithPropertyPath<?> action) {
+    private String getColumnNameForReverseColumn(DbAction.WithPropertyPath<?> action) {
 
-		PersistentPropertyPath<RelationalPersistentProperty> path = action.getPropertyPath();
-		return path.getRequiredLeafProperty().getReverseColumnName();
-	}
+        PersistentPropertyPath<RelationalPersistentProperty> path = action.getPropertyPath();
+        return path.getRequiredLeafProperty().getReverseColumnName();
+    }
 }

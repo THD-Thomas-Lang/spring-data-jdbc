@@ -25,14 +25,14 @@ import org.springframework.data.relational.core.conversion.AggregateChange;
  */
 public class BeforeSaveEvent extends RelationalEventWithEntity {
 
-	private static final long serialVersionUID = -6996874391990315443L;
+    private static final long serialVersionUID = -6996874391990315443L;
 
-	/**
-	 * @param id of the entity to be saved.
-	 * @param instance the entity about to get saved.
-	 * @param change the {@link AggregateChange} that is going to get applied to the database.
-	 */
-	public BeforeSaveEvent(Identifier id, Object instance, AggregateChange change) {
-		super(id, instance, change);
-	}
+    /**
+     * @param id       of the entity to be saved.
+     * @param instance the entity about to get saved.
+     * @param change   the {@link AggregateChange} that is going to get applied to the database.
+     */
+    public BeforeSaveEvent(Identifier id, Object instance, AggregateChange change) {
+        super(id, instance, change);
+    }
 }

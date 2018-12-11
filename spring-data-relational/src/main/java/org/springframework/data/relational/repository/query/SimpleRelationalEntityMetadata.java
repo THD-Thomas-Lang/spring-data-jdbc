@@ -27,36 +27,37 @@ import org.springframework.util.Assert;
  */
 public class SimpleRelationalEntityMetadata<T> implements RelationalEntityMetadata<T> {
 
-	private final Class<T> type;
-	private final @Getter RelationalPersistentEntity<?> tableEntity;
+    private final Class<T> type;
+    private final @Getter
+    RelationalPersistentEntity<?> tableEntity;
 
-	/**
-	 * Creates a new {@link SimpleRelationalEntityMetadata} using the given type and {@link RelationalPersistentEntity} to
-	 * use for table lookups.
-	 *
-	 * @param type must not be {@literal null}.
-	 * @param tableEntity must not be {@literal null}.
-	 */
-	public SimpleRelationalEntityMetadata(Class<T> type, RelationalPersistentEntity<?> tableEntity) {
+    /**
+     * Creates a new {@link SimpleRelationalEntityMetadata} using the given type and {@link RelationalPersistentEntity} to
+     * use for table lookups.
+     *
+     * @param type        must not be {@literal null}.
+     * @param tableEntity must not be {@literal null}.
+     */
+    public SimpleRelationalEntityMetadata(Class<T> type, RelationalPersistentEntity<?> tableEntity) {
 
-		Assert.notNull(type, "Type must not be null!");
-		Assert.notNull(tableEntity, "Table entity must not be null!");
+        Assert.notNull(type, "Type must not be null!");
+        Assert.notNull(tableEntity, "Table entity must not be null!");
 
-		this.type = type;
-		this.tableEntity = tableEntity;
-	}
+        this.type = type;
+        this.tableEntity = tableEntity;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
-	 */
-	public Class<T> getJavaType() {
-		return type;
-	}
+    /* (non-Javadoc)
+     * @see org.springframework.data.repository.core.EntityMetadata#getJavaType()
+     */
+    public Class<T> getJavaType() {
+        return type;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.relational.repository.query.RelationalEntityMetadata#getTableName()
-	 */
-	public String getTableName() {
-		return tableEntity.getTableName();
-	}
+    /* (non-Javadoc)
+     * @see org.springframework.data.relational.repository.query.RelationalEntityMetadata#getTableName()
+     */
+    public String getTableName() {
+        return tableEntity.getTableName();
+    }
 }

@@ -49,106 +49,108 @@ import org.springframework.jdbc.support.KeyHolder;
  */
 public class DefaultDataAccessStrategyUnitTests {
 
-	public static final long ID_FROM_ADDITIONAL_VALUES = 23L;
-	public static final long ORIGINAL_ID = 4711L;
+    public static final long ID_FROM_ADDITIONAL_VALUES = 23L;
+    public static final long ORIGINAL_ID = 4711L;
 
-	NamedParameterJdbcOperations jdbcOperations = mock(NamedParameterJdbcOperations.class);
-	RelationalMappingContext context = new JdbcMappingContext();
-	RelationalConverter converter = new BasicRelationalConverter(context, new JdbcCustomConversions());
-	HashMap<String, Object> additionalParameters = new HashMap<>();
-	ArgumentCaptor<SqlParameterSource> paramSourceCaptor = ArgumentCaptor.forClass(SqlParameterSource.class);
+    NamedParameterJdbcOperations jdbcOperations = mock(NamedParameterJdbcOperations.class);
+    RelationalMappingContext context = new JdbcMappingContext();
+    RelationalConverter converter = new BasicRelationalConverter(context, new JdbcCustomConversions());
+    HashMap<String, Object> additionalParameters = new HashMap<>();
+    ArgumentCaptor<SqlParameterSource> paramSourceCaptor = ArgumentCaptor.forClass(SqlParameterSource.class);
 
-	DefaultDataAccessStrategy accessStrategy = new DefaultDataAccessStrategy( //
-			new SqlGeneratorSource(context), //
-			context, //
-			converter, //
-			jdbcOperations);
+    DefaultDataAccessStrategy accessStrategy = new DefaultDataAccessStrategy( //
+            new SqlGeneratorSource(context), //
+            context, //
+            converter, //
+            jdbcOperations);
 
-	@Test // DATAJDBC-146
-	public void additionalParameterForIdDoesNotLeadToDuplicateParameters() {
+    @Test // DATAJDBC-146
+    public void additionalParameterForIdDoesNotLeadToDuplicateParameters() {
 
-		additionalParameters.put("id", ID_FROM_ADDITIONAL_VALUES);
+        additionalParameters.put("id", ID_FROM_ADDITIONAL_VALUES);
 
-		accessStrategy.insert(new DummyEntity(ORIGINAL_ID), DummyEntity.class, additionalParameters);
+        accessStrategy.insert(new DummyEntity(ORIGINAL_ID), DummyEntity.class, additionalParameters);
 
-		verify(jdbcOperations).update(eq("INSERT INTO dummy_entity (id) VALUES (:id)"), paramSourceCaptor.capture(),
-				any(KeyHolder.class));
-	}
+        verify(jdbcOperations).update(eq("INSERT INTO dummy_entity (id) VALUES (:id)"), paramSourceCaptor.capture(),
+                any(KeyHolder.class));
+    }
 
-	@Test // DATAJDBC-146
-	public void additionalParametersGetAddedToStatement() {
+    @Test // DATAJDBC-146
+    public void additionalParametersGetAddedToStatement() {
 
-		ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
 
-		additionalParameters.put("reference", ID_FROM_ADDITIONAL_VALUES);
+        additionalParameters.put("reference", ID_FROM_ADDITIONAL_VALUES);
 
-		accessStrategy.insert(new DummyEntity(ORIGINAL_ID), DummyEntity.class, additionalParameters);
+        accessStrategy.insert(new DummyEntity(ORIGINAL_ID), DummyEntity.class, additionalParameters);
 
-		verify(jdbcOperations).update(sqlCaptor.capture(), paramSourceCaptor.capture(), any(KeyHolder.class));
+        verify(jdbcOperations).update(sqlCaptor.capture(), paramSourceCaptor.capture(), any(KeyHolder.class));
 
-		assertThat(sqlCaptor.getValue()) //
-				.containsSequence("INSERT INTO dummy_entity (", "id", ") VALUES (", ":id", ")") //
-				.containsSequence("INSERT INTO dummy_entity (", "reference", ") VALUES (", ":reference", ")");
-		assertThat(paramSourceCaptor.getValue().getValue("id")).isEqualTo(ORIGINAL_ID);
-	}
+        assertThat(sqlCaptor.getValue()) //
+                .containsSequence("INSERT INTO dummy_entity (", "id", ") VALUES (", ":id", ")") //
+                .containsSequence("INSERT INTO dummy_entity (", "reference", ") VALUES (", ":reference", ")");
+        assertThat(paramSourceCaptor.getValue().getValue("id")).isEqualTo(ORIGINAL_ID);
+    }
 
-	@Test // DATAJDBC-235
-	public void considersConfiguredWriteConverter() {
+    @Test // DATAJDBC-235
+    public void considersConfiguredWriteConverter() {
 
-		RelationalConverter converter = new BasicRelationalConverter(context,
-				new JdbcCustomConversions(Arrays.asList(BooleanToStringConverter.INSTANCE, StringToBooleanConverter.INSTANCE)));
+        RelationalConverter converter = new BasicRelationalConverter(context,
+                new JdbcCustomConversions(Arrays.asList(BooleanToStringConverter.INSTANCE, StringToBooleanConverter.INSTANCE)));
 
-		DefaultDataAccessStrategy accessStrategy = new DefaultDataAccessStrategy( //
-				new SqlGeneratorSource(context), //
-				context, //
-				converter, //
-				jdbcOperations);
+        DefaultDataAccessStrategy accessStrategy = new DefaultDataAccessStrategy( //
+                new SqlGeneratorSource(context), //
+                context, //
+                converter, //
+                jdbcOperations);
 
-		ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
 
-		EntityWithBoolean entity = new EntityWithBoolean(ORIGINAL_ID, true);
+        EntityWithBoolean entity = new EntityWithBoolean(ORIGINAL_ID, true);
 
-		accessStrategy.insert(entity, EntityWithBoolean.class, new HashMap<>());
+        accessStrategy.insert(entity, EntityWithBoolean.class, new HashMap<>());
 
-		verify(jdbcOperations).update(sqlCaptor.capture(), paramSourceCaptor.capture(), any(KeyHolder.class));
+        verify(jdbcOperations).update(sqlCaptor.capture(), paramSourceCaptor.capture(), any(KeyHolder.class));
 
-		assertThat(paramSourceCaptor.getValue().getValue("id")).isEqualTo(ORIGINAL_ID);
-		assertThat(paramSourceCaptor.getValue().getValue("flag")).isEqualTo("T");
-	}
+        assertThat(paramSourceCaptor.getValue().getValue("id")).isEqualTo(ORIGINAL_ID);
+        assertThat(paramSourceCaptor.getValue().getValue("flag")).isEqualTo("T");
+    }
 
-	@RequiredArgsConstructor
-	private static class DummyEntity {
+    @RequiredArgsConstructor
+    private static class DummyEntity {
 
-		@Id private final Long id;
-	}
+        @Id
+        private final Long id;
+    }
 
-	@AllArgsConstructor
-	private static class EntityWithBoolean {
+    @AllArgsConstructor
+    private static class EntityWithBoolean {
 
-		@Id Long id;
-		boolean flag;
-	}
+        @Id
+        Long id;
+        boolean flag;
+    }
 
-	@WritingConverter
-	enum BooleanToStringConverter implements Converter<Boolean, String> {
+    @WritingConverter
+    enum BooleanToStringConverter implements Converter<Boolean, String> {
 
-		INSTANCE;
+        INSTANCE;
 
-		@Override
-		public String convert(Boolean source) {
-			return source != null && source ? "T" : "F";
-		}
-	}
+        @Override
+        public String convert(Boolean source) {
+            return source != null && source ? "T" : "F";
+        }
+    }
 
-	@ReadingConverter
-	enum StringToBooleanConverter implements Converter<String, Boolean> {
+    @ReadingConverter
+    enum StringToBooleanConverter implements Converter<String, Boolean> {
 
-		INSTANCE;
+        INSTANCE;
 
-		@Override
-		public Boolean convert(String source) {
-			return source != null && source.equalsIgnoreCase("T") ? Boolean.TRUE : Boolean.FALSE;
-		}
-	}
+        @Override
+        public Boolean convert(String source) {
+            return source != null && source.equalsIgnoreCase("T") ? Boolean.TRUE : Boolean.FALSE;
+        }
+    }
 
 }

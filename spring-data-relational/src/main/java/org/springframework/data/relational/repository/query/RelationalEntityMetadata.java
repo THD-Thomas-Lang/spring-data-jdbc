@@ -25,17 +25,17 @@ import org.springframework.data.repository.core.EntityMetadata;
  */
 public interface RelationalEntityMetadata<T> extends EntityMetadata<T> {
 
-	/**
-	 * Returns the name of the table the entity shall be persisted to.
-	 *
-	 * @return
-	 */
-	String getTableName();
+    /**
+     * Returns the name of the table the entity shall be persisted to.
+     *
+     * @return
+     */
+    String getTableName();
 
-	/**
-	 * Returns the {@link RelationalPersistentEntity} that supposed to determine the table to be queried.
-	 *
-	 * @return
-	 */
-	RelationalPersistentEntity<?> getTableEntity();
+    /**
+     * Returns the {@link RelationalPersistentEntity} that supposed to determine the table to be queried.
+     *
+     * @return
+     */
+    RelationalPersistentEntity<?> getTableEntity();
 }

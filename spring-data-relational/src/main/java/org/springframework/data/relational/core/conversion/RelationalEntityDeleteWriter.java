@@ -34,71 +34,71 @@ import org.springframework.util.Assert;
  */
 public class RelationalEntityDeleteWriter implements EntityWriter<Object, AggregateChange<?>> {
 
-	private final RelationalMappingContext context;
+    private final RelationalMappingContext context;
 
-	public RelationalEntityDeleteWriter(RelationalMappingContext context) {
+    public RelationalEntityDeleteWriter(RelationalMappingContext context) {
 
-		Assert.notNull(context, "Context must not be null");
+        Assert.notNull(context, "Context must not be null");
 
-		this.context = context;
-	}
+        this.context = context;
+    }
 
-	/**
-	 * Fills the provided {@link AggregateChange} with the necessary {@link DbAction}s to delete the aggregate root
-	 * identified by {@code id}. If {@code id} is {@code null} it is interpreted as "Delete all aggregates of the type
-	 * indicated by the aggregateChange".
-	 *
-	 * @param id May be {@code null}.
-	 * @param aggregateChange Must not be {@code null}.
-	 */
-	@Override
-	public void write(@Nullable Object id, AggregateChange<?> aggregateChange) {
+    /**
+     * Fills the provided {@link AggregateChange} with the necessary {@link DbAction}s to delete the aggregate root
+     * identified by {@code id}. If {@code id} is {@code null} it is interpreted as "Delete all aggregates of the type
+     * indicated by the aggregateChange".
+     *
+     * @param id              May be {@code null}.
+     * @param aggregateChange Must not be {@code null}.
+     */
+    @Override
+    public void write(@Nullable Object id, AggregateChange<?> aggregateChange) {
 
-		if (id == null) {
-			deleteAll(aggregateChange.getEntityType()).forEach(aggregateChange::addAction);
-		} else {
-			deleteById(id, aggregateChange).forEach(aggregateChange::addAction);
-		}
-	}
+        if (id == null) {
+            deleteAll(aggregateChange.getEntityType()).forEach(aggregateChange::addAction);
+        } else {
+            deleteById(id, aggregateChange).forEach(aggregateChange::addAction);
+        }
+    }
 
-	private List<DbAction<?>> deleteAll(Class<?> entityType) {
+    private List<DbAction<?>> deleteAll(Class<?> entityType) {
 
-		List<DbAction<?>> actions = new ArrayList<>();
+        List<DbAction<?>> actions = new ArrayList<>();
 
-		context.findPersistentPropertyPaths(entityType, PersistentProperty::isEntity)
-				.forEach(p -> actions.add(new DbAction.DeleteAll<>(p)));
+        context.findPersistentPropertyPaths(entityType, PersistentProperty::isEntity)
+                .forEach(p -> actions.add(new DbAction.DeleteAll<>(p)));
 
-		Collections.reverse(actions);
+        Collections.reverse(actions);
 
-		DbAction.DeleteAllRoot<?> result = new DbAction.DeleteAllRoot<>(entityType);
-		actions.add(result);
+        DbAction.DeleteAllRoot<?> result = new DbAction.DeleteAllRoot<>(entityType);
+        actions.add(result);
 
-		return actions;
-	}
+        return actions;
+    }
 
-	private <T> List<DbAction<?>> deleteById(Object id, AggregateChange<T> aggregateChange) {
+    private <T> List<DbAction<?>> deleteById(Object id, AggregateChange<T> aggregateChange) {
 
-		List<DbAction<?>> actions = new ArrayList<>(deleteReferencedEntities(id, aggregateChange));
-		actions.add(new DbAction.DeleteRoot<>(aggregateChange.getEntityType(), id));
+        List<DbAction<?>> actions = new ArrayList<>(deleteReferencedEntities(id, aggregateChange));
+        actions.add(new DbAction.DeleteRoot<>(aggregateChange.getEntityType(), id));
 
-		return actions;
-	}
+        return actions;
+    }
 
-	/**
-	 * Add {@link DbAction.Delete} actions to the {@link AggregateChange} for deleting all referenced entities.
-	 *
-	 * @param id id of the aggregate root, of which the referenced entities get deleted.
-	 * @param aggregateChange the change object to which the actions should get added. Must not be {@code null}
-	 */
-	private List<DbAction<?>> deleteReferencedEntities(Object id, AggregateChange<?> aggregateChange) {
+    /**
+     * Add {@link DbAction.Delete} actions to the {@link AggregateChange} for deleting all referenced entities.
+     *
+     * @param id              id of the aggregate root, of which the referenced entities get deleted.
+     * @param aggregateChange the change object to which the actions should get added. Must not be {@code null}
+     */
+    private List<DbAction<?>> deleteReferencedEntities(Object id, AggregateChange<?> aggregateChange) {
 
-		List<DbAction<?>> actions = new ArrayList<>();
+        List<DbAction<?>> actions = new ArrayList<>();
 
-		context.findPersistentPropertyPaths(aggregateChange.getEntityType(), PersistentProperty::isEntity)
-				.forEach(p -> actions.add(new DbAction.Delete<>(id, p)));
+        context.findPersistentPropertyPaths(aggregateChange.getEntityType(), PersistentProperty::isEntity)
+                .forEach(p -> actions.add(new DbAction.Delete<>(id, p)));
 
-		Collections.reverse(actions);
+        Collections.reverse(actions);
 
-		return actions;
-	}
+        return actions;
+    }
 }

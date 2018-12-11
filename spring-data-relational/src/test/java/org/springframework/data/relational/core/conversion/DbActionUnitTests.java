@@ -29,25 +29,25 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
  */
 public class DbActionUnitTests {
 
-	RelationalMappingContext context = new RelationalMappingContext();
+    RelationalMappingContext context = new RelationalMappingContext();
 
-	@Test // DATAJDBC-150
-	public void exceptionFromActionContainsUsefulInformationWhenInterpreterFails() {
+    @Test // DATAJDBC-150
+    public void exceptionFromActionContainsUsefulInformationWhenInterpreterFails() {
 
-		DummyEntity entity = new DummyEntity();
-		DbAction.InsertRoot<DummyEntity> insert = new DbAction.InsertRoot<>(entity);
+        DummyEntity entity = new DummyEntity();
+        DbAction.InsertRoot<DummyEntity> insert = new DbAction.InsertRoot<>(entity);
 
-		Interpreter failingInterpreter = mock(Interpreter.class);
-		doThrow(new RuntimeException()).when(failingInterpreter).interpret(any(DbAction.InsertRoot.class));
+        Interpreter failingInterpreter = mock(Interpreter.class);
+        doThrow(new RuntimeException()).when(failingInterpreter).interpret(any(DbAction.InsertRoot.class));
 
-		assertThatExceptionOfType(DbActionExecutionException.class) //
-				.isThrownBy(() -> insert.executeWith(failingInterpreter)) //
-				.withMessageContaining("Insert") //
-				.withMessageContaining(entity.toString());
+        assertThatExceptionOfType(DbActionExecutionException.class) //
+                .isThrownBy(() -> insert.executeWith(failingInterpreter)) //
+                .withMessageContaining("Insert") //
+                .withMessageContaining(entity.toString());
 
-	}
+    }
 
-	static class DummyEntity {
-		String someName;
-	}
+    static class DummyEntity {
+        String someName;
+    }
 }

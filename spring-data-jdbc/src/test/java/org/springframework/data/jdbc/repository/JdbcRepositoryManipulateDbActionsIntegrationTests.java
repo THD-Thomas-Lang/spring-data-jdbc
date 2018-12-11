@@ -57,175 +57,183 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 @ContextConfiguration
 public class JdbcRepositoryManipulateDbActionsIntegrationTests {
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
 
-	@Autowired DummyEntityRepository repository;
-	@Autowired LogRepository logRepository;
+    @Autowired
+    DummyEntityRepository repository;
+    @Autowired
+    LogRepository logRepository;
 
-	@Test // DATAJDBC-120
-	public void softDelete() {
+    @Test // DATAJDBC-120
+    public void softDelete() {
 
-		// given a persistent entity
-		DummyEntity entity = new DummyEntity(null, "Hello");
-		repository.save(entity);
-		assertThat(entity.id).isNotNull();
+        // given a persistent entity
+        DummyEntity entity = new DummyEntity(null, "Hello");
+        repository.save(entity);
+        assertThat(entity.id).isNotNull();
 
-		// when I delete the entity
-		repository.delete(entity);
+        // when I delete the entity
+        repository.delete(entity);
 
-		// it is still in the repository, but marked as deleted
-		assertThat(repository.findById(entity.id)) //
-				.contains(new DummyEntity( //
-						entity.id, //
-						entity.name, //
-						true) //
-				);
+        // it is still in the repository, but marked as deleted
+        assertThat(repository.findById(entity.id)) //
+                .contains(new DummyEntity( //
+                        entity.id, //
+                        entity.name, //
+                        true) //
+                );
 
-	}
+    }
 
-	@Test // DATAJDBC-120
-	public void softDeleteMany() {
+    @Test // DATAJDBC-120
+    public void softDeleteMany() {
 
-		// given persistent entities
-		DummyEntity one = new DummyEntity(null, "One");
-		DummyEntity two = new DummyEntity(null, "Two");
-		repository.saveAll(asList(one, two));
+        // given persistent entities
+        DummyEntity one = new DummyEntity(null, "One");
+        DummyEntity two = new DummyEntity(null, "Two");
+        repository.saveAll(asList(one, two));
 
-		assertThat(one.id).isNotNull();
+        assertThat(one.id).isNotNull();
 
-		// when I delete the entities
-		repository.deleteAll(asList(one, two));
+        // when I delete the entities
+        repository.deleteAll(asList(one, two));
 
-		// they are still in the repository, but marked as deleted
-		assertThat(repository.findById(one.id)) //
-				.contains(new DummyEntity( //
-						one.id, //
-						one.name, //
-						true) //
-				);
+        // they are still in the repository, but marked as deleted
+        assertThat(repository.findById(one.id)) //
+                .contains(new DummyEntity( //
+                        one.id, //
+                        one.name, //
+                        true) //
+                );
 
-		assertThat(repository.findById(two.id)) //
-				.contains(new DummyEntity( //
-						two.id, //
-						two.name, //
-						true) //
-				);
-	}
+        assertThat(repository.findById(two.id)) //
+                .contains(new DummyEntity( //
+                        two.id, //
+                        two.name, //
+                        true) //
+                );
+    }
 
-	@Test // DATAJDBC-120
-	public void loggingOnSave() {
+    @Test // DATAJDBC-120
+    public void loggingOnSave() {
 
-		// given a new entity
-		DummyEntity one = new DummyEntity(null, "one");
+        // given a new entity
+        DummyEntity one = new DummyEntity(null, "one");
 
-		repository.save(one);
-		assertThat(one.id).isNotNull();
+        repository.save(one);
+        assertThat(one.id).isNotNull();
 
-		// they are still in the repository, but marked as deleted
-		assertThat(logRepository.findById(Config.lastLogId)) //
-				.isNotEmpty() //
-				.map(Log::getText) //
-				.contains("one saved");
-	}
+        // they are still in the repository, but marked as deleted
+        assertThat(logRepository.findById(Config.lastLogId)) //
+                .isNotEmpty() //
+                .map(Log::getText) //
+                .contains("one saved");
+    }
 
-	@Test // DATAJDBC-120
-	public void loggingOnSaveMany() {
+    @Test // DATAJDBC-120
+    public void loggingOnSaveMany() {
 
-		// given a new entity
-		DummyEntity one = new DummyEntity(null, "one");
-		DummyEntity two = new DummyEntity(null, "two");
+        // given a new entity
+        DummyEntity one = new DummyEntity(null, "one");
+        DummyEntity two = new DummyEntity(null, "two");
 
-		repository.saveAll(asList(one, two));
-		assertThat(one.id).isNotNull();
+        repository.saveAll(asList(one, two));
+        assertThat(one.id).isNotNull();
 
-		// they are still in the repository, but marked as deleted
-		assertThat(logRepository.findById(Config.lastLogId)) //
-				.isNotEmpty() //
-				.map(Log::getText) //
-				.contains("two saved");
-	}
+        // they are still in the repository, but marked as deleted
+        assertThat(logRepository.findById(Config.lastLogId)) //
+                .isNotEmpty() //
+                .map(Log::getText) //
+                .contains("two saved");
+    }
 
-	@Data
-	private static class DummyEntity {
+    @Data
+    private static class DummyEntity {
 
-		@Id Long id;
-		String name;
-		boolean deleted;
+        @Id
+        Long id;
+        String name;
+        boolean deleted;
 
-		DummyEntity(Long id, String name) {
+        DummyEntity(Long id, String name) {
 
-			this.id = id;
-			this.name = name;
-			this.deleted = false;
-		}
+            this.id = id;
+            this.name = name;
+            this.deleted = false;
+        }
 
-		@PersistenceConstructor
-		DummyEntity(Long id, String name, boolean deleted) {
+        @PersistenceConstructor
+        DummyEntity(Long id, String name, boolean deleted) {
 
-			this.id = id;
-			this.name = name;
-			this.deleted = deleted;
-		}
-	}
+            this.id = id;
+            this.name = name;
+            this.deleted = deleted;
+        }
+    }
 
-	private interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {}
+    private interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
+    }
 
-	@Getter
-	@Setter
-	@RequiredArgsConstructor
-	private static class Log {
+    @Getter
+    @Setter
+    @RequiredArgsConstructor
+    private static class Log {
 
-		@Id Long id;
-		DummyEntity entity;
-		String text;
-	}
+        @Id
+        Long id;
+        DummyEntity entity;
+        String text;
+    }
 
-	private interface LogRepository extends CrudRepository<Log, Long> {}
+    private interface LogRepository extends CrudRepository<Log, Long> {
+    }
 
-	@Configuration
-	@Import(TestConfiguration.class)
-	@EnableJdbcRepositories(considerNestedRepositories = true)
-	static class Config {
+    @Configuration
+    @Import(TestConfiguration.class)
+    @EnableJdbcRepositories(considerNestedRepositories = true)
+    static class Config {
 
-		static long lastLogId;
+        static long lastLogId;
 
-		@Bean
-		Class<?> testClass() {
-			return JdbcRepositoryManipulateDbActionsIntegrationTests.class;
-		}
+        @Bean
+        Class<?> testClass() {
+            return JdbcRepositoryManipulateDbActionsIntegrationTests.class;
+        }
 
-		@Bean
-		ApplicationListener<BeforeDeleteEvent> softDeleteListener() {
+        @Bean
+        ApplicationListener<BeforeDeleteEvent> softDeleteListener() {
 
-			return event -> {
+            return event -> {
 
-				DummyEntity entity = (DummyEntity) event.getOptionalEntity().orElseThrow(AssertionFailedError::new);
-				entity.deleted = true;
+                DummyEntity entity = (DummyEntity) event.getOptionalEntity().orElseThrow(AssertionFailedError::new);
+                entity.deleted = true;
 
-				List<DbAction<?>> actions = event.getChange().getActions();
-				actions.clear();
-				actions.add(new DbAction.UpdateRoot<>(entity));
-			};
-		}
+                List<DbAction<?>> actions = event.getChange().getActions();
+                actions.clear();
+                actions.add(new DbAction.UpdateRoot<>(entity));
+            };
+        }
 
-		@Bean
-		ApplicationListener<BeforeSaveEvent> logOnSaveListener() {
+        @Bean
+        ApplicationListener<BeforeSaveEvent> logOnSaveListener() {
 
-			// this would actually be easier to implement with an AfterSaveEvent listener, but we want to test AggregateChange
-			// manipulation.
-			return event -> {
+            // this would actually be easier to implement with an AfterSaveEvent listener, but we want to test AggregateChange
+            // manipulation.
+            return event -> {
 
-				DummyEntity entity = (DummyEntity) event.getOptionalEntity().orElseThrow(AssertionFailedError::new);
-				lastLogId = new Random().nextLong();
-				Log log = new Log();
-				log.setId(lastLogId);
-				log.entity = entity;
-				log.text = entity.name + " saved";
+                DummyEntity entity = (DummyEntity) event.getOptionalEntity().orElseThrow(AssertionFailedError::new);
+                lastLogId = new Random().nextLong();
+                Log log = new Log();
+                log.setId(lastLogId);
+                log.entity = entity;
+                log.text = entity.name + " saved";
 
-				List<DbAction<?>> actions = event.getChange().getActions();
-				actions.add(new DbAction.InsertRoot<>(log));
-			};
-		}
-	}
+                List<DbAction<?>> actions = event.getChange().getActions();
+                actions.add(new DbAction.InsertRoot<>(log));
+            };
+        }
+    }
 }

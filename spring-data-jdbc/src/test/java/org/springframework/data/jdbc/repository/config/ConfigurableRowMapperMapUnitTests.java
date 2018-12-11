@@ -24,72 +24,72 @@ import org.springframework.jdbc.core.RowMapper;
 
 /**
  * Unit tests for {@link ConfigurableRowMapperMap}.
- * 
+ *
  * @author Jens Schauder
  */
 public class ConfigurableRowMapperMapUnitTests {
 
-	@Test
-	public void freshInstanceReturnsNull() {
+    @Test
+    public void freshInstanceReturnsNull() {
 
-		RowMapperMap map = new ConfigurableRowMapperMap();
+        RowMapperMap map = new ConfigurableRowMapperMap();
 
-		assertThat(map.rowMapperFor(Object.class)).isNull();
-	}
+        assertThat(map.rowMapperFor(Object.class)).isNull();
+    }
 
-	@Test
-	public void returnsConfiguredInstanceForClass() {
+    @Test
+    public void returnsConfiguredInstanceForClass() {
 
-		RowMapper rowMapper = mock(RowMapper.class);
+        RowMapper rowMapper = mock(RowMapper.class);
 
-		RowMapperMap map = new ConfigurableRowMapperMap().register(Object.class, rowMapper);
+        RowMapperMap map = new ConfigurableRowMapperMap().register(Object.class, rowMapper);
 
-		assertThat(map.rowMapperFor(Object.class)).isEqualTo(rowMapper);
-	}
+        assertThat(map.rowMapperFor(Object.class)).isEqualTo(rowMapper);
+    }
 
-	@Test
-	public void returnsNullForClassNotConfigured() {
+    @Test
+    public void returnsNullForClassNotConfigured() {
 
-		RowMapper rowMapper = mock(RowMapper.class);
+        RowMapper rowMapper = mock(RowMapper.class);
 
-		RowMapperMap map = new ConfigurableRowMapperMap().register(Number.class, rowMapper);
+        RowMapperMap map = new ConfigurableRowMapperMap().register(Number.class, rowMapper);
 
-		assertThat(map.rowMapperFor(Integer.class)).isNull();
-		assertThat(map.rowMapperFor(String.class)).isNull();
-	}
+        assertThat(map.rowMapperFor(Integer.class)).isNull();
+        assertThat(map.rowMapperFor(String.class)).isNull();
+    }
 
-	@Test
-	public void returnsInstanceRegisteredForSubClass() {
+    @Test
+    public void returnsInstanceRegisteredForSubClass() {
 
-		RowMapper rowMapper = mock(RowMapper.class);
+        RowMapper rowMapper = mock(RowMapper.class);
 
-		RowMapperMap map = new ConfigurableRowMapperMap().register(String.class, rowMapper);
+        RowMapperMap map = new ConfigurableRowMapperMap().register(String.class, rowMapper);
 
-		assertThat(map.rowMapperFor(Object.class)).isEqualTo(rowMapper);
-	}
+        assertThat(map.rowMapperFor(Object.class)).isEqualTo(rowMapper);
+    }
 
-	@Test
-	public void prefersExactTypeMatchClass() {
+    @Test
+    public void prefersExactTypeMatchClass() {
 
-		RowMapper rowMapper = mock(RowMapper.class);
+        RowMapper rowMapper = mock(RowMapper.class);
 
-		RowMapperMap map = new ConfigurableRowMapperMap() //
-				.register(Object.class, mock(RowMapper.class)) //
-				.register(Integer.class, rowMapper) //
-				.register(Number.class, mock(RowMapper.class));
+        RowMapperMap map = new ConfigurableRowMapperMap() //
+                .register(Object.class, mock(RowMapper.class)) //
+                .register(Integer.class, rowMapper) //
+                .register(Number.class, mock(RowMapper.class));
 
-		assertThat(map.rowMapperFor(Integer.class)).isEqualTo(rowMapper);
-	}
+        assertThat(map.rowMapperFor(Integer.class)).isEqualTo(rowMapper);
+    }
 
-	@Test
-	public void prefersLatestRegistrationForSuperTypeMatch() {
+    @Test
+    public void prefersLatestRegistrationForSuperTypeMatch() {
 
-		RowMapper rowMapper = mock(RowMapper.class);
+        RowMapper rowMapper = mock(RowMapper.class);
 
-		RowMapperMap map = new ConfigurableRowMapperMap() //
-				.register(Integer.class, mock(RowMapper.class)) //
-				.register(Number.class, rowMapper);
+        RowMapperMap map = new ConfigurableRowMapperMap() //
+                .register(Integer.class, mock(RowMapper.class)) //
+                .register(Number.class, rowMapper);
 
-		assertThat(map.rowMapperFor(Object.class)).isEqualTo(rowMapper);
-	}
+        assertThat(map.rowMapperFor(Object.class)).isEqualTo(rowMapper);
+    }
 }

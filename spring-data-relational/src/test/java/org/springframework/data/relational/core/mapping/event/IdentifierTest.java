@@ -28,30 +28,30 @@ import org.junit.Test;
  */
 public class IdentifierTest {
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void specifiedOffersTheIdentifierValue() {
+    @SuppressWarnings("unchecked")
+    @Test
+    public void specifiedOffersTheIdentifierValue() {
 
-		Identifier.Specified identifier = Identifier.of("x");
+        Identifier.Specified identifier = Identifier.of("x");
 
-		assertThat(identifier.getValue()).isEqualTo("x");
-		assertThat((Optional<Object>) identifier.getOptionalValue()).contains("x");
-	}
+        assertThat(identifier.getValue()).isEqualTo("x");
+        assertThat((Optional<Object>) identifier.getOptionalValue()).contains("x");
+    }
 
-	@Test
-	public void indentifierOfNullHasEmptyValue() {
+    @Test
+    public void indentifierOfNullHasEmptyValue() {
 
-		Identifier identifier = Identifier.ofNullable(null);
+        Identifier identifier = Identifier.ofNullable(null);
 
-		assertThat(identifier.getOptionalValue()).isEmpty();
-	}
+        assertThat(identifier.getOptionalValue()).isEmpty();
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void indentifierOfXHasValueX() {
+    @SuppressWarnings("unchecked")
+    @Test
+    public void indentifierOfXHasValueX() {
 
-		Identifier identifier = Identifier.ofNullable("x");
+        Identifier identifier = Identifier.ofNullable("x");
 
-		assertThat((Optional<Object>) identifier.getOptionalValue()).hasValue("x");
-	}
+        assertThat((Optional<Object>) identifier.getOptionalValue()).hasValue("x");
+    }
 }

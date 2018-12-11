@@ -67,183 +67,185 @@ import org.springframework.jdbc.support.KeyHolder;
  */
 public class SimpleJdbcRepositoryEventsUnitTests {
 
-	CollectingEventPublisher publisher = new CollectingEventPublisher();
+    CollectingEventPublisher publisher = new CollectingEventPublisher();
 
-	DummyEntityRepository repository;
-	DefaultDataAccessStrategy dataAccessStrategy;
+    DummyEntityRepository repository;
+    DefaultDataAccessStrategy dataAccessStrategy;
 
-	@Before
-	public void before() {
+    @Before
+    public void before() {
 
-		RelationalMappingContext context = new JdbcMappingContext();
-		RelationalConverter converter = new BasicRelationalConverter(context, new JdbcCustomConversions());
+        RelationalMappingContext context = new JdbcMappingContext();
+        RelationalConverter converter = new BasicRelationalConverter(context, new JdbcCustomConversions());
 
-		NamedParameterJdbcOperations operations = createIdGeneratingOperations();
-		SqlGeneratorSource generatorSource = new SqlGeneratorSource(context);
+        NamedParameterJdbcOperations operations = createIdGeneratingOperations();
+        SqlGeneratorSource generatorSource = new SqlGeneratorSource(context);
 
-		this.dataAccessStrategy = spy(new DefaultDataAccessStrategy(generatorSource, context, converter, operations));
+        this.dataAccessStrategy = spy(new DefaultDataAccessStrategy(generatorSource, context, converter, operations));
 
-		JdbcRepositoryFactory factory = new JdbcRepositoryFactory(dataAccessStrategy, context, converter, publisher,
-				operations);
+        JdbcRepositoryFactory factory = new JdbcRepositoryFactory(dataAccessStrategy, context, converter, publisher,
+                operations);
 
-		this.repository = factory.getRepository(DummyEntityRepository.class);
-	}
+        this.repository = factory.getRepository(DummyEntityRepository.class);
+    }
 
-	@Test // DATAJDBC-99
-	@SuppressWarnings("rawtypes")
-	public void publishesEventsOnSave() {
+    @Test // DATAJDBC-99
+    @SuppressWarnings("rawtypes")
+    public void publishesEventsOnSave() {
 
-		DummyEntity entity = new DummyEntity(23L);
+        DummyEntity entity = new DummyEntity(23L);
 
-		repository.save(entity);
+        repository.save(entity);
 
-		assertThat(publisher.events) //
-				.extracting(e -> (Class) e.getClass()) //
-				.containsExactly( //
-						BeforeSaveEvent.class, //
-						AfterSaveEvent.class //
-				);
-	}
+        assertThat(publisher.events) //
+                .extracting(e -> (Class) e.getClass()) //
+                .containsExactly( //
+                        BeforeSaveEvent.class, //
+                        AfterSaveEvent.class //
+                );
+    }
 
-	@Test // DATAJDBC-99
-	@SuppressWarnings("rawtypes")
-	public void publishesEventsOnSaveMany() {
+    @Test // DATAJDBC-99
+    @SuppressWarnings("rawtypes")
+    public void publishesEventsOnSaveMany() {
 
-		DummyEntity entity1 = new DummyEntity(null);
-		DummyEntity entity2 = new DummyEntity(23L);
+        DummyEntity entity1 = new DummyEntity(null);
+        DummyEntity entity2 = new DummyEntity(23L);
 
-		repository.saveAll(asList(entity1, entity2));
+        repository.saveAll(asList(entity1, entity2));
 
-		assertThat(publisher.events) //
-				.extracting(e -> (Class) e.getClass()) //
-				.containsExactly( //
-						BeforeSaveEvent.class, //
-						AfterSaveEvent.class, //
-						BeforeSaveEvent.class, //
-						AfterSaveEvent.class //
-				);
-	}
+        assertThat(publisher.events) //
+                .extracting(e -> (Class) e.getClass()) //
+                .containsExactly( //
+                        BeforeSaveEvent.class, //
+                        AfterSaveEvent.class, //
+                        BeforeSaveEvent.class, //
+                        AfterSaveEvent.class //
+                );
+    }
 
-	@Test // DATAJDBC-99
-	public void publishesEventsOnDelete() {
+    @Test // DATAJDBC-99
+    public void publishesEventsOnDelete() {
 
-		DummyEntity entity = new DummyEntity(23L);
+        DummyEntity entity = new DummyEntity(23L);
 
-		repository.delete(entity);
+        repository.delete(entity);
 
-		assertThat(publisher.events).extracting( //
-				RelationalEvent::getClass, //
-				e -> e.getOptionalEntity().orElseGet(AssertionFailedError::new), //
-				RelationalEvent::getId //
-		).containsExactly( //
-				Tuple.tuple(BeforeDeleteEvent.class, entity, Identifier.of(23L)), //
-				Tuple.tuple(AfterDeleteEvent.class, entity, Identifier.of(23L)) //
-		);
-	}
+        assertThat(publisher.events).extracting( //
+                RelationalEvent::getClass, //
+                e -> e.getOptionalEntity().orElseGet(AssertionFailedError::new), //
+                RelationalEvent::getId //
+        ).containsExactly( //
+                Tuple.tuple(BeforeDeleteEvent.class, entity, Identifier.of(23L)), //
+                Tuple.tuple(AfterDeleteEvent.class, entity, Identifier.of(23L)) //
+        );
+    }
 
-	@Test // DATAJDBC-99
-	@SuppressWarnings("rawtypes")
-	public void publishesEventsOnDeleteById() {
+    @Test // DATAJDBC-99
+    @SuppressWarnings("rawtypes")
+    public void publishesEventsOnDeleteById() {
 
-		repository.deleteById(23L);
+        repository.deleteById(23L);
 
-		assertThat(publisher.events) //
-				.extracting(e -> (Class) e.getClass()) //
-				.containsExactly( //
-						BeforeDeleteEvent.class, //
-						AfterDeleteEvent.class //
-				);
-	}
+        assertThat(publisher.events) //
+                .extracting(e -> (Class) e.getClass()) //
+                .containsExactly( //
+                        BeforeDeleteEvent.class, //
+                        AfterDeleteEvent.class //
+                );
+    }
 
-	@Test // DATAJDBC-197
-	@SuppressWarnings("rawtypes")
-	public void publishesEventsOnFindAll() {
+    @Test // DATAJDBC-197
+    @SuppressWarnings("rawtypes")
+    public void publishesEventsOnFindAll() {
 
-		DummyEntity entity1 = new DummyEntity(42L);
-		DummyEntity entity2 = new DummyEntity(23L);
+        DummyEntity entity1 = new DummyEntity(42L);
+        DummyEntity entity2 = new DummyEntity(23L);
 
-		doReturn(asList(entity1, entity2)).when(dataAccessStrategy).findAll(any());
+        doReturn(asList(entity1, entity2)).when(dataAccessStrategy).findAll(any());
 
-		repository.findAll();
+        repository.findAll();
 
-		assertThat(publisher.events) //
-				.extracting(e -> (Class) e.getClass()) //
-				.containsExactly( //
-						AfterLoadEvent.class, //
-						AfterLoadEvent.class //
-				);
-	}
+        assertThat(publisher.events) //
+                .extracting(e -> (Class) e.getClass()) //
+                .containsExactly( //
+                        AfterLoadEvent.class, //
+                        AfterLoadEvent.class //
+                );
+    }
 
-	@Test // DATAJDBC-197
-	@SuppressWarnings("rawtypes")
-	public void publishesEventsOnFindAllById() {
+    @Test // DATAJDBC-197
+    @SuppressWarnings("rawtypes")
+    public void publishesEventsOnFindAllById() {
 
-		DummyEntity entity1 = new DummyEntity(42L);
-		DummyEntity entity2 = new DummyEntity(23L);
+        DummyEntity entity1 = new DummyEntity(42L);
+        DummyEntity entity2 = new DummyEntity(23L);
 
-		doReturn(asList(entity1, entity2)).when(dataAccessStrategy).findAllById(any(), any());
+        doReturn(asList(entity1, entity2)).when(dataAccessStrategy).findAllById(any(), any());
 
-		repository.findAllById(asList(42L, 23L));
+        repository.findAllById(asList(42L, 23L));
 
-		assertThat(publisher.events) //
-				.extracting(e -> (Class) e.getClass()) //
-				.containsExactly( //
-						AfterLoadEvent.class, //
-						AfterLoadEvent.class //
-				);
-	}
+        assertThat(publisher.events) //
+                .extracting(e -> (Class) e.getClass()) //
+                .containsExactly( //
+                        AfterLoadEvent.class, //
+                        AfterLoadEvent.class //
+                );
+    }
 
-	@Test // DATAJDBC-197
-	@SuppressWarnings("rawtypes")
-	public void publishesEventsOnFindById() {
+    @Test // DATAJDBC-197
+    @SuppressWarnings("rawtypes")
+    public void publishesEventsOnFindById() {
 
-		DummyEntity entity1 = new DummyEntity(23L);
+        DummyEntity entity1 = new DummyEntity(23L);
 
-		doReturn(entity1).when(dataAccessStrategy).findById(eq(23L), any());
+        doReturn(entity1).when(dataAccessStrategy).findById(eq(23L), any());
 
-		repository.findById(23L);
+        repository.findById(23L);
 
-		assertThat(publisher.events) //
-				.extracting(e -> (Class) e.getClass()) //
-				.containsExactly( //
-						AfterLoadEvent.class //
-				);
-	}
+        assertThat(publisher.events) //
+                .extracting(e -> (Class) e.getClass()) //
+                .containsExactly( //
+                        AfterLoadEvent.class //
+                );
+    }
 
-	private static NamedParameterJdbcOperations createIdGeneratingOperations() {
+    private static NamedParameterJdbcOperations createIdGeneratingOperations() {
 
-		Answer<Integer> setIdInKeyHolder = invocation -> {
+        Answer<Integer> setIdInKeyHolder = invocation -> {
 
-			HashMap<String, Object> keys = new HashMap<>();
-			keys.put("id", 4711L);
-			KeyHolder keyHolder = invocation.getArgument(2);
-			keyHolder.getKeyList().add(keys);
+            HashMap<String, Object> keys = new HashMap<>();
+            keys.put("id", 4711L);
+            KeyHolder keyHolder = invocation.getArgument(2);
+            keyHolder.getKeyList().add(keys);
 
-			return 1;
-		};
+            return 1;
+        };
 
-		NamedParameterJdbcOperations operations = mock(NamedParameterJdbcOperations.class);
-		when(operations.update(anyString(), any(SqlParameterSource.class), any(KeyHolder.class)))
-				.thenAnswer(setIdInKeyHolder);
-		return operations;
-	}
+        NamedParameterJdbcOperations operations = mock(NamedParameterJdbcOperations.class);
+        when(operations.update(anyString(), any(SqlParameterSource.class), any(KeyHolder.class)))
+                .thenAnswer(setIdInKeyHolder);
+        return operations;
+    }
 
-	interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {}
+    interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
+    }
 
-	@Value
-	@Wither
-	@RequiredArgsConstructor
-	static class DummyEntity {
-		@Id Long id;
-	}
+    @Value
+    @Wither
+    @RequiredArgsConstructor
+    static class DummyEntity {
+        @Id
+        Long id;
+    }
 
-	static class CollectingEventPublisher implements ApplicationEventPublisher {
+    static class CollectingEventPublisher implements ApplicationEventPublisher {
 
-		List<RelationalEvent> events = new ArrayList<>();
+        List<RelationalEvent> events = new ArrayList<>();
 
-		@Override
-		public void publishEvent(Object o) {
-			events.add((RelationalEvent) o);
-		}
-	}
+        @Override
+        public void publishEvent(Object o) {
+            events.add((RelationalEvent) o);
+        }
+    }
 }

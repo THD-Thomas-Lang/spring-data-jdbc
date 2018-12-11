@@ -37,64 +37,66 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentEnti
  */
 public class NamingStrategyUnitTests {
 
-	private final NamingStrategy target = NamingStrategy.INSTANCE;
+    private final NamingStrategy target = NamingStrategy.INSTANCE;
 
-	private final RelationalPersistentEntity<?> persistentEntity = //
-			new JdbcMappingContext(target).getRequiredPersistentEntity(DummyEntity.class);
+    private final RelationalPersistentEntity<?> persistentEntity = //
+            new JdbcMappingContext(target).getRequiredPersistentEntity(DummyEntity.class);
 
-	@Test // DATAJDBC-184
-	public void getTableName() {
-		assertThat(target.getTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
-	}
+    @Test // DATAJDBC-184
+    public void getTableName() {
+        assertThat(target.getTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
+    }
 
-	@Test // DATAJDBC-184
-	public void getColumnName() {
+    @Test // DATAJDBC-184
+    public void getColumnName() {
 
-		assertThat(target.getColumnName(persistentEntity.getPersistentProperty("id"))) //
-				.isEqualTo("id");
-		assertThat(target.getColumnName(persistentEntity.getPersistentProperty("createdAt"))) //
-				.isEqualTo("created_at");
-		assertThat(target.getColumnName(persistentEntity.getPersistentProperty("dummySubEntities"))) //
-				.isEqualTo("dummy_sub_entities");
-	}
+        assertThat(target.getColumnName(persistentEntity.getPersistentProperty("id"))) //
+                .isEqualTo("id");
+        assertThat(target.getColumnName(persistentEntity.getPersistentProperty("createdAt"))) //
+                .isEqualTo("created_at");
+        assertThat(target.getColumnName(persistentEntity.getPersistentProperty("dummySubEntities"))) //
+                .isEqualTo("dummy_sub_entities");
+    }
 
-	@Test // DATAJDBC-184
-	public void getReverseColumnName() {
-		assertThat(target.getReverseColumnName(persistentEntity.getPersistentProperty("dummySubEntities")))
-				.isEqualTo("dummy_entity");
-	}
+    @Test // DATAJDBC-184
+    public void getReverseColumnName() {
+        assertThat(target.getReverseColumnName(persistentEntity.getPersistentProperty("dummySubEntities")))
+                .isEqualTo("dummy_entity");
+    }
 
-	@Test // DATAJDBC-184
-	public void getKeyColumn() {
+    @Test // DATAJDBC-184
+    public void getKeyColumn() {
 
-		assertThat(target.getKeyColumn(persistentEntity.getPersistentProperty("dummySubEntities"))) //
-				.isEqualTo("dummy_entity_key");
-	}
+        assertThat(target.getKeyColumn(persistentEntity.getPersistentProperty("dummySubEntities"))) //
+                .isEqualTo("dummy_entity_key");
+    }
 
-	@Test // DATAJDBC-184
-	public void getSchema() {
-		assertThat(target.getSchema()).isEmpty();
-	}
+    @Test // DATAJDBC-184
+    public void getSchema() {
+        assertThat(target.getSchema()).isEmpty();
+    }
 
-	@Test // DATAJDBC-184
-	public void getQualifiedTableName() {
+    @Test // DATAJDBC-184
+    public void getQualifiedTableName() {
 
-		assertThat(target.getQualifiedTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
-	}
+        assertThat(target.getQualifiedTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
+    }
 
-	@Data
-	private static class DummyEntity {
+    @Data
+    private static class DummyEntity {
 
-		@Id private int id;
-		private LocalDateTime createdAt;
-		private List<DummySubEntity> dummySubEntities;
-	}
+        @Id
+        private int id;
+        private LocalDateTime createdAt;
+        private List<DummySubEntity> dummySubEntities;
+    }
 
-	@Data
-	private static class DummySubEntity {
+    @Data
+    private static class DummySubEntity {
 
-		@Id private int id;
-		private LocalDateTime createdAt;
-	}
+        @Id
+        private int id;
+        private LocalDateTime createdAt;
+    }
 
 }

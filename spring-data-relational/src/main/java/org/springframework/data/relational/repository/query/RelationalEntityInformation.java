@@ -24,10 +24,10 @@ import org.springframework.data.repository.core.EntityInformation;
  */
 public interface RelationalEntityInformation<T, ID> extends EntityInformation<T, ID> {
 
-	/**
-	 * Returns the name of the table the entity shall be persisted to.
-	 *
-	 * @return
-	 */
-	String getTableName();
+    /**
+     * Returns the name of the table the entity shall be persisted to.
+     *
+     * @return
+     */
+    String getTableName();
 }

@@ -22,39 +22,39 @@ import org.springframework.lang.Nullable;
 /**
  * A reference to the aggregate root of a different aggregate.
  *
- * @param <T> the type of the referenced aggregate root.
+ * @param <T>  the type of the referenced aggregate root.
  * @param <ID> the type of the id of the referenced aggregate root.
  * @author Jens Schauder
  * @since 1.0
  */
 public interface AggregateReference<T, ID> {
 
-	static <T, ID> AggregateReference<T, ID> to(ID id) {
-		return new IdOnlyAggregateReference<>(id);
-	}
+    static <T, ID> AggregateReference<T, ID> to(ID id) {
+        return new IdOnlyAggregateReference<>(id);
+    }
 
-	/**
-	 * @return the id of the referenced aggregate. May be {@code null}.
-	 */
-	@Nullable
-	ID getId();
+    /**
+     * @return the id of the referenced aggregate. May be {@code null}.
+     */
+    @Nullable
+    ID getId();
 
-	/**
-	 * An {@link AggregateReference} that only holds the id of the referenced aggregate root. Note that there is no check
-	 * that a matching aggregate for this id actually exists.
-	 * 
-	 * @param <T>
-	 * @param <ID>
-	 */
-	@RequiredArgsConstructor
-	class IdOnlyAggregateReference<T, ID> implements AggregateReference<T, ID> {
+    /**
+     * An {@link AggregateReference} that only holds the id of the referenced aggregate root. Note that there is no check
+     * that a matching aggregate for this id actually exists.
+     *
+     * @param <T>
+     * @param <ID>
+     */
+    @RequiredArgsConstructor
+    class IdOnlyAggregateReference<T, ID> implements AggregateReference<T, ID> {
 
-		private final ID id;
+        private final ID id;
 
-		@Override
-		public ID getId() {
-			return id;
-		}
-	}
+        @Override
+        public ID getId() {
+            return id;
+        }
+    }
 
 }

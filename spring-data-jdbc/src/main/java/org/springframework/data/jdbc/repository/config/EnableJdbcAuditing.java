@@ -29,8 +29,8 @@ import org.springframework.data.domain.AuditorAware;
 /**
  * Annotation to enable auditing in JDBC via annotation configuration.
  *
- * @see EnableJdbcRepositories
  * @author Kazuki Shimizu
+ * @see EnableJdbcRepositories
  */
 @Inherited
 @Documented
@@ -39,29 +39,29 @@ import org.springframework.data.domain.AuditorAware;
 @Import(JdbcAuditingRegistrar.class)
 public @interface EnableJdbcAuditing {
 
-	/**
-	 * Configures the {@link AuditorAware} bean to be used to lookup the current principal.
-	 *
-	 * @see AuditorAware
-	 */
-	String auditorAwareRef() default "";
+    /**
+     * Configures the {@link AuditorAware} bean to be used to lookup the current principal.
+     *
+     * @see AuditorAware
+     */
+    String auditorAwareRef() default "";
 
-	/**
-	 * Configures whether the creation and modification dates are set.
-	 */
-	boolean setDates() default true;
+    /**
+     * Configures whether the creation and modification dates are set.
+     */
+    boolean setDates() default true;
 
-	/**
-	 * Configures whether the entity shall be marked as modified on creation.
-	 */
-	boolean modifyOnCreate() default true;
+    /**
+     * Configures whether the entity shall be marked as modified on creation.
+     */
+    boolean modifyOnCreate() default true;
 
-	/**
-	 * Configures a {@link DateTimeProvider} bean name that allows customizing the {@link java.time.LocalDateTime} to be
-	 * used for setting creation and modification dates.
-	 *
-	 * @see DateTimeProvider
-	 */
-	String dateTimeProviderRef() default "";
+    /**
+     * Configures a {@link DateTimeProvider} bean name that allows customizing the {@link java.time.LocalDateTime} to be
+     * used for setting creation and modification dates.
+     *
+     * @see DateTimeProvider
+     */
+    String dateTimeProviderRef() default "";
 
 }

@@ -28,23 +28,23 @@ import org.springframework.lang.Nullable;
  */
 public class RelationalEventWithId extends SimpleRelationalEvent implements WithId {
 
-	private static final long serialVersionUID = -8071323168471611098L;
+    private static final long serialVersionUID = -8071323168471611098L;
 
-	private final Specified id;
+    private final Specified id;
 
-	public RelationalEventWithId(Specified id, Optional<Object> entity, @Nullable AggregateChange change) {
+    public RelationalEventWithId(Specified id, Optional<Object> entity, @Nullable AggregateChange change) {
 
-		super(id, entity, change);
+        super(id, entity, change);
 
-		this.id = id;
-	}
+        this.id = id;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.mapping.event.JdbcEvent#getId()
-	 */
-	@Override
-	public Specified getId() {
-		return id;
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.mapping.event.JdbcEvent#getId()
+     */
+    @Override
+    public Specified getId() {
+        return id;
+    }
 }

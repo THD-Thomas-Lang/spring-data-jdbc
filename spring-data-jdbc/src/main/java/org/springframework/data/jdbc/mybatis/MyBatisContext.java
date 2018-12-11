@@ -28,58 +28,58 @@ import org.springframework.lang.Nullable;
  */
 public class MyBatisContext {
 
-	private final Object id;
-	private final Object instance;
-	private final Class domainType;
-	private final Map<String, Object> additonalValues;
+    private final Object id;
+    private final Object instance;
+    private final Class domainType;
+    private final Map<String, Object> additonalValues;
 
-	public MyBatisContext(@Nullable Object id, @Nullable Object instance, Class domainType,
-			Map<String, Object> additonalValues) {
+    public MyBatisContext(@Nullable Object id, @Nullable Object instance, Class domainType,
+                          Map<String, Object> additonalValues) {
 
-		this.id = id;
-		this.instance = instance;
-		this.domainType = domainType;
-		this.additonalValues = additonalValues;
-	}
+        this.id = id;
+        this.instance = instance;
+        this.domainType = domainType;
+        this.additonalValues = additonalValues;
+    }
 
-	/**
-	 * The ID of the entity to query/act upon.
-	 *
-	 * @return Might return {@code null}.
-	 */
-	@Nullable
-	public Object getId() {
-		return id;
-	}
+    /**
+     * The ID of the entity to query/act upon.
+     *
+     * @return Might return {@code null}.
+     */
+    @Nullable
+    public Object getId() {
+        return id;
+    }
 
-	/**
-	 * The entity to act upon. This is {@code null} for queries, since the object doesn't exist before the query.
-	 * 
-	 * @return Might return {@code null}.
-	 */
-	@Nullable
-	public Object getInstance() {
-		return instance;
-	}
+    /**
+     * The entity to act upon. This is {@code null} for queries, since the object doesn't exist before the query.
+     *
+     * @return Might return {@code null}.
+     */
+    @Nullable
+    public Object getInstance() {
+        return instance;
+    }
 
-	/**
-	 * The domain type of the entity to query or act upon.
-	 *
-	 * @return Might return {@code null}.
-	 */
-	@Nullable
-	public Class getDomainType() {
-		return domainType;
-	}
+    /**
+     * The domain type of the entity to query or act upon.
+     *
+     * @return Might return {@code null}.
+     */
+    @Nullable
+    public Class getDomainType() {
+        return domainType;
+    }
 
-	/**
-	 * Returns a value for the given key. Used to communicate ids of parent entities.
-	 *
-	 * @param key Must not be {@code null}.
-	 * @return Might return {@code null}.
-	 */
-	@Nullable
-	public Object get(String key) {
-		return additonalValues.get(key);
-	}
+    /**
+     * Returns a value for the given key. Used to communicate ids of parent entities.
+     *
+     * @param key Must not be {@code null}.
+     * @return Might return {@code null}.
+     */
+    @Nullable
+    public Object get(String key) {
+        return additonalValues.get(key);
+    }
 }

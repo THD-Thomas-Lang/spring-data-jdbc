@@ -31,14 +31,15 @@ import org.springframework.data.relational.core.mapping.event.Identifier.Specifi
 @Value(staticConstructor = "of")
 class SpecifiedIdentifier implements Specified {
 
-	@NonNull Object value;
+    @NonNull
+    Object value;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.mapping.event.Identifier#getOptionalValue()
-	 */
-	@Override
-	public Optional<?> getOptionalValue() {
-		return Optional.of(value);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.mapping.event.Identifier#getOptionalValue()
+     */
+    @Override
+    public Optional<?> getOptionalValue() {
+        return Optional.of(value);
+    }
 }

@@ -34,47 +34,48 @@ import org.springframework.util.Assert;
  * @author Mark Paluch
  */
 public class RelationalMappingContext
-		extends AbstractMappingContext<RelationalPersistentEntity<?>, RelationalPersistentProperty> {
+        extends AbstractMappingContext<RelationalPersistentEntity<?>, RelationalPersistentProperty> {
 
-	@Getter private final NamingStrategy namingStrategy;
+    @Getter
+    private final NamingStrategy namingStrategy;
 
-	/**
-	 * Creates a new {@link RelationalMappingContext}.
-	 */
-	public RelationalMappingContext() {
-		this(NamingStrategy.INSTANCE);
-	}
+    /**
+     * Creates a new {@link RelationalMappingContext}.
+     */
+    public RelationalMappingContext() {
+        this(NamingStrategy.INSTANCE);
+    }
 
-	/**
-	 * Creates a new {@link RelationalMappingContext} using the given {@link NamingStrategy}.
-	 *
-	 * @param namingStrategy must not be {@literal null}.
-	 */
-	public RelationalMappingContext(NamingStrategy namingStrategy) {
+    /**
+     * Creates a new {@link RelationalMappingContext} using the given {@link NamingStrategy}.
+     *
+     * @param namingStrategy must not be {@literal null}.
+     */
+    public RelationalMappingContext(NamingStrategy namingStrategy) {
 
-		Assert.notNull(namingStrategy, "NamingStrategy must not be null!");
+        Assert.notNull(namingStrategy, "NamingStrategy must not be null!");
 
-		this.namingStrategy = namingStrategy;
+        this.namingStrategy = namingStrategy;
 
-		setSimpleTypeHolder(SimpleTypeHolder.DEFAULT);
-	}
+        setSimpleTypeHolder(SimpleTypeHolder.DEFAULT);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
-	 */
-	@Override
-	protected <T> RelationalPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
-		return new RelationalPersistentEntityImpl<>(typeInformation, this.namingStrategy);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentEntity(org.springframework.data.util.TypeInformation)
+     */
+    @Override
+    protected <T> RelationalPersistentEntity<T> createPersistentEntity(TypeInformation<T> typeInformation) {
+        return new RelationalPersistentEntityImpl<>(typeInformation, this.namingStrategy);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(org.springframework.data.mapping.model.Property, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
-	 */
-	@Override
-	protected RelationalPersistentProperty createPersistentProperty(Property property,
-			RelationalPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
-		return new BasicRelationalPersistentProperty(property, owner, simpleTypeHolder, this);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(org.springframework.data.mapping.model.Property, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
+     */
+    @Override
+    protected RelationalPersistentProperty createPersistentProperty(Property property,
+                                                                    RelationalPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
+        return new BasicRelationalPersistentProperty(property, owner, simpleTypeHolder, this);
+    }
 }

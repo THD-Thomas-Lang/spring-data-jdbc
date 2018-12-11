@@ -28,25 +28,28 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentEnti
 
 /**
  * Unit tests for {@link SimpleJdbcRepository}.
- * 
+ *
  * @author Oliver Gierke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class SimpleJdbcRepositoryUnitTests {
 
-	@Mock JdbcAggregateOperations operations;
-	@Mock RelationalPersistentEntity<Sample> entity;
+    @Mock
+    JdbcAggregateOperations operations;
+    @Mock
+    RelationalPersistentEntity<Sample> entity;
 
-	@Test // DATAJDBC-252
-	public void saveReturnsEntityProducedByOperations() {
+    @Test // DATAJDBC-252
+    public void saveReturnsEntityProducedByOperations() {
 
-		SimpleJdbcRepository<Sample, Object> repository = new SimpleJdbcRepository<>(operations, entity);
+        SimpleJdbcRepository<Sample, Object> repository = new SimpleJdbcRepository<>(operations, entity);
 
-		Sample expected = new Sample();
-		doReturn(expected).when(operations).save(any());
+        Sample expected = new Sample();
+        doReturn(expected).when(operations).save(any());
 
-		assertThat(repository.save(new Sample())).isEqualTo(expected);
-	}
+        assertThat(repository.save(new Sample())).isEqualTo(expected);
+    }
 
-	static class Sample {}
+    static class Sample {
+    }
 }

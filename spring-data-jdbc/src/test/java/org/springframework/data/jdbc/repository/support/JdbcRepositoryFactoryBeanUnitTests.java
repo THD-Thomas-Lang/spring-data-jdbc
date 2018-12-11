@@ -47,65 +47,69 @@ import org.springframework.test.util.ReflectionTestUtils;
 @RunWith(MockitoJUnitRunner.class)
 public class JdbcRepositoryFactoryBeanUnitTests {
 
-	JdbcRepositoryFactoryBean<DummyEntityRepository, DummyEntity, Long> factoryBean;
+    JdbcRepositoryFactoryBean<DummyEntityRepository, DummyEntity, Long> factoryBean;
 
-	@Mock DataAccessStrategy dataAccessStrategy;
-	@Mock ApplicationEventPublisher publisher;
+    @Mock
+    DataAccessStrategy dataAccessStrategy;
+    @Mock
+    ApplicationEventPublisher publisher;
 
-	RelationalMappingContext mappingContext;
+    RelationalMappingContext mappingContext;
 
-	@Before
-	public void setUp() {
+    @Before
+    public void setUp() {
 
-		this.mappingContext = new JdbcMappingContext();
+        this.mappingContext = new JdbcMappingContext();
 
-		// Setup standard configuration
-		factoryBean = new JdbcRepositoryFactoryBean<>(DummyEntityRepository.class);
-	}
+        // Setup standard configuration
+        factoryBean = new JdbcRepositoryFactoryBean<>(DummyEntityRepository.class);
+    }
 
-	@Test
-	public void setsUpBasicInstanceCorrectly() {
+    @Test
+    public void setsUpBasicInstanceCorrectly() {
 
-		factoryBean.setDataAccessStrategy(dataAccessStrategy);
-		factoryBean.setMappingContext(mappingContext);
-		factoryBean.setConverter(new BasicRelationalConverter(mappingContext));
-		factoryBean.setApplicationEventPublisher(publisher);
-		factoryBean.afterPropertiesSet();
+        factoryBean.setDataAccessStrategy(dataAccessStrategy);
+        factoryBean.setMappingContext(mappingContext);
+        factoryBean.setConverter(new BasicRelationalConverter(mappingContext));
+        factoryBean.setApplicationEventPublisher(publisher);
+        factoryBean.afterPropertiesSet();
 
-		assertThat(factoryBean.getObject()).isNotNull();
-	}
+        assertThat(factoryBean.getObject()).isNotNull();
+    }
 
-	@Test(expected = IllegalArgumentException.class)
-	public void requiresListableBeanFactory() {
+    @Test(expected = IllegalArgumentException.class)
+    public void requiresListableBeanFactory() {
 
-		factoryBean.setBeanFactory(mock(BeanFactory.class));
-	}
+        factoryBean.setBeanFactory(mock(BeanFactory.class));
+    }
 
-	@Test(expected = IllegalStateException.class) // DATAJDBC-155
-	public void afterPropertiesThowsExceptionWhenNoMappingContextSet() {
+    @Test(expected = IllegalStateException.class) // DATAJDBC-155
+    public void afterPropertiesThowsExceptionWhenNoMappingContextSet() {
 
-		factoryBean.setMappingContext(null);
-		factoryBean.setApplicationEventPublisher(publisher);
-		factoryBean.afterPropertiesSet();
-	}
+        factoryBean.setMappingContext(null);
+        factoryBean.setApplicationEventPublisher(publisher);
+        factoryBean.afterPropertiesSet();
+    }
 
-	@Test // DATAJDBC-155
-	public void afterPropertiesSetDefaultsNullablePropertiesCorrectly() {
+    @Test // DATAJDBC-155
+    public void afterPropertiesSetDefaultsNullablePropertiesCorrectly() {
 
-		factoryBean.setMappingContext(mappingContext);
-		factoryBean.setConverter(new BasicRelationalConverter(mappingContext));
-		factoryBean.setApplicationEventPublisher(publisher);
-		factoryBean.afterPropertiesSet();
+        factoryBean.setMappingContext(mappingContext);
+        factoryBean.setConverter(new BasicRelationalConverter(mappingContext));
+        factoryBean.setApplicationEventPublisher(publisher);
+        factoryBean.afterPropertiesSet();
 
-		assertThat(factoryBean.getObject()).isNotNull();
-		assertThat(ReflectionTestUtils.getField(factoryBean, "dataAccessStrategy"))
-				.isInstanceOf(DefaultDataAccessStrategy.class);
-		assertThat(ReflectionTestUtils.getField(factoryBean, "rowMapperMap")).isEqualTo(RowMapperMap.EMPTY);
-	}
+        assertThat(factoryBean.getObject()).isNotNull();
+        assertThat(ReflectionTestUtils.getField(factoryBean, "dataAccessStrategy"))
+                .isInstanceOf(DefaultDataAccessStrategy.class);
+        assertThat(ReflectionTestUtils.getField(factoryBean, "rowMapperMap")).isEqualTo(RowMapperMap.EMPTY);
+    }
 
-	private static class DummyEntity {
-		@Id private Long id;
-	}
+    private static class DummyEntity {
+        @Id
+        private Long id;
+    }
 
-	private interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {}
+    private interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
+    }
 }

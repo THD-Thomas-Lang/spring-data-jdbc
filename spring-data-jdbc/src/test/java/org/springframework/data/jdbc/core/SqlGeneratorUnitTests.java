@@ -43,241 +43,249 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
  */
 public class SqlGeneratorUnitTests {
 
-	private SqlGenerator sqlGenerator;
-	private RelationalMappingContext context = new JdbcMappingContext();
+    private SqlGenerator sqlGenerator;
+    private RelationalMappingContext context = new JdbcMappingContext();
 
-	@Before
-	public void setUp() {
+    @Before
+    public void setUp() {
 
-		this.sqlGenerator = createSqlGenerator(DummyEntity.class);
-	}
+        this.sqlGenerator = createSqlGenerator(DummyEntity.class);
+    }
 
-	SqlGenerator createSqlGenerator(Class<?> type) {
+    SqlGenerator createSqlGenerator(Class<?> type) {
 
-		NamingStrategy namingStrategy = new PrefixingNamingStrategy();
-		RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
-		RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(type);
+        NamingStrategy namingStrategy = new PrefixingNamingStrategy();
+        RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
+        RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(type);
 
-		return new SqlGenerator(context, persistentEntity, new SqlGeneratorSource(context));
-	}
+        return new SqlGenerator(context, persistentEntity, new SqlGeneratorSource(context));
+    }
 
-	@Test // DATAJDBC-112
-	public void findOne() {
+    @Test // DATAJDBC-112
+    public void findOne() {
 
-		String sql = sqlGenerator.getFindOne();
+        String sql = sqlGenerator.getFindOne();
 
-		SoftAssertions softAssertions = new SoftAssertions();
-		softAssertions.assertThat(sql) //
-				.startsWith("SELECT") //
-				.contains("dummy_entity.id1 AS id1,") //
-				.contains("dummy_entity.x_name AS x_name,") //
-				.contains("dummy_entity.x_other AS x_other,") //
-				.contains("ref.x_l1id AS ref_x_l1id") //
-				.contains("ref.x_content AS ref_x_content").contains(" FROM dummy_entity") //
-				.contains("ON ref.dummy_entity = dummy_entity.id1") //
-				.contains("WHERE dummy_entity.id1 = :id") //
-				// 1-N relationships do not get loaded via join
-				.doesNotContain("Element AS elements");
-		softAssertions.assertAll();
-	}
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions.assertThat(sql) //
+                .startsWith("SELECT") //
+                .contains("dummy_entity.id1 AS id1,") //
+                .contains("dummy_entity.x_name AS x_name,") //
+                .contains("dummy_entity.x_other AS x_other,") //
+                .contains("ref.x_l1id AS ref_x_l1id") //
+                .contains("ref.x_content AS ref_x_content").contains(" FROM dummy_entity") //
+                .contains("ON ref.dummy_entity = dummy_entity.id1") //
+                .contains("WHERE dummy_entity.id1 = :id") //
+                // 1-N relationships do not get loaded via join
+                .doesNotContain("Element AS elements");
+        softAssertions.assertAll();
+    }
 
-	@Test // DATAJDBC-112
-	public void cascadingDeleteFirstLevel() {
+    @Test // DATAJDBC-112
+    public void cascadingDeleteFirstLevel() {
 
-		String sql = sqlGenerator.createDeleteByPath(getPath("ref", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteByPath(getPath("ref", DummyEntity.class));
 
-		assertThat(sql).isEqualTo("DELETE FROM referenced_entity WHERE dummy_entity = :rootId");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM referenced_entity WHERE dummy_entity = :rootId");
+    }
 
-	@Test // DATAJDBC-112
-	public void cascadingDeleteAllSecondLevel() {
+    @Test // DATAJDBC-112
+    public void cascadingDeleteAllSecondLevel() {
 
-		String sql = sqlGenerator.createDeleteByPath(getPath("ref.further", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteByPath(getPath("ref.further", DummyEntity.class));
 
-		assertThat(sql).isEqualTo(
-				"DELETE FROM second_level_referenced_entity WHERE referenced_entity IN (SELECT x_l1id FROM referenced_entity WHERE dummy_entity = :rootId)");
-	}
+        assertThat(sql).isEqualTo(
+                "DELETE FROM second_level_referenced_entity WHERE referenced_entity IN (SELECT x_l1id FROM referenced_entity WHERE dummy_entity = :rootId)");
+    }
 
-	@Test // DATAJDBC-112
-	public void deleteAll() {
+    @Test // DATAJDBC-112
+    public void deleteAll() {
 
-		String sql = sqlGenerator.createDeleteAllSql(null);
+        String sql = sqlGenerator.createDeleteAllSql(null);
 
-		assertThat(sql).isEqualTo("DELETE FROM dummy_entity");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM dummy_entity");
+    }
 
-	@Test // DATAJDBC-112
-	public void cascadingDeleteAllFirstLevel() {
+    @Test // DATAJDBC-112
+    public void cascadingDeleteAllFirstLevel() {
 
-		String sql = sqlGenerator.createDeleteAllSql(getPath("ref", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteAllSql(getPath("ref", DummyEntity.class));
 
-		assertThat(sql).isEqualTo("DELETE FROM referenced_entity WHERE dummy_entity IS NOT NULL");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM referenced_entity WHERE dummy_entity IS NOT NULL");
+    }
 
-	@Test // DATAJDBC-112
-	public void cascadingDeleteSecondLevel() {
+    @Test // DATAJDBC-112
+    public void cascadingDeleteSecondLevel() {
 
-		String sql = sqlGenerator.createDeleteAllSql(getPath("ref.further", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteAllSql(getPath("ref.further", DummyEntity.class));
 
-		assertThat(sql).isEqualTo(
-				"DELETE FROM second_level_referenced_entity WHERE referenced_entity IN (SELECT x_l1id FROM referenced_entity WHERE dummy_entity IS NOT NULL)");
-	}
+        assertThat(sql).isEqualTo(
+                "DELETE FROM second_level_referenced_entity WHERE referenced_entity IN (SELECT x_l1id FROM referenced_entity WHERE dummy_entity IS NOT NULL)");
+    }
 
-	@Test // DATAJDBC-227
-	public void deleteAllMap() {
+    @Test // DATAJDBC-227
+    public void deleteAllMap() {
 
-		String sql = sqlGenerator.createDeleteAllSql(getPath("mappedElements", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteAllSql(getPath("mappedElements", DummyEntity.class));
 
-		assertThat(sql).isEqualTo("DELETE FROM element WHERE dummy_entity IS NOT NULL");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM element WHERE dummy_entity IS NOT NULL");
+    }
 
-	@Test // DATAJDBC-227
-	public void deleteMapByPath() {
+    @Test // DATAJDBC-227
+    public void deleteMapByPath() {
 
-		String sql = sqlGenerator.createDeleteByPath(getPath("mappedElements", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteByPath(getPath("mappedElements", DummyEntity.class));
 
-		assertThat(sql).isEqualTo("DELETE FROM element WHERE dummy_entity = :rootId");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM element WHERE dummy_entity = :rootId");
+    }
 
-	@Test // DATAJDBC-131
-	public void findAllByProperty() {
+    @Test // DATAJDBC-131
+    public void findAllByProperty() {
 
-		// this would get called when ListParent is the element type of a Set
-		String sql = sqlGenerator.getFindAllByProperty("back-ref", null, false);
-
-		assertThat(sql).isEqualTo("SELECT dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name, " //
-				+ "dummy_entity.x_other AS x_other, " //
-				+ "ref.x_l1id AS ref_x_l1id, ref.x_content AS ref_x_content, ref.x_further AS ref_x_further " //
-				+ "FROM dummy_entity LEFT OUTER JOIN referenced_entity AS ref ON ref.dummy_entity = dummy_entity.id1 " //
-				+ "WHERE back-ref = :back-ref");
-	}
-
-	@Test // DATAJDBC-131
-	public void findAllByPropertyWithKey() {
-
-		// this would get called when ListParent is th element type of a Map
-		String sql = sqlGenerator.getFindAllByProperty("back-ref", "key-column", false);
-
-		assertThat(sql).isEqualTo("SELECT dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name, " //
-				+ "dummy_entity.x_other AS x_other, " //
-				+ "ref.x_l1id AS ref_x_l1id, ref.x_content AS ref_x_content, ref.x_further AS ref_x_further, " //
-				+ "dummy_entity.key-column AS key-column " //
-				+ "FROM dummy_entity LEFT OUTER JOIN referenced_entity AS ref ON ref.dummy_entity = dummy_entity.id1 " //
-				+ "WHERE back-ref = :back-ref");
-	}
-
-	@Test(expected = IllegalArgumentException.class) // DATAJDBC-130
-	public void findAllByPropertyOrderedWithoutKey() {
-		String sql = sqlGenerator.getFindAllByProperty("back-ref", null, true);
-	}
-
-	@Test // DATAJDBC-131
-	public void findAllByPropertyWithKeyOrdered() {
-
-		// this would get called when ListParent is th element type of a Map
-		String sql = sqlGenerator.getFindAllByProperty("back-ref", "key-column", true);
-
-		assertThat(sql).isEqualTo("SELECT dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name, " //
-				+ "dummy_entity.x_other AS x_other, " //
-				+ "ref.x_l1id AS ref_x_l1id, ref.x_content AS ref_x_content, ref.x_further AS ref_x_further, " //
-				+ "dummy_entity.key-column AS key-column " //
-				+ "FROM dummy_entity LEFT OUTER JOIN referenced_entity AS ref ON ref.dummy_entity = dummy_entity.id1 " //
-				+ "WHERE back-ref = :back-ref " + "ORDER BY key-column");
-	}
-
-	@Test // DATAJDBC-264
-	public void getInsertForEmptyColumnList() {
-
-		SqlGenerator sqlGenerator = createSqlGenerator(IdOnlyEntity.class);
-
-		String insert = sqlGenerator.getInsert(emptySet());
-
-		assertThat(insert).endsWith("()");
-	}
-
-	@Test // DATAJDBC-266
-	public void joinForOneToOneWithoutIdIncludesTheBackReferenceOfTheOuterJoin() {
-
-		SqlGenerator sqlGenerator = createSqlGenerator(ParentOfNoIdChild.class);
-
-		String findAll = sqlGenerator.getFindAll();
-
-		assertThat(findAll).containsSequence("SELECT", "child.parent_of_no_id_child AS child_parent_of_no_id_child",
-				"FROM");
-	}
-
-	@Test // DATAJDBC-262
-	public void update() {
-
-		assertThat(sqlGenerator.getUpdate()).containsSequence( //
-				"UPDATE", //
-				"dummy_entity", //
-				"SET", //
-				"WHERE", //
-				"id1 = :id");
-	}
-
-	private PersistentPropertyPath<RelationalPersistentProperty> getPath(String path, Class<?> base) {
-		return PersistentPropertyPathTestUtils.getPath(context, path, base);
-	}
-
-	@SuppressWarnings("unused")
-	static class DummyEntity {
-
-		@Column("id1")
-		@Id Long id;
-		String name;
-		ReferencedEntity ref;
-		Set<Element> elements;
-		Map<Integer, Element> mappedElements;
-		AggregateReference<OtherAggregate, Long> other;
-	}
-
-	@SuppressWarnings("unused")
-	static class ReferencedEntity {
-
-		@Id Long l1id;
-		String content;
-		SecondLevelReferencedEntity further;
-	}
-
-	@SuppressWarnings("unused")
-	static class SecondLevelReferencedEntity {
-
-		@Id Long l2id;
-		String something;
-	}
-
-	static class Element {
-		@Id Long id;
-		String content;
-	}
-
-	static class ParentOfNoIdChild {
-		@Id Long id;
-		NoIdChild child;
-	}
-
-	static class NoIdChild {}
-
-	static class OtherAggregate {
-		@Id Long id;
-		String name;
-	}
-
-	private static class PrefixingNamingStrategy implements NamingStrategy {
-
-		@Override
-		public String getColumnName(RelationalPersistentProperty property) {
-			return "x_" + NamingStrategy.super.getColumnName(property);
-		}
-
-	}
-
-	@SuppressWarnings("unused")
-	static class IdOnlyEntity {
-
-		@Id Long id;
-	}
+        // this would get called when ListParent is the element type of a Set
+        String sql = sqlGenerator.getFindAllByProperty("back-ref", null, false);
+
+        assertThat(sql).isEqualTo("SELECT dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name, " //
+                + "dummy_entity.x_other AS x_other, " //
+                + "ref.x_l1id AS ref_x_l1id, ref.x_content AS ref_x_content, ref.x_further AS ref_x_further " //
+                + "FROM dummy_entity LEFT OUTER JOIN referenced_entity AS ref ON ref.dummy_entity = dummy_entity.id1 " //
+                + "WHERE back-ref = :back-ref");
+    }
+
+    @Test // DATAJDBC-131
+    public void findAllByPropertyWithKey() {
+
+        // this would get called when ListParent is th element type of a Map
+        String sql = sqlGenerator.getFindAllByProperty("back-ref", "key-column", false);
+
+        assertThat(sql).isEqualTo("SELECT dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name, " //
+                + "dummy_entity.x_other AS x_other, " //
+                + "ref.x_l1id AS ref_x_l1id, ref.x_content AS ref_x_content, ref.x_further AS ref_x_further, " //
+                + "dummy_entity.key-column AS key-column " //
+                + "FROM dummy_entity LEFT OUTER JOIN referenced_entity AS ref ON ref.dummy_entity = dummy_entity.id1 " //
+                + "WHERE back-ref = :back-ref");
+    }
+
+    @Test(expected = IllegalArgumentException.class) // DATAJDBC-130
+    public void findAllByPropertyOrderedWithoutKey() {
+        String sql = sqlGenerator.getFindAllByProperty("back-ref", null, true);
+    }
+
+    @Test // DATAJDBC-131
+    public void findAllByPropertyWithKeyOrdered() {
+
+        // this would get called when ListParent is th element type of a Map
+        String sql = sqlGenerator.getFindAllByProperty("back-ref", "key-column", true);
+
+        assertThat(sql).isEqualTo("SELECT dummy_entity.id1 AS id1, dummy_entity.x_name AS x_name, " //
+                + "dummy_entity.x_other AS x_other, " //
+                + "ref.x_l1id AS ref_x_l1id, ref.x_content AS ref_x_content, ref.x_further AS ref_x_further, " //
+                + "dummy_entity.key-column AS key-column " //
+                + "FROM dummy_entity LEFT OUTER JOIN referenced_entity AS ref ON ref.dummy_entity = dummy_entity.id1 " //
+                + "WHERE back-ref = :back-ref " + "ORDER BY key-column");
+    }
+
+    @Test // DATAJDBC-264
+    public void getInsertForEmptyColumnList() {
+
+        SqlGenerator sqlGenerator = createSqlGenerator(IdOnlyEntity.class);
+
+        String insert = sqlGenerator.getInsert(emptySet());
+
+        assertThat(insert).endsWith("()");
+    }
+
+    @Test // DATAJDBC-266
+    public void joinForOneToOneWithoutIdIncludesTheBackReferenceOfTheOuterJoin() {
+
+        SqlGenerator sqlGenerator = createSqlGenerator(ParentOfNoIdChild.class);
+
+        String findAll = sqlGenerator.getFindAll();
+
+        assertThat(findAll).containsSequence("SELECT", "child.parent_of_no_id_child AS child_parent_of_no_id_child",
+                "FROM");
+    }
+
+    @Test // DATAJDBC-262
+    public void update() {
+
+        assertThat(sqlGenerator.getUpdate()).containsSequence( //
+                "UPDATE", //
+                "dummy_entity", //
+                "SET", //
+                "WHERE", //
+                "id1 = :id");
+    }
+
+    private PersistentPropertyPath<RelationalPersistentProperty> getPath(String path, Class<?> base) {
+        return PersistentPropertyPathTestUtils.getPath(context, path, base);
+    }
+
+    @SuppressWarnings("unused")
+    static class DummyEntity {
+
+        @Column("id1")
+        @Id
+        Long id;
+        String name;
+        ReferencedEntity ref;
+        Set<Element> elements;
+        Map<Integer, Element> mappedElements;
+        AggregateReference<OtherAggregate, Long> other;
+    }
+
+    @SuppressWarnings("unused")
+    static class ReferencedEntity {
+
+        @Id
+        Long l1id;
+        String content;
+        SecondLevelReferencedEntity further;
+    }
+
+    @SuppressWarnings("unused")
+    static class SecondLevelReferencedEntity {
+
+        @Id
+        Long l2id;
+        String something;
+    }
+
+    static class Element {
+        @Id
+        Long id;
+        String content;
+    }
+
+    static class ParentOfNoIdChild {
+        @Id
+        Long id;
+        NoIdChild child;
+    }
+
+    static class NoIdChild {
+    }
+
+    static class OtherAggregate {
+        @Id
+        Long id;
+        String name;
+    }
+
+    private static class PrefixingNamingStrategy implements NamingStrategy {
+
+        @Override
+        public String getColumnName(RelationalPersistentProperty property) {
+            return "x_" + NamingStrategy.super.getColumnName(property);
+        }
+
+    }
+
+    @SuppressWarnings("unused")
+    static class IdOnlyEntity {
+
+        @Id
+        Long id;
+    }
 
 }

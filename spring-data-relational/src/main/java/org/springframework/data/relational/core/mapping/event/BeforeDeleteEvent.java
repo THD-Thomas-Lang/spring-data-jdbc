@@ -28,14 +28,14 @@ import org.springframework.data.relational.core.mapping.event.Identifier.Specifi
  */
 public class BeforeDeleteEvent extends RelationalEventWithId {
 
-	private static final long serialVersionUID = -5483432053368496651L;
+    private static final long serialVersionUID = -5483432053368496651L;
 
-	/**
-	 * @param id the id of the entity
-	 * @param entity the entity about to get deleted. Might be empty.
-	 * @param change the {@link AggregateChange} encoding the planned actions to be performed on the database.
-	 */
-	public <T> BeforeDeleteEvent(Specified id, Optional<Object> entity, AggregateChange change) {
-		super(id, entity, change);
-	}
+    /**
+     * @param id     the id of the entity
+     * @param entity the entity about to get deleted. Might be empty.
+     * @param change the {@link AggregateChange} encoding the planned actions to be performed on the database.
+     */
+    public <T> BeforeDeleteEvent(Specified id, Optional<Object> entity, AggregateChange change) {
+        super(id, entity, change);
+    }
 }

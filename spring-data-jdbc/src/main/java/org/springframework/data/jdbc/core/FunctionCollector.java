@@ -37,111 +37,111 @@ import org.springframework.dao.DataAccessException;
  */
 class FunctionCollector<T> implements Collector<DataAccessStrategy, FunctionCollector.ResultOrException<T>, T> {
 
-	private final Function<DataAccessStrategy, T> method;
+    private final Function<DataAccessStrategy, T> method;
 
-	FunctionCollector(Function<DataAccessStrategy, T> method) {
-		this.method = method;
-	}
+    FunctionCollector(Function<DataAccessStrategy, T> method) {
+        this.method = method;
+    }
 
-	/* 
-	 * (non-Javadoc)
-	 * @see java.util.stream.Collector#supplier()
-	 */
-	@Override
-	public Supplier<ResultOrException<T>> supplier() {
-		return ResultOrException::new;
-	}
+    /*
+     * (non-Javadoc)
+     * @see java.util.stream.Collector#supplier()
+     */
+    @Override
+    public Supplier<ResultOrException<T>> supplier() {
+        return ResultOrException::new;
+    }
 
-	/* 
-	 * (non-Javadoc)
-	 * @see java.util.stream.Collector#accumulator()
-	 */
-	@Override
-	public BiConsumer<ResultOrException<T>, DataAccessStrategy> accumulator() {
+    /*
+     * (non-Javadoc)
+     * @see java.util.stream.Collector#accumulator()
+     */
+    @Override
+    public BiConsumer<ResultOrException<T>, DataAccessStrategy> accumulator() {
 
-		return (roe, das) -> {
+        return (roe, das) -> {
 
-			if (!roe.hasResult()) {
+            if (!roe.hasResult()) {
 
-				try {
-					roe.setResult(method.apply(das));
-				} catch (Exception ex) {
-					roe.add(ex);
-				}
-			}
-		};
-	}
+                try {
+                    roe.setResult(method.apply(das));
+                } catch (Exception ex) {
+                    roe.add(ex);
+                }
+            }
+        };
+    }
 
-	/* 
-	 * (non-Javadoc)
-	 * @see java.util.stream.Collector#combiner()
-	 */
-	@Override
-	public BinaryOperator<ResultOrException<T>> combiner() {
+    /*
+     * (non-Javadoc)
+     * @see java.util.stream.Collector#combiner()
+     */
+    @Override
+    public BinaryOperator<ResultOrException<T>> combiner() {
 
-		return (roe1, roe2) -> {
-			throw new UnsupportedOperationException("Can't combine method calls");
-		};
-	}
+        return (roe1, roe2) -> {
+            throw new UnsupportedOperationException("Can't combine method calls");
+        };
+    }
 
-	/* 
-	 * (non-Javadoc)
-	 * @see java.util.stream.Collector#finisher()
-	 */
-	@Override
-	public Function<ResultOrException<T>, T> finisher() {
+    /*
+     * (non-Javadoc)
+     * @see java.util.stream.Collector#finisher()
+     */
+    @Override
+    public Function<ResultOrException<T>, T> finisher() {
 
-		return roe -> {
+        return roe -> {
 
-			if (roe.hasResult)
-				return roe.result;
-			else
-				throw new CombinedDataAccessException("Failed to perform data access with all available strategies",
-						Collections.unmodifiableList(roe.exceptions));
-		};
-	}
+            if (roe.hasResult)
+                return roe.result;
+            else
+                throw new CombinedDataAccessException("Failed to perform data access with all available strategies",
+                        Collections.unmodifiableList(roe.exceptions));
+        };
+    }
 
-	/* 
-	 * (non-Javadoc)
-	 * @see java.util.stream.Collector#characteristics()
-	 */
-	@Override
-	public Set<Characteristics> characteristics() {
-		return Collections.emptySet();
-	}
+    /*
+     * (non-Javadoc)
+     * @see java.util.stream.Collector#characteristics()
+     */
+    @Override
+    public Set<Characteristics> characteristics() {
+        return Collections.emptySet();
+    }
 
-	/**
-	 * Stores intermediate results. I.e. a list of exceptions caught so far, any actual result and the fact, if there
-	 * actually is an result.
-	 */
-	static class ResultOrException<T> {
+    /**
+     * Stores intermediate results. I.e. a list of exceptions caught so far, any actual result and the fact, if there
+     * actually is an result.
+     */
+    static class ResultOrException<T> {
 
-		private T result;
-		private final List<Exception> exceptions = new LinkedList<>();
-		private boolean hasResult = false;
+        private T result;
+        private final List<Exception> exceptions = new LinkedList<>();
+        private boolean hasResult = false;
 
-		private boolean hasResult() {
-			return hasResult;
-		}
+        private boolean hasResult() {
+            return hasResult;
+        }
 
-		private void setResult(T result) {
-			this.result = result;
-			hasResult = true;
-		}
+        private void setResult(T result) {
+            this.result = result;
+            hasResult = true;
+        }
 
-		public void add(Exception ex) {
-			exceptions.add(ex);
-		}
-	}
+        public void add(Exception ex) {
+            exceptions.add(ex);
+        }
+    }
 
-	static class CombinedDataAccessException extends DataAccessException {
+    static class CombinedDataAccessException extends DataAccessException {
 
-		CombinedDataAccessException(String message, List<Exception> exceptions) {
-			super(combineMessage(message, exceptions), exceptions.get(exceptions.size() - 1));
-		}
+        CombinedDataAccessException(String message, List<Exception> exceptions) {
+            super(combineMessage(message, exceptions), exceptions.get(exceptions.size() - 1));
+        }
 
-		private static String combineMessage(String message, List<Exception> exceptions) {
-			return message + exceptions.stream().map(Exception::getMessage).collect(Collectors.joining("\n\t", "\n\t", ""));
-		}
-	}
+        private static String combineMessage(String message, List<Exception> exceptions) {
+            return message + exceptions.stream().map(Exception::getMessage).collect(Collectors.joining("\n\t", "\n\t", ""));
+        }
+    }
 }

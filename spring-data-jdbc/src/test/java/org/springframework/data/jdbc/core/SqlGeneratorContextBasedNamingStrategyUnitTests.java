@@ -42,195 +42,198 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
  */
 public class SqlGeneratorContextBasedNamingStrategyUnitTests {
 
-	RelationalMappingContext context = new JdbcMappingContext();
-	ThreadLocal<String> userHandler = new ThreadLocal<>();
+    RelationalMappingContext context = new JdbcMappingContext();
+    ThreadLocal<String> userHandler = new ThreadLocal<>();
 
-	/**
-	 * Use a {@link NamingStrategy}, but override the schema with a {@link ThreadLocal}-based setting.
-	 */
-	private final NamingStrategy contextualNamingStrategy = new NamingStrategy() {
+    /**
+     * Use a {@link NamingStrategy}, but override the schema with a {@link ThreadLocal}-based setting.
+     */
+    private final NamingStrategy contextualNamingStrategy = new NamingStrategy() {
 
-		@Override
-		public String getSchema() {
-			return userHandler.get();
-		}
-	};
+        @Override
+        public String getSchema() {
+            return userHandler.get();
+        }
+    };
 
-	@Test // DATAJDBC-107
-	public void findOne() {
+    @Test // DATAJDBC-107
+    public void findOne() {
 
-		testAgainstMultipleUsers(user -> {
+        testAgainstMultipleUsers(user -> {
 
-			SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
+            SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
 
-			String sql = sqlGenerator.getFindOne();
+            String sql = sqlGenerator.getFindOne();
 
-			SoftAssertions softAssertions = new SoftAssertions();
-			softAssertions.assertThat(sql) //
-					.startsWith("SELECT") //
-					.contains(user + ".dummy_entity.id AS id,") //
-					.contains(user + ".dummy_entity.name AS name,") //
-					.contains("ref.l1id AS ref_l1id") //
-					.contains("ref.content AS ref_content") //
-					.contains("FROM " + user + ".dummy_entity");
-			softAssertions.assertAll();
-		});
-	}
+            SoftAssertions softAssertions = new SoftAssertions();
+            softAssertions.assertThat(sql) //
+                    .startsWith("SELECT") //
+                    .contains(user + ".dummy_entity.id AS id,") //
+                    .contains(user + ".dummy_entity.name AS name,") //
+                    .contains("ref.l1id AS ref_l1id") //
+                    .contains("ref.content AS ref_content") //
+                    .contains("FROM " + user + ".dummy_entity");
+            softAssertions.assertAll();
+        });
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteFirstLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteFirstLevel() {
 
-		testAgainstMultipleUsers(user -> {
+        testAgainstMultipleUsers(user -> {
 
-			SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
+            SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
 
-			String sql = sqlGenerator.createDeleteByPath(getPath("ref", DummyEntity.class));
+            String sql = sqlGenerator.createDeleteByPath(getPath("ref", DummyEntity.class));
 
-			assertThat(sql).isEqualTo("DELETE FROM " + user + ".referenced_entity WHERE " + "dummy_entity = :rootId");
-		});
-	}
+            assertThat(sql).isEqualTo("DELETE FROM " + user + ".referenced_entity WHERE " + "dummy_entity = :rootId");
+        });
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteAllSecondLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteAllSecondLevel() {
 
-		testAgainstMultipleUsers(user -> {
+        testAgainstMultipleUsers(user -> {
 
-			SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
+            SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
 
-			String sql = sqlGenerator.createDeleteByPath(getPath("ref.further", DummyEntity.class));
+            String sql = sqlGenerator.createDeleteByPath(getPath("ref.further", DummyEntity.class));
 
-			assertThat(sql).isEqualTo( //
-					"DELETE FROM " + user + ".second_level_referenced_entity " //
-							+ "WHERE " + "referenced_entity IN " //
-							+ "(SELECT l1id FROM " + user + ".referenced_entity " //
-							+ "WHERE " + "dummy_entity = :rootId)");
-		});
-	}
+            assertThat(sql).isEqualTo( //
+                    "DELETE FROM " + user + ".second_level_referenced_entity " //
+                            + "WHERE " + "referenced_entity IN " //
+                            + "(SELECT l1id FROM " + user + ".referenced_entity " //
+                            + "WHERE " + "dummy_entity = :rootId)");
+        });
+    }
 
-	@Test // DATAJDBC-107
-	public void deleteAll() {
+    @Test // DATAJDBC-107
+    public void deleteAll() {
 
-		testAgainstMultipleUsers(user -> {
+        testAgainstMultipleUsers(user -> {
 
-			SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
+            SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
 
-			String sql = sqlGenerator.createDeleteAllSql(null);
+            String sql = sqlGenerator.createDeleteAllSql(null);
 
-			assertThat(sql).isEqualTo("DELETE FROM " + user + ".dummy_entity");
-		});
-	}
+            assertThat(sql).isEqualTo("DELETE FROM " + user + ".dummy_entity");
+        });
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteAllFirstLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteAllFirstLevel() {
 
-		testAgainstMultipleUsers(user -> {
+        testAgainstMultipleUsers(user -> {
 
-			SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
+            SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
 
-			String sql = sqlGenerator.createDeleteAllSql(getPath("ref", DummyEntity.class));
+            String sql = sqlGenerator.createDeleteAllSql(getPath("ref", DummyEntity.class));
 
-			assertThat(sql).isEqualTo( //
-					"DELETE FROM " + user + ".referenced_entity WHERE " + "dummy_entity IS NOT NULL");
-		});
-	}
+            assertThat(sql).isEqualTo( //
+                    "DELETE FROM " + user + ".referenced_entity WHERE " + "dummy_entity IS NOT NULL");
+        });
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteSecondLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteSecondLevel() {
 
-		testAgainstMultipleUsers(user -> {
+        testAgainstMultipleUsers(user -> {
 
-			SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
+            SqlGenerator sqlGenerator = configureSqlGenerator(contextualNamingStrategy);
 
-			String sql = sqlGenerator.createDeleteAllSql(getPath("ref.further", DummyEntity.class));
+            String sql = sqlGenerator.createDeleteAllSql(getPath("ref.further", DummyEntity.class));
 
-			assertThat(sql).isEqualTo( //
-					"DELETE FROM " + user + ".second_level_referenced_entity " //
-							+ "WHERE " + "referenced_entity IN " //
-							+ "(SELECT l1id FROM " + user + ".referenced_entity " //
-							+ "WHERE " + "dummy_entity IS NOT NULL)");
-		});
-	}
+            assertThat(sql).isEqualTo( //
+                    "DELETE FROM " + user + ".second_level_referenced_entity " //
+                            + "WHERE " + "referenced_entity IN " //
+                            + "(SELECT l1id FROM " + user + ".referenced_entity " //
+                            + "WHERE " + "dummy_entity IS NOT NULL)");
+        });
+    }
 
-	private PersistentPropertyPath<RelationalPersistentProperty> getPath(String path, Class<DummyEntity> baseType) {
-		return PersistentPropertyPathTestUtils.getPath(this.context, path, baseType);
-	}
+    private PersistentPropertyPath<RelationalPersistentProperty> getPath(String path, Class<DummyEntity> baseType) {
+        return PersistentPropertyPathTestUtils.getPath(this.context, path, baseType);
+    }
 
-	/**
-	 * Take a set of user-based assertions and run them against multiple users, in different threads.
-	 */
-	private void testAgainstMultipleUsers(Consumer<String> testAssertions) {
+    /**
+     * Take a set of user-based assertions and run them against multiple users, in different threads.
+     */
+    private void testAgainstMultipleUsers(Consumer<String> testAssertions) {
 
-		AtomicReference<Error> exception = new AtomicReference<>();
-		CountDownLatch latch = new CountDownLatch(2);
+        AtomicReference<Error> exception = new AtomicReference<>();
+        CountDownLatch latch = new CountDownLatch(2);
 
-		threadedTest("User1", latch, testAssertions, exception);
-		threadedTest("User2", latch, testAssertions, exception);
+        threadedTest("User1", latch, testAssertions, exception);
+        threadedTest("User2", latch, testAssertions, exception);
 
-		try {
-			if (!latch.await(10L, TimeUnit.SECONDS)) {
-				fail("Test failed due to a time out.");
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+        try {
+            if (!latch.await(10L, TimeUnit.SECONDS)) {
+                fail("Test failed due to a time out.");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
-		Error ex = exception.get();
-		if (ex != null) {
-			throw ex;
-		}
-	}
+        Error ex = exception.get();
+        if (ex != null) {
+            throw ex;
+        }
+    }
 
-	/**
-	 * Inside a {@link Runnable}, fetch the {@link ThreadLocal}-based username and execute the provided set of assertions.
-	 * Then signal through the provided {@link CountDownLatch}.
-	 */
-	private void threadedTest(String user, CountDownLatch latch, Consumer<String> testAssertions,
-			AtomicReference<Error> exception) {
+    /**
+     * Inside a {@link Runnable}, fetch the {@link ThreadLocal}-based username and execute the provided set of assertions.
+     * Then signal through the provided {@link CountDownLatch}.
+     */
+    private void threadedTest(String user, CountDownLatch latch, Consumer<String> testAssertions,
+                              AtomicReference<Error> exception) {
 
-		new Thread(() -> {
+        new Thread(() -> {
 
-			try {
+            try {
 
-				userHandler.set(user);
-				testAssertions.accept(user);
+                userHandler.set(user);
+                testAssertions.accept(user);
 
-			} catch (Error ex) {
-				exception.compareAndSet(null, ex);
-			} finally {
-				latch.countDown();
-			}
+            } catch (Error ex) {
+                exception.compareAndSet(null, ex);
+            } finally {
+                latch.countDown();
+            }
 
-		}).start();
-	}
+        }).start();
+    }
 
-	/**
-	 * Plug in a custom {@link NamingStrategy} for this test case.
-	 */
-	private SqlGenerator configureSqlGenerator(NamingStrategy namingStrategy) {
+    /**
+     * Plug in a custom {@link NamingStrategy} for this test case.
+     */
+    private SqlGenerator configureSqlGenerator(NamingStrategy namingStrategy) {
 
-		RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
-		RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(DummyEntity.class);
+        RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
+        RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(DummyEntity.class);
 
-		return new SqlGenerator(context, persistentEntity, new SqlGeneratorSource(context));
-	}
+        return new SqlGenerator(context, persistentEntity, new SqlGeneratorSource(context));
+    }
 
-	static class DummyEntity {
+    static class DummyEntity {
 
-		@Id Long id;
-		String name;
-		ReferencedEntity ref;
-	}
+        @Id
+        Long id;
+        String name;
+        ReferencedEntity ref;
+    }
 
-	static class ReferencedEntity {
+    static class ReferencedEntity {
 
-		@Id Long l1id;
-		String content;
-		SecondLevelReferencedEntity further;
-	}
+        @Id
+        Long l1id;
+        String content;
+        SecondLevelReferencedEntity further;
+    }
 
-	static class SecondLevelReferencedEntity {
+    static class SecondLevelReferencedEntity {
 
-		@Id Long l2id;
-		String something;
-	}
+        @Id
+        Long l2id;
+        String something;
+    }
 }

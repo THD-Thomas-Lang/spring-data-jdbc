@@ -43,140 +43,140 @@ import java.util.List;
  */
 class JdbcRepositoryQuery implements RepositoryQuery {
 
-	private static final String PARAMETER_NEEDS_TO_BE_NAMED = "For queries with named parameters you need to provide names for method parameters. Use @Param for query method parameters, or when on Java 8+ use the javac flag -parameters.";
+    private static final String PARAMETER_NEEDS_TO_BE_NAMED = "For queries with named parameters you need to provide names for method parameters. Use @Param for query method parameters, or when on Java 8+ use the javac flag -parameters.";
 
-	private final ApplicationEventPublisher publisher;
-	private final RelationalMappingContext context;
-	private final JdbcQueryMethod queryMethod;
-	private final NamedParameterJdbcOperations operations;
-	private final RowMapper<?> rowMapper;
+    private final ApplicationEventPublisher publisher;
+    private final RelationalMappingContext context;
+    private final JdbcQueryMethod queryMethod;
+    private final NamedParameterJdbcOperations operations;
+    private final RowMapper<?> rowMapper;
 
-	/**
-	 * Creates a new {@link JdbcRepositoryQuery} for the given {@link JdbcQueryMethod}, {@link RelationalMappingContext}
-	 * and {@link RowMapper}.
-	 *
-	 * @param publisher must not be {@literal null}.
-	 * @param context must not be {@literal null}.
-	 * @param queryMethod must not be {@literal null}.
-	 * @param operations must not be {@literal null}.
-	 * @param defaultRowMapper can be {@literal null} (only in case of a modifying query).
-	 */
-	JdbcRepositoryQuery(ApplicationEventPublisher publisher, RelationalMappingContext context, JdbcQueryMethod queryMethod, NamedParameterJdbcOperations operations,
-			@Nullable RowMapper<?> defaultRowMapper) {
+    /**
+     * Creates a new {@link JdbcRepositoryQuery} for the given {@link JdbcQueryMethod}, {@link RelationalMappingContext}
+     * and {@link RowMapper}.
+     *
+     * @param publisher        must not be {@literal null}.
+     * @param context          must not be {@literal null}.
+     * @param queryMethod      must not be {@literal null}.
+     * @param operations       must not be {@literal null}.
+     * @param defaultRowMapper can be {@literal null} (only in case of a modifying query).
+     */
+    JdbcRepositoryQuery(ApplicationEventPublisher publisher, RelationalMappingContext context, JdbcQueryMethod queryMethod, NamedParameterJdbcOperations operations,
+                        @Nullable RowMapper<?> defaultRowMapper) {
 
-		Assert.notNull(publisher, "Publisher must not be null!");
-		Assert.notNull(context, "Context must not be null!");
-		Assert.notNull(queryMethod, "Query method must not be null!");
-		Assert.notNull(operations, "NamedParameterJdbcOperations must not be null!");
+        Assert.notNull(publisher, "Publisher must not be null!");
+        Assert.notNull(context, "Context must not be null!");
+        Assert.notNull(queryMethod, "Query method must not be null!");
+        Assert.notNull(operations, "NamedParameterJdbcOperations must not be null!");
 
-		if (!queryMethod.isModifyingQuery()) {
-			Assert.notNull(defaultRowMapper, "RowMapper must not be null!");
-		}
+        if (!queryMethod.isModifyingQuery()) {
+            Assert.notNull(defaultRowMapper, "RowMapper must not be null!");
+        }
 
-		this.publisher = publisher;
-		this.context = context;
-		this.queryMethod = queryMethod;
-		this.operations = operations;
-		this.rowMapper = createRowMapper(queryMethod, defaultRowMapper);
-	}
+        this.publisher = publisher;
+        this.context = context;
+        this.queryMethod = queryMethod;
+        this.operations = operations;
+        this.rowMapper = createRowMapper(queryMethod, defaultRowMapper);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
-	 */
-	@Override
-	public Object execute(Object[] objects) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
+     */
+    @Override
+    public Object execute(Object[] objects) {
 
-		String query = determineQuery();
-		MapSqlParameterSource parameters = bindParameters(objects);
+        String query = determineQuery();
+        MapSqlParameterSource parameters = bindParameters(objects);
 
-		if (queryMethod.isModifyingQuery()) {
+        if (queryMethod.isModifyingQuery()) {
 
-			int updatedCount = operations.update(query, parameters);
-			Class<?> returnedObjectType = queryMethod.getReturnedObjectType();
-			return (returnedObjectType == boolean.class || returnedObjectType == Boolean.class) ? updatedCount != 0
-					: updatedCount;
-		}
+            int updatedCount = operations.update(query, parameters);
+            Class<?> returnedObjectType = queryMethod.getReturnedObjectType();
+            return (returnedObjectType == boolean.class || returnedObjectType == Boolean.class) ? updatedCount != 0
+                    : updatedCount;
+        }
 
-		if (queryMethod.isCollectionQuery() || queryMethod.isStreamQuery()) {
+        if (queryMethod.isCollectionQuery() || queryMethod.isStreamQuery()) {
 
-			List<?> result = operations.query(query, parameters, rowMapper);
-			publishAfterLoad(result);
-			return result;
-		}
+            List<?> result = operations.query(query, parameters, rowMapper);
+            publishAfterLoad(result);
+            return result;
+        }
 
-		try {
+        try {
 
-			Object result = operations.queryForObject(query, parameters, rowMapper);
-			publishAfterLoad(result);
-			return result;
-		} catch (EmptyResultDataAccessException e) {
-			return null;
-		}
-	}
+            Object result = operations.queryForObject(query, parameters, rowMapper);
+            publishAfterLoad(result);
+            return result;
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
-	 */
-	@Override
-	public JdbcQueryMethod getQueryMethod() {
-		return queryMethod;
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
+     */
+    @Override
+    public JdbcQueryMethod getQueryMethod() {
+        return queryMethod;
+    }
 
-	private String determineQuery() {
+    private String determineQuery() {
 
-		String query = queryMethod.getAnnotatedQuery();
+        String query = queryMethod.getAnnotatedQuery();
 
-		if (StringUtils.isEmpty(query)) {
-			throw new IllegalStateException(String.format("No query specified on %s", queryMethod.getName()));
-		}
+        if (StringUtils.isEmpty(query)) {
+            throw new IllegalStateException(String.format("No query specified on %s", queryMethod.getName()));
+        }
 
-		return query;
-	}
+        return query;
+    }
 
-	private MapSqlParameterSource bindParameters(Object[] objects) {
+    private MapSqlParameterSource bindParameters(Object[] objects) {
 
-		MapSqlParameterSource parameters = new MapSqlParameterSource();
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
 
-		queryMethod.getParameters().getBindableParameters().forEach(p -> {
+        queryMethod.getParameters().getBindableParameters().forEach(p -> {
 
-			String parameterName = p.getName().orElseThrow(() -> new IllegalStateException(PARAMETER_NEEDS_TO_BE_NAMED));
-			parameters.addValue(parameterName, objects[p.getIndex()]);
-		});
+            String parameterName = p.getName().orElseThrow(() -> new IllegalStateException(PARAMETER_NEEDS_TO_BE_NAMED));
+            parameters.addValue(parameterName, objects[p.getIndex()]);
+        });
 
-		return parameters;
-	}
+        return parameters;
+    }
 
-	@Nullable
-	private static RowMapper<?> createRowMapper(JdbcQueryMethod queryMethod, @Nullable RowMapper<?> defaultRowMapper) {
+    @Nullable
+    private static RowMapper<?> createRowMapper(JdbcQueryMethod queryMethod, @Nullable RowMapper<?> defaultRowMapper) {
 
-		Class<?> rowMapperClass = queryMethod.getRowMapperClass();
+        Class<?> rowMapperClass = queryMethod.getRowMapperClass();
 
-		return rowMapperClass == null || rowMapperClass == RowMapper.class //
-				? defaultRowMapper //
-				: (RowMapper<?>) BeanUtils.instantiateClass(rowMapperClass);
-	}
+        return rowMapperClass == null || rowMapperClass == RowMapper.class //
+                ? defaultRowMapper //
+                : (RowMapper<?>) BeanUtils.instantiateClass(rowMapperClass);
+    }
 
-	private <T> void publishAfterLoad(Iterable<T> all) {
+    private <T> void publishAfterLoad(Iterable<T> all) {
 
-		for (T e : all) {
-			publishAfterLoad(e);
-		}
-	}
+        for (T e : all) {
+            publishAfterLoad(e);
+        }
+    }
 
-	private <T> void publishAfterLoad(@Nullable T entity) {
+    private <T> void publishAfterLoad(@Nullable T entity) {
 
-		if (entity != null && context.hasPersistentEntityFor(entity.getClass())) {
+        if (entity != null && context.hasPersistentEntityFor(entity.getClass())) {
 
-			RelationalPersistentEntity<?> e = context.getRequiredPersistentEntity(entity.getClass());
-			Object identifier = e.getIdentifierAccessor(entity)
-					     .getIdentifier();
+            RelationalPersistentEntity<?> e = context.getRequiredPersistentEntity(entity.getClass());
+            Object identifier = e.getIdentifierAccessor(entity)
+                    .getIdentifier();
 
-			if (identifier != null) {
-				publisher.publishEvent(new AfterLoadEvent(Identifier.of(identifier), entity));
-			}
-		}
+            if (identifier != null) {
+                publisher.publishEvent(new AfterLoadEvent(Identifier.of(identifier), entity));
+            }
+        }
 
-	}
+    }
 }

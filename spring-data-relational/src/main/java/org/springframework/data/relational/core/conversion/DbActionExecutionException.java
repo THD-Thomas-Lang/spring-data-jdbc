@@ -23,11 +23,11 @@ package org.springframework.data.relational.core.conversion;
  */
 public class DbActionExecutionException extends RuntimeException {
 
-	/**
-	 * @param action the {@link DbAction} which triggered the exception. Must not be {@code null}.
-	 * @param cause the underlying exception. May not be {@code null}.
-	 */
-	public DbActionExecutionException(DbAction<?> action, Throwable cause) {
-		super("Failed to execute " + action, cause);
-	}
+    /**
+     * @param action the {@link DbAction} which triggered the exception. Must not be {@code null}.
+     * @param cause  the underlying exception. May not be {@code null}.
+     */
+    public DbActionExecutionException(DbAction<?> action, Throwable cause) {
+        super("Failed to execute " + action, cause);
+    }
 }

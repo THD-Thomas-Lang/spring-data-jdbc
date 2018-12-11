@@ -36,44 +36,47 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 @Configuration
 abstract class DataSourceConfiguration {
 
-	@Autowired Class<?> testClass;
-	@Autowired Environment environment;
+    @Autowired
+    Class<?> testClass;
+    @Autowired
+    Environment environment;
 
-	@Bean
-	DataSource dataSource() {
-		return createDataSource();
-	}
+    @Bean
+    DataSource dataSource() {
+        return createDataSource();
+    }
 
-	@Bean
-	DataSourceInitializer initializer() {
+    @Bean
+    DataSourceInitializer initializer() {
 
-		DataSourceInitializer initializer = new DataSourceInitializer();
-		initializer.setDataSource(dataSource());
+        DataSourceInitializer initializer = new DataSourceInitializer();
+        initializer.setDataSource(dataSource());
 
-		String[] activeProfiles = environment.getActiveProfiles();
-		String profile = activeProfiles.length == 0 ? "" : activeProfiles[0];
+        String[] activeProfiles = environment.getActiveProfiles();
+        String profile = activeProfiles.length == 0 ? "" : activeProfiles[0];
 
-		ClassPathResource script = new ClassPathResource(TestUtils.createScriptName(testClass, profile));
-		ResourceDatabasePopulator populator = new ResourceDatabasePopulator(script);
-		customizePopulator(populator);
-		initializer.setDatabasePopulator(populator);
+        ClassPathResource script = new ClassPathResource(TestUtils.createScriptName(testClass, profile));
+        ResourceDatabasePopulator populator = new ResourceDatabasePopulator(script);
+        customizePopulator(populator);
+        initializer.setDatabasePopulator(populator);
 
-		return initializer;
-	}
+        return initializer;
+    }
 
-	/**
-	 * Return the {@link DataSource} to be exposed as a Spring bean.
-	 *
-	 * @return
-	 */
-	protected abstract DataSource createDataSource();
+    /**
+     * Return the {@link DataSource} to be exposed as a Spring bean.
+     *
+     * @return
+     */
+    protected abstract DataSource createDataSource();
 
-	/**
-	 * Callback to customize the {@link ResourceDatabasePopulator} before it will be applied to the {@link DataSource}. It
-	 * will be pre-populated with a SQL script derived from the name of the current test class and the activated Spring
-	 * profile.
-	 *
-	 * @param populator will never be {@literal null}.
-	 */
-	protected void customizePopulator(ResourceDatabasePopulator populator) {}
+    /**
+     * Callback to customize the {@link ResourceDatabasePopulator} before it will be applied to the {@link DataSource}. It
+     * will be pre-populated with a SQL script derived from the name of the current test class and the activated Spring
+     * profile.
+     *
+     * @param populator will never be {@literal null}.
+     */
+    protected void customizePopulator(ResourceDatabasePopulator populator) {
+    }
 }

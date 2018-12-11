@@ -31,20 +31,21 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
  * @author Oliver Gierke
  */
 @Configuration
-@Profile({ "hsql", "default" })
+@Profile({"hsql", "default"})
 class HsqlDataSourceConfiguration {
 
-	@Autowired Class<?> context;
+    @Autowired
+    Class<?> context;
 
-	@Bean
-	DataSource dataSource() {
+    @Bean
+    DataSource dataSource() {
 
-		return new EmbeddedDatabaseBuilder() //
-				.generateUniqueName(true) //
-				.setType(EmbeddedDatabaseType.HSQL) //
-				.setScriptEncoding("UTF-8") //
-				.ignoreFailedDrops(true) //
-				.addScript(TestUtils.createScriptName(context, "hsql")) //
-				.build();
-	}
+        return new EmbeddedDatabaseBuilder() //
+                .generateUniqueName(true) //
+                .setType(EmbeddedDatabaseType.HSQL) //
+                .setScriptEncoding("UTF-8") //
+                .ignoreFailedDrops(true) //
+                .addScript(TestUtils.createScriptName(context, "hsql")) //
+                .build();
+    }
 }

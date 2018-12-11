@@ -40,70 +40,70 @@ import org.springframework.lang.Nullable;
  */
 public class BasicJdbcConverter extends BasicRelationalConverter {
 
-	/**
-	 * Creates a new {@link BasicRelationalConverter} given {@link MappingContext}.
-	 *
-	 * @param context must not be {@literal null}. org.springframework.data.jdbc.core.DefaultDataAccessStrategyUnitTests
-	 */
-	public BasicJdbcConverter(
-			MappingContext<? extends RelationalPersistentEntity<?>, ? extends RelationalPersistentProperty> context) {
-		super(context);
-	}
+    /**
+     * Creates a new {@link BasicRelationalConverter} given {@link MappingContext}.
+     *
+     * @param context must not be {@literal null}. org.springframework.data.jdbc.core.DefaultDataAccessStrategyUnitTests
+     */
+    public BasicJdbcConverter(
+            MappingContext<? extends RelationalPersistentEntity<?>, ? extends RelationalPersistentProperty> context) {
+        super(context);
+    }
 
-	/**
-	 * Creates a new {@link BasicRelationalConverter} given {@link MappingContext} and {@link CustomConversions}.
-	 *
-	 * @param context must not be {@literal null}.
-	 * @param conversions must not be {@literal null}.
-	 */
-	public BasicJdbcConverter(
-			MappingContext<? extends RelationalPersistentEntity<?>, ? extends RelationalPersistentProperty> context,
-			CustomConversions conversions) {
-		super(context, conversions);
-	}
+    /**
+     * Creates a new {@link BasicRelationalConverter} given {@link MappingContext} and {@link CustomConversions}.
+     *
+     * @param context     must not be {@literal null}.
+     * @param conversions must not be {@literal null}.
+     */
+    public BasicJdbcConverter(
+            MappingContext<? extends RelationalPersistentEntity<?>, ? extends RelationalPersistentProperty> context,
+            CustomConversions conversions) {
+        super(context, conversions);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.RelationalConverter#readValue(java.lang.Object, org.springframework.data.util.TypeInformation)
-	 */
-	@Override
-	@Nullable
-	public Object readValue(@Nullable Object value, TypeInformation<?> type) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.RelationalConverter#readValue(java.lang.Object, org.springframework.data.util.TypeInformation)
+     */
+    @Override
+    @Nullable
+    public Object readValue(@Nullable Object value, TypeInformation<?> type) {
 
-		if (null == value) {
-			return null;
-		}
+        if (null == value) {
+            return null;
+        }
 
-		if (getConversions().hasCustomReadTarget(value.getClass(), type.getType())) {
-			return getConversionService().convert(value, type.getType());
-		}
+        if (getConversions().hasCustomReadTarget(value.getClass(), type.getType())) {
+            return getConversionService().convert(value, type.getType());
+        }
 
-		if (AggregateReference.class.isAssignableFrom(type.getType())) {
+        if (AggregateReference.class.isAssignableFrom(type.getType())) {
 
-			TypeInformation<?> idType = type.getSuperTypeInformation(AggregateReference.class).getTypeArguments().get(1);
+            TypeInformation<?> idType = type.getSuperTypeInformation(AggregateReference.class).getTypeArguments().get(1);
 
-			return AggregateReference.to(readValue(value, idType));
-		}
+            return AggregateReference.to(readValue(value, idType));
+        }
 
-		return super.readValue(value, type);
-	}
+        return super.readValue(value, type);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.relational.core.conversion.RelationalConverter#writeValue(java.lang.Object, org.springframework.data.util.TypeInformation)
-	 */
-	@Override
-	@Nullable
-	public Object writeValue(@Nullable Object value, TypeInformation<?> type) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.relational.core.conversion.RelationalConverter#writeValue(java.lang.Object, org.springframework.data.util.TypeInformation)
+     */
+    @Override
+    @Nullable
+    public Object writeValue(@Nullable Object value, TypeInformation<?> type) {
 
-		if (value == null) {
-			return null;
-		}
+        if (value == null) {
+            return null;
+        }
 
-		if (AggregateReference.class.isAssignableFrom(value.getClass())) {
-			return writeValue(((AggregateReference) value).getId(), type);
-		}
+        if (AggregateReference.class.isAssignableFrom(value.getClass())) {
+            return writeValue(((AggregateReference) value).getId(), type);
+        }
 
-		return super.writeValue(value, type);
-	}
+        return super.writeValue(value, type);
+    }
 }

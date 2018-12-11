@@ -57,295 +57,299 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class QueryAnnotationHsqlIntegrationTests {
 
-	@Autowired DummyEntityRepository repository;
+    @Autowired
+    DummyEntityRepository repository;
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
 
-	@Test // DATAJDBC-164
-	public void executeCustomQueryWithoutParameter() {
+    @Test // DATAJDBC-164
+    public void executeCustomQueryWithoutParameter() {
 
-		repository.save(dummyEntity("Example"));
-		repository.save(dummyEntity("example"));
-		repository.save(dummyEntity("EXAMPLE"));
+        repository.save(dummyEntity("Example"));
+        repository.save(dummyEntity("example"));
+        repository.save(dummyEntity("EXAMPLE"));
 
-		List<DummyEntity> entities = repository.findByNameContainingCapitalLetter();
+        List<DummyEntity> entities = repository.findByNameContainingCapitalLetter();
 
-		assertThat(entities) //
-				.extracting(e -> e.name) //
-				.containsExactlyInAnyOrder("Example", "EXAMPLE");
+        assertThat(entities) //
+                .extracting(e -> e.name) //
+                .containsExactlyInAnyOrder("Example", "EXAMPLE");
 
-	}
+    }
 
-	@Test // DATAJDBC-164
-	public void executeCustomQueryWithNamedParameters() {
+    @Test // DATAJDBC-164
+    public void executeCustomQueryWithNamedParameters() {
 
-		repository.save(dummyEntity("a"));
-		repository.save(dummyEntity("b"));
-		repository.save(dummyEntity("c"));
+        repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("b"));
+        repository.save(dummyEntity("c"));
 
-		List<DummyEntity> entities = repository.findByNamedRangeWithNamedParameter("a", "c");
+        List<DummyEntity> entities = repository.findByNamedRangeWithNamedParameter("a", "c");
 
-		assertThat(entities) //
-				.extracting(e -> e.name) //
-				.containsExactlyInAnyOrder("b");
+        assertThat(entities) //
+                .extracting(e -> e.name) //
+                .containsExactlyInAnyOrder("b");
 
-	}
+    }
 
-	@Test // DATAJDBC-172
-	public void executeCustomQueryWithReturnTypeIsOptional() {
+    @Test // DATAJDBC-172
+    public void executeCustomQueryWithReturnTypeIsOptional() {
 
-		repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
 
-		Optional<DummyEntity> entity = repository.findByNameAsOptional("a");
+        Optional<DummyEntity> entity = repository.findByNameAsOptional("a");
 
-		assertThat(entity).map(e -> e.name).contains("a");
+        assertThat(entity).map(e -> e.name).contains("a");
 
-	}
+    }
 
-	@Test // DATAJDBC-172
-	public void executeCustomQueryWithReturnTypeIsOptionalWhenEntityNotFound() {
+    @Test // DATAJDBC-172
+    public void executeCustomQueryWithReturnTypeIsOptionalWhenEntityNotFound() {
 
-		repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
 
-		Optional<DummyEntity> entity = repository.findByNameAsOptional("x");
+        Optional<DummyEntity> entity = repository.findByNameAsOptional("x");
 
-		assertThat(entity).isNotPresent();
+        assertThat(entity).isNotPresent();
 
-	}
+    }
 
-	@Test // DATAJDBC-172
-	public void executeCustomQueryWithReturnTypeIsEntity() {
+    @Test // DATAJDBC-172
+    public void executeCustomQueryWithReturnTypeIsEntity() {
 
-		repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
 
-		DummyEntity entity = repository.findByNameAsEntity("a");
+        DummyEntity entity = repository.findByNameAsEntity("a");
 
-		assertThat(entity).isNotNull();
-		assertThat(entity.name).isEqualTo("a");
+        assertThat(entity).isNotNull();
+        assertThat(entity.name).isEqualTo("a");
 
-	}
+    }
 
-	@Test // DATAJDBC-172
-	public void executeCustomQueryWithReturnTypeIsEntityWhenEntityNotFound() {
+    @Test // DATAJDBC-172
+    public void executeCustomQueryWithReturnTypeIsEntityWhenEntityNotFound() {
 
-		repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
 
-		DummyEntity entity = repository.findByNameAsEntity("x");
+        DummyEntity entity = repository.findByNameAsEntity("x");
 
-		assertThat(entity).isNull();
+        assertThat(entity).isNull();
 
-	}
+    }
 
-	@Test // DATAJDBC-172
-	public void executeCustomQueryWithReturnTypeIsEntityWhenEntityDuplicateResult() {
+    @Test // DATAJDBC-172
+    public void executeCustomQueryWithReturnTypeIsEntityWhenEntityDuplicateResult() {
 
-		repository.save(dummyEntity("a"));
-		repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
 
-		assertThatExceptionOfType(DataAccessException.class) //
-				.isThrownBy(() -> repository.findByNameAsEntity("a"));
-	}
+        assertThatExceptionOfType(DataAccessException.class) //
+                .isThrownBy(() -> repository.findByNameAsEntity("a"));
+    }
 
-	@Test // DATAJDBC-172
-	public void executeCustomQueryWithReturnTypeIsOptionalWhenEntityDuplicateResult() {
+    @Test // DATAJDBC-172
+    public void executeCustomQueryWithReturnTypeIsOptionalWhenEntityDuplicateResult() {
 
-		repository.save(dummyEntity("a"));
-		repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("a"));
 
-		assertThatExceptionOfType(DataAccessException.class) //
-				.isThrownBy(() -> repository.findByNameAsOptional("a"));
-	}
+        assertThatExceptionOfType(DataAccessException.class) //
+                .isThrownBy(() -> repository.findByNameAsOptional("a"));
+    }
 
-	@Test // DATAJDBC-172
-	public void executeCustomQueryWithReturnTypeIsStream() {
+    @Test // DATAJDBC-172
+    public void executeCustomQueryWithReturnTypeIsStream() {
 
-		repository.save(dummyEntity("a"));
-		repository.save(dummyEntity("b"));
+        repository.save(dummyEntity("a"));
+        repository.save(dummyEntity("b"));
 
-		Stream<DummyEntity> entities = repository.findAllWithReturnTypeIsStream();
+        Stream<DummyEntity> entities = repository.findAllWithReturnTypeIsStream();
 
-		assertThat(entities) //
-				.extracting(e -> e.name) //
-				.containsExactlyInAnyOrder("a", "b");
+        assertThat(entities) //
+                .extracting(e -> e.name) //
+                .containsExactlyInAnyOrder("a", "b");
 
-	}
+    }
 
-	@Test // DATAJDBC-175
-	public void executeCustomQueryWithReturnTypeIsNubmer() {
+    @Test // DATAJDBC-175
+    public void executeCustomQueryWithReturnTypeIsNubmer() {
 
-		repository.save(dummyEntity("aaa"));
-		repository.save(dummyEntity("bbb"));
-		repository.save(dummyEntity("cac"));
+        repository.save(dummyEntity("aaa"));
+        repository.save(dummyEntity("bbb"));
+        repository.save(dummyEntity("cac"));
 
-		int count = repository.countByNameContaining("a");
+        int count = repository.countByNameContaining("a");
 
-		assertThat(count).isEqualTo(2);
+        assertThat(count).isEqualTo(2);
 
-	}
+    }
 
-	@Test // DATAJDBC-175
-	public void executeCustomQueryWithReturnTypeIsBoolean() {
+    @Test // DATAJDBC-175
+    public void executeCustomQueryWithReturnTypeIsBoolean() {
 
-		repository.save(dummyEntity("aaa"));
-		repository.save(dummyEntity("bbb"));
-		repository.save(dummyEntity("cac"));
+        repository.save(dummyEntity("aaa"));
+        repository.save(dummyEntity("bbb"));
+        repository.save(dummyEntity("cac"));
 
-		assertThat(repository.existsByNameContaining("a")).isTrue();
-		assertThat(repository.existsByNameContaining("d")).isFalse();
+        assertThat(repository.existsByNameContaining("a")).isTrue();
+        assertThat(repository.existsByNameContaining("d")).isFalse();
 
-	}
+    }
 
-	@Test // DATAJDBC-175
-	public void executeCustomQueryWithReturnTypeIsDate() {
+    @Test // DATAJDBC-175
+    public void executeCustomQueryWithReturnTypeIsDate() {
 
-		// Since Timestamp extends Date the repository returns the Timestamp as it comes from the database.
-		// Trying to compare that to an actual Date results in non determistic results, so we have to use an actual
-		// Timestamp.
-		Date now = new Timestamp(System.currentTimeMillis());
-		assertThat(repository.nowWithDate()).isAfterOrEqualsTo(now);
+        // Since Timestamp extends Date the repository returns the Timestamp as it comes from the database.
+        // Trying to compare that to an actual Date results in non determistic results, so we have to use an actual
+        // Timestamp.
+        Date now = new Timestamp(System.currentTimeMillis());
+        assertThat(repository.nowWithDate()).isAfterOrEqualsTo(now);
 
-	}
+    }
 
-	@Test // DATAJDBC-175
-	public void executeCustomQueryWithReturnTypeIsLocalDateTimeList() {
+    @Test // DATAJDBC-175
+    public void executeCustomQueryWithReturnTypeIsLocalDateTimeList() {
 
-		LocalDateTime now = LocalDateTime.now();
-		repository.nowWithLocalDateTimeList() //
-				.forEach(d -> assertThat(d).isAfterOrEqualTo(now));
+        LocalDateTime now = LocalDateTime.now();
+        repository.nowWithLocalDateTimeList() //
+                .forEach(d -> assertThat(d).isAfterOrEqualTo(now));
 
-	}
+    }
 
-	@Test // DATAJDBC-182
-	public void executeCustomModifyingQueryWithReturnTypeNumber() {
+    @Test // DATAJDBC-182
+    public void executeCustomModifyingQueryWithReturnTypeNumber() {
 
-		DummyEntity entity = dummyEntity("a");
-		repository.save(entity);
+        DummyEntity entity = dummyEntity("a");
+        repository.save(entity);
 
-		assertThat(repository.updateName(entity.id, "b")).isEqualTo(1);
-		assertThat(repository.updateName(9999L, "c")).isEqualTo(0);
+        assertThat(repository.updateName(entity.id, "b")).isEqualTo(1);
+        assertThat(repository.updateName(9999L, "c")).isEqualTo(0);
 
-		assertThat(repository.findById(entity.id)) //
-				.describedAs("update was not performed as expected") //
-				.isPresent() //
-				.map(e -> e.name).contains("b");
-	}
+        assertThat(repository.findById(entity.id)) //
+                .describedAs("update was not performed as expected") //
+                .isPresent() //
+                .map(e -> e.name).contains("b");
+    }
 
-	@Test // DATAJDBC-182
-	public void executeCustomModifyingQueryWithReturnTypeBoolean() {
+    @Test // DATAJDBC-182
+    public void executeCustomModifyingQueryWithReturnTypeBoolean() {
 
-		DummyEntity entity = dummyEntity("a");
-		repository.save(entity);
+        DummyEntity entity = dummyEntity("a");
+        repository.save(entity);
 
-		assertThat(repository.deleteByName("a")).isTrue();
-		assertThat(repository.deleteByName("b")).isFalse();
+        assertThat(repository.deleteByName("a")).isTrue();
+        assertThat(repository.deleteByName("b")).isFalse();
 
-		assertThat(repository.findById(entity.id)) //
-				.describedAs("delete not performed as expected") //
-				.isNotPresent();
-	}
+        assertThat(repository.findById(entity.id)) //
+                .describedAs("delete not performed as expected") //
+                .isNotPresent();
+    }
 
-	@Test // DATAJDBC-182
-	public void executeCustomModifyingQueryWithReturnTypeVoid() {
+    @Test // DATAJDBC-182
+    public void executeCustomModifyingQueryWithReturnTypeVoid() {
 
-		repository.insert("Spring Data JDBC");
+        repository.insert("Spring Data JDBC");
 
-		assertThat(repository.findByNameAsEntity("Spring Data JDBC")).isNotNull();
-	}
+        assertThat(repository.findByNameAsEntity("Spring Data JDBC")).isNotNull();
+    }
 
-	@Test // DATAJDBC-175
-	public void executeCustomQueryWithImmutableResultType() {
+    @Test // DATAJDBC-175
+    public void executeCustomQueryWithImmutableResultType() {
 
-		assertThat(repository.immutableTuple()).isEqualTo(new DummyEntityRepository.ImmutableTuple("one", "two", 3));
-	}
+        assertThat(repository.immutableTuple()).isEqualTo(new DummyEntityRepository.ImmutableTuple("one", "two", 3));
+    }
 
-	private DummyEntity dummyEntity(String name) {
+    private DummyEntity dummyEntity(String name) {
 
-		DummyEntity entity = new DummyEntity();
-		entity.name = name;
-		return entity;
-	}
+        DummyEntity entity = new DummyEntity();
+        entity.name = name;
+        return entity;
+    }
 
-	@Configuration
-	@Import(TestConfiguration.class)
-	@EnableJdbcRepositories(considerNestedRepositories = true)
-	static class Config {
+    @Configuration
+    @Import(TestConfiguration.class)
+    @EnableJdbcRepositories(considerNestedRepositories = true)
+    static class Config {
 
-		@Bean
-		Class<?> testClass() {
-			return QueryAnnotationHsqlIntegrationTests.class;
-		}
-	}
+        @Bean
+        Class<?> testClass() {
+            return QueryAnnotationHsqlIntegrationTests.class;
+        }
+    }
 
-	private static class DummyEntity {
+    private static class DummyEntity {
 
-		@Id Long id;
+        @Id
+        Long id;
 
-		String name;
-	}
+        String name;
+    }
 
-	private interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
+    private interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
 
-		// DATAJDBC-164
-		@Query("SELECT * FROM DUMMY_ENTITY WHERE lower(name) <> name")
-		List<DummyEntity> findByNameContainingCapitalLetter();
+        // DATAJDBC-164
+        @Query("SELECT * FROM DUMMY_ENTITY WHERE lower(name) <> name")
+        List<DummyEntity> findByNameContainingCapitalLetter();
 
-		// DATAJDBC-164
-		@Query("SELECT * FROM DUMMY_ENTITY WHERE name  < :upper and name > :lower")
-		List<DummyEntity> findByNamedRangeWithNamedParameter(@Param("lower") String lower, @Param("upper") String upper);
+        // DATAJDBC-164
+        @Query("SELECT * FROM DUMMY_ENTITY WHERE name  < :upper and name > :lower")
+        List<DummyEntity> findByNamedRangeWithNamedParameter(@Param("lower") String lower, @Param("upper") String upper);
 
-		@Query("SELECT * FROM DUMMY_ENTITY WHERE name = :name")
-		Optional<DummyEntity> findByNameAsOptional(@Param("name") String name);
+        @Query("SELECT * FROM DUMMY_ENTITY WHERE name = :name")
+        Optional<DummyEntity> findByNameAsOptional(@Param("name") String name);
 
-		// DATAJDBC-172
-		@Nullable
-		@Query("SELECT * FROM DUMMY_ENTITY WHERE name = :name")
-		DummyEntity findByNameAsEntity(@Param("name") String name);
+        // DATAJDBC-172
+        @Nullable
+        @Query("SELECT * FROM DUMMY_ENTITY WHERE name = :name")
+        DummyEntity findByNameAsEntity(@Param("name") String name);
 
-		// DATAJDBC-172
-		@Query("SELECT * FROM DUMMY_ENTITY")
-		Stream<DummyEntity> findAllWithReturnTypeIsStream();
+        // DATAJDBC-172
+        @Query("SELECT * FROM DUMMY_ENTITY")
+        Stream<DummyEntity> findAllWithReturnTypeIsStream();
 
-		// DATAJDBC-175
-		@Query("SELECT count(*) FROM DUMMY_ENTITY WHERE name like '%' || :name || '%'")
-		int countByNameContaining(@Param("name") String name);
+        // DATAJDBC-175
+        @Query("SELECT count(*) FROM DUMMY_ENTITY WHERE name like '%' || :name || '%'")
+        int countByNameContaining(@Param("name") String name);
 
-		// DATAJDBC-175
-		@Query("SELECT count(*) FROM DUMMY_ENTITY WHERE name like '%' || :name || '%'")
-		boolean existsByNameContaining(@Param("name") String name);
+        // DATAJDBC-175
+        @Query("SELECT count(*) FROM DUMMY_ENTITY WHERE name like '%' || :name || '%'")
+        boolean existsByNameContaining(@Param("name") String name);
 
-		// DATAJDBC-175
-		@Query("VALUES (current_timestamp)")
-		Date nowWithDate();
+        // DATAJDBC-175
+        @Query("VALUES (current_timestamp)")
+        Date nowWithDate();
 
-		// DATAJDBC-175
-		@Query("VALUES (current_timestamp),(current_timestamp)")
-		List<LocalDateTime> nowWithLocalDateTimeList();
+        // DATAJDBC-175
+        @Query("VALUES (current_timestamp),(current_timestamp)")
+        List<LocalDateTime> nowWithLocalDateTimeList();
 
-		// DATAJDBC-182
-		@Modifying
-		@Query("UPDATE DUMMY_ENTITY SET name = :name WHERE id = :id")
-		int updateName(@Param("id") Long id, @Param("name") String name);
+        // DATAJDBC-182
+        @Modifying
+        @Query("UPDATE DUMMY_ENTITY SET name = :name WHERE id = :id")
+        int updateName(@Param("id") Long id, @Param("name") String name);
 
-		// DATAJDBC-182
-		@Modifying
-		@Query("DELETE FROM DUMMY_ENTITY WHERE name = :name")
-		boolean deleteByName(@Param("name") String name);
+        // DATAJDBC-182
+        @Modifying
+        @Query("DELETE FROM DUMMY_ENTITY WHERE name = :name")
+        boolean deleteByName(@Param("name") String name);
 
-		// DATAJDBC-182
-		@Modifying
-		@Query("INSERT INTO DUMMY_ENTITY (name) VALUES(:name)")
-		void insert(@Param("name") String name);
+        // DATAJDBC-182
+        @Modifying
+        @Query("INSERT INTO DUMMY_ENTITY (name) VALUES(:name)")
+        void insert(@Param("name") String name);
 
-		// DATAJDBC-252
-		@Query("SELECT 'one' one, 'two' two, 3 three FROM (VALUES (0))")
-		ImmutableTuple immutableTuple();
+        // DATAJDBC-252
+        @Query("SELECT 'one' one, 'two' two, 3 three FROM (VALUES (0))")
+        ImmutableTuple immutableTuple();
 
-		@Value
-		class ImmutableTuple {
-			String one;
-			String two;
-			int three;
-		}
-	}
+        @Value
+        class ImmutableTuple {
+            String one;
+            String two;
+            int three;
+        }
+    }
 }

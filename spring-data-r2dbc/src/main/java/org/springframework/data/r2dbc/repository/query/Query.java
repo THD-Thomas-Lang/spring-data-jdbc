@@ -25,7 +25,7 @@ import org.springframework.data.annotation.QueryAnnotation;
 
 /**
  * Annotation to provide SQL statements that will get used for executing the method.
- * 
+ *
  * @author Mark Paluch
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -34,8 +34,8 @@ import org.springframework.data.annotation.QueryAnnotation;
 @Documented
 public @interface Query {
 
-	/**
-	 * The SQL statement to execute when the annotated method gets invoked.
-	 */
-	String value();
+    /**
+     * The SQL statement to execute when the annotated method gets invoked.
+     */
+    String value();
 }

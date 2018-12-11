@@ -30,306 +30,308 @@ import java.util.stream.Collectors;
  */
 class SelectBuilder {
 
-	private final List<Column> columns = new ArrayList<>();
-	private final String tableName;
-	private final List<Join> joins = new ArrayList<>();
-	private final List<WhereCondition> conditions = new ArrayList<>();
-
-	/**
-	 * Creates a {@link SelectBuilder} using the given table name.
-	 * 
-	 * @param tableName the table name. Must not be {@code null}.
-	 */
-	SelectBuilder(String tableName) {
-
-		this.tableName = tableName;
-	}
-
-	/**
-	 * Adds a column to the select list.
-	 *
-	 * @param columnSpec a function that specifies the column to add. The passed in {@link Column.ColumnBuilder} allows to
-	 *          specify details like alias and the source table. Must not be {@code null}.
-	 * @return {@code this}.
-	 */
-	SelectBuilder column(Function<Column.ColumnBuilder, Column.ColumnBuilder> columnSpec) {
-
-		columns.add(columnSpec.apply(Column.builder()).build());
-		return this;
-	}
-
-	/**
-	 * Adds a where clause to the select
-	 *
-	 * @param whereSpec a function specifying the details of the where clause by manipulating the passed in
-	 *          {@link WhereConditionBuilder}. Must not be {@code null}.
-	 * @return {@code this}.
-	 */
-	SelectBuilder where(Function<WhereConditionBuilder, WhereConditionBuilder> whereSpec) {
-
-		conditions.add(whereSpec.apply(new WhereConditionBuilder()).build());
-		return this;
-	}
-
-	/**
-	 * Adds a join to the select.
-	 *
-	 * @param joinSpec a function specifying the details of the join by manipulating the passed in
-	 *          {@link Join.JoinBuilder}. Must not be {@code null}.
-	 * @return {@code this}.
-	 */
-	SelectBuilder join(Function<Join.JoinBuilder, Join.JoinBuilder> joinSpec) {
-
-		joins.add(joinSpec.apply(Join.builder()).build());
-		return this;
-	}
+    private final List<Column> columns = new ArrayList<>();
+    private final String tableName;
+    private final List<Join> joins = new ArrayList<>();
+    private final List<WhereCondition> conditions = new ArrayList<>();
+
+    /**
+     * Creates a {@link SelectBuilder} using the given table name.
+     *
+     * @param tableName the table name. Must not be {@code null}.
+     */
+    SelectBuilder(String tableName) {
+
+        this.tableName = tableName;
+    }
+
+    /**
+     * Adds a column to the select list.
+     *
+     * @param columnSpec a function that specifies the column to add. The passed in {@link Column.ColumnBuilder} allows to
+     *                   specify details like alias and the source table. Must not be {@code null}.
+     * @return {@code this}.
+     */
+    SelectBuilder column(Function<Column.ColumnBuilder, Column.ColumnBuilder> columnSpec) {
+
+        columns.add(columnSpec.apply(Column.builder()).build());
+        return this;
+    }
+
+    /**
+     * Adds a where clause to the select
+     *
+     * @param whereSpec a function specifying the details of the where clause by manipulating the passed in
+     *                  {@link WhereConditionBuilder}. Must not be {@code null}.
+     * @return {@code this}.
+     */
+    SelectBuilder where(Function<WhereConditionBuilder, WhereConditionBuilder> whereSpec) {
+
+        conditions.add(whereSpec.apply(new WhereConditionBuilder()).build());
+        return this;
+    }
+
+    /**
+     * Adds a join to the select.
+     *
+     * @param joinSpec a function specifying the details of the join by manipulating the passed in
+     *                 {@link Join.JoinBuilder}. Must not be {@code null}.
+     * @return {@code this}.
+     */
+    SelectBuilder join(Function<Join.JoinBuilder, Join.JoinBuilder> joinSpec) {
+
+        joins.add(joinSpec.apply(Join.builder()).build());
+        return this;
+    }
+
+    /**
+     * Builds the actual SQL statement.
+     *
+     * @return a SQL statement. Guaranteed to be not {@code null}.
+     */
+    String build() {
 
-	/**
-	 * Builds the actual SQL statement.
-	 *
-	 * @return a SQL statement. Guaranteed to be not {@code null}.
-	 */
-	String build() {
+        return selectFrom() + joinClause() + whereClause();
+    }
+
+    private String whereClause() {
+
+        if (conditions.isEmpty()) {
+            return "";
+        }
+
+        return conditions.stream() //
+                .map(WhereCondition::toSql) //
+                .collect(Collectors.joining("AND", " WHERE ", "") //
+                );
+    }
 
-		return selectFrom() + joinClause() + whereClause();
-	}
+    private String joinClause() {
+        return joins.stream().map(j -> joinTable(j) + joinConditions(j)).collect(Collectors.joining(" "));
+    }
 
-	private String whereClause() {
+    private String joinTable(Join j) {
+        return String.format("%s JOIN %s AS %s", j.outerJoinModifier(), j.table, j.as);
+    }
 
-		if (conditions.isEmpty()) {
-			return "";
-		}
-
-		return conditions.stream() //
-				.map(WhereCondition::toSql) //
-				.collect(Collectors.joining("AND", " WHERE ", "") //
-				);
-	}
+    private String joinConditions(Join j) {
 
-	private String joinClause() {
-		return joins.stream().map(j -> joinTable(j) + joinConditions(j)).collect(Collectors.joining(" "));
-	}
+        return j.conditions.stream() //
+                .map(w -> String.format("%s %s %s", w.fromExpression, w.operation, w.toExpression)) //
+                .collect(Collectors.joining(" AND ", " ON ", ""));
+    }
 
-	private String joinTable(Join j) {
-		return String.format("%s JOIN %s AS %s", j.outerJoinModifier(), j.table, j.as);
-	}
+    private String selectFrom() {
 
-	private String joinConditions(Join j) {
+        return columns.stream() //
+                .map(Column::columnDefinition) //
+                .collect(Collectors.joining(", ", "SELECT ", " FROM " + tableName));
+    }
 
-		return j.conditions.stream() //
-				.map(w -> String.format("%s %s %s", w.fromExpression, w.operation, w.toExpression)) //
-				.collect(Collectors.joining(" AND ", " ON ", ""));
-	}
+    static class WhereConditionBuilder {
 
-	private String selectFrom() {
+        private String fromTable;
+        private String fromColumn;
 
-		return columns.stream() //
-				.map(Column::columnDefinition) //
-				.collect(Collectors.joining(", ", "SELECT ", " FROM " + tableName));
-	}
+        private String operation = "=";
+        private String expression;
 
-	static class WhereConditionBuilder {
+        WhereConditionBuilder() {
+        }
 
-		private String fromTable;
-		private String fromColumn;
+        WhereConditionBuilder eq() {
 
-		private String operation = "=";
-		private String expression;
+            this.operation = "=";
+            return this;
+        }
 
-		WhereConditionBuilder() {}
+        public WhereConditionBuilder in() {
 
-		WhereConditionBuilder eq() {
+            this.operation = "in";
+            return this;
+        }
 
-			this.operation = "=";
-			return this;
-		}
+        WhereConditionBuilder tableAlias(String fromTable) {
 
-		public WhereConditionBuilder in() {
+            this.fromTable = fromTable;
+            return this;
+        }
 
-			this.operation = "in";
-			return this;
-		}
+        WhereConditionBuilder column(String fromColumn) {
 
-		WhereConditionBuilder tableAlias(String fromTable) {
+            this.fromColumn = fromColumn;
+            return this;
+        }
 
-			this.fromTable = fromTable;
-			return this;
-		}
+        WhereConditionBuilder variable(String var) {
 
-		WhereConditionBuilder column(String fromColumn) {
+            this.expression = ":" + var;
+            return this;
+        }
 
-			this.fromColumn = fromColumn;
-			return this;
-		}
+        WhereCondition build() {
+            return new WhereCondition(fromTable + "." + fromColumn, operation, expression);
+        }
 
-		WhereConditionBuilder variable(String var) {
+    }
 
-			this.expression = ":" + var;
-			return this;
-		}
+    static class Join {
 
-		WhereCondition build() {
-			return new WhereCondition(fromTable + "." + fromColumn, operation, expression);
-		}
+        private final String table;
+        private final String as;
+        private final Outer outer;
+        private final List<WhereCondition> conditions = new ArrayList<>();
 
-	}
+        Join(String table, String as, List<WhereCondition> conditions, Outer outer) {
 
-	static class Join {
+            this.table = table;
+            this.as = as;
+            this.outer = outer;
+            this.conditions.addAll(conditions);
+        }
 
-		private final String table;
-		private final String as;
-		private final Outer outer;
-		private final List<WhereCondition> conditions = new ArrayList<>();
+        static JoinBuilder builder() {
+            return new JoinBuilder();
+        }
 
-		Join(String table, String as, List<WhereCondition> conditions, Outer outer) {
+        private String outerJoinModifier() {
 
-			this.table = table;
-			this.as = as;
-			this.outer = outer;
-			this.conditions.addAll(conditions);
-		}
+            switch (outer) {
+                case NONE:
+                    return "";
+                default:
+                    return String.format(" %s OUTER", outer.name());
 
-		static JoinBuilder builder() {
-			return new JoinBuilder();
-		}
+            }
+        }
 
-		private String outerJoinModifier() {
+        public static class JoinBuilder {
 
-			switch (outer) {
-				case NONE:
-					return "";
-				default:
-					return String.format(" %s OUTER", outer.name());
+            private String table;
+            private String as;
+            private List<WhereCondition> conditions = new ArrayList<>();
+            private Outer outer = Outer.NONE;
 
-			}
-		}
+            JoinBuilder() {
+            }
 
-		public static class JoinBuilder {
+            public Join.JoinBuilder table(String table) {
 
-			private String table;
-			private String as;
-			private List<WhereCondition> conditions = new ArrayList<>();
-			private Outer outer = Outer.NONE;
+                this.table = table;
+                return this;
+            }
 
-			JoinBuilder() {}
+            public Join.JoinBuilder as(String as) {
 
-			public Join.JoinBuilder table(String table) {
+                this.as = as;
+                return this;
+            }
 
-				this.table = table;
-				return this;
-			}
+            WhereConditionBuilder where(String column) {
+                return new WhereConditionBuilder(this, column);
+            }
 
-			public Join.JoinBuilder as(String as) {
+            private JoinBuilder where(WhereCondition condition) {
 
-				this.as = as;
-				return this;
-			}
+                conditions.add(condition);
+                return this;
+            }
 
-			WhereConditionBuilder where(String column) {
-				return new WhereConditionBuilder(this, column);
-			}
+            Join build() {
+                return new Join(table, as, conditions, outer);
+            }
 
-			private JoinBuilder where(WhereCondition condition) {
+            public String toString() {
+                return "org.springframework.data.jdbc.core.SelectBuilder.Join.JoinBuilder(table=" + this.table + ", as="
+                        + this.as + ")";
+            }
 
-				conditions.add(condition);
-				return this;
-			}
+            JoinBuilder rightOuter() {
 
-			Join build() {
-				return new Join(table, as, conditions, outer);
-			}
+                outer = Outer.RIGHT;
+                return this;
+            }
 
-			public String toString() {
-				return "org.springframework.data.jdbc.core.SelectBuilder.Join.JoinBuilder(table=" + this.table + ", as="
-						+ this.as + ")";
-			}
+            JoinBuilder leftOuter() {
+                outer = Outer.LEFT;
+                return this;
+            }
 
-			JoinBuilder rightOuter() {
+            static class WhereConditionBuilder {
 
-				outer = Outer.RIGHT;
-				return this;
-			}
+                private final JoinBuilder joinBuilder;
+                private final String fromColumn;
 
-			JoinBuilder leftOuter() {
-				outer = Outer.LEFT;
-				return this;
-			}
+                private String operation = "=";
 
-			static class WhereConditionBuilder {
+                WhereConditionBuilder(JoinBuilder joinBuilder, String column) {
 
-				private final JoinBuilder joinBuilder;
-				private final String fromColumn;
+                    this.joinBuilder = joinBuilder;
+                    this.fromColumn = column;
+                }
 
-				private String operation = "=";
+                WhereConditionBuilder eq() {
+                    operation = "=";
+                    return this;
+                }
 
-				WhereConditionBuilder(JoinBuilder joinBuilder, String column) {
+                JoinBuilder column(String table, String column) {
 
-					this.joinBuilder = joinBuilder;
-					this.fromColumn = column;
-				}
+                    return joinBuilder.where(new WhereCondition( //
+                            joinBuilder.as + "." + fromColumn, //
+                            operation, //
+                            table + "." + column //
+                    ));
 
-				WhereConditionBuilder eq() {
-					operation = "=";
-					return this;
-				}
+                }
 
-				JoinBuilder column(String table, String column) {
+            }
 
-					return joinBuilder.where(new WhereCondition( //
-							joinBuilder.as + "." + fromColumn, //
-							operation, //
-							table + "." + column //
-					));
+        }
 
-				}
+        private enum Outer {
+            NONE, RIGHT, LEFT
+        }
+    }
 
-			}
+    static class WhereCondition {
 
-		}
+        private final String operation;
+        private final String fromExpression;
+        private final String toExpression;
 
-		private enum Outer {
-			NONE, RIGHT, LEFT
-		}
-	}
+        WhereCondition(String fromExpression, String operation, String toExpression) {
 
-	static class WhereCondition {
+            this.fromExpression = fromExpression;
+            this.toExpression = toExpression;
+            this.operation = operation;
+        }
 
-		private final String operation;
-		private final String fromExpression;
-		private final String toExpression;
+        String toSql() {
 
-		WhereCondition(String fromExpression, String operation, String toExpression) {
+            if (operation.equals("in")) {
+                return String.format("%s %s(%s)", fromExpression, operation, toExpression);
+            }
 
-			this.fromExpression = fromExpression;
-			this.toExpression = toExpression;
-			this.operation = operation;
-		}
+            return String.format("%s %s %s", fromExpression, operation, toExpression);
+        }
+    }
 
-		String toSql() {
+    @Builder
+    static class Column {
 
-			if (operation.equals("in")) {
-				return String.format("%s %s(%s)", fromExpression, operation, toExpression);
-			}
+        private final String tableAlias;
+        private final String column;
+        private final String as;
 
-			return String.format("%s %s %s", fromExpression, operation, toExpression);
-		}
-	}
-
-	@Builder
-	static class Column {
-
-		private final String tableAlias;
-		private final String column;
-		private final String as;
-
-		String columnDefinition() {
-			StringBuilder b = new StringBuilder();
-			if (tableAlias != null)
-				b.append(tableAlias).append('.');
-			b.append(column);
-			if (as != null)
-				b.append(" AS ").append(as);
-			return b.toString();
-		}
-	}
+        String columnDefinition() {
+            StringBuilder b = new StringBuilder();
+            if (tableAlias != null)
+                b.append(tableAlias).append('.');
+            b.append(column);
+            if (as != null)
+                b.append(" AS ").append(as);
+            return b.toString();
+        }
+    }
 }

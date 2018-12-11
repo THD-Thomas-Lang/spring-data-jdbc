@@ -25,20 +25,20 @@ import org.springframework.lang.Nullable;
  */
 public interface RowMapperMap {
 
-	/**
-	 * An immutable empty instance that will return {@literal null} for all arguments.
-	 */
-	RowMapperMap EMPTY = new RowMapperMap() {
+    /**
+     * An immutable empty instance that will return {@literal null} for all arguments.
+     */
+    RowMapperMap EMPTY = new RowMapperMap() {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.springframework.data.jdbc.repository.RowMapperMap#rowMapperFor(java.lang.Class)
-		 */
-		public <T> RowMapper<? extends T> rowMapperFor(Class<T> type) {
-			return null;
-		}
-	};
+        /*
+         * (non-Javadoc)
+         * @see org.springframework.data.jdbc.repository.RowMapperMap#rowMapperFor(java.lang.Class)
+         */
+        public <T> RowMapper<? extends T> rowMapperFor(Class<T> type) {
+            return null;
+        }
+    };
 
-	@Nullable
-	<T> RowMapper<? extends T> rowMapperFor(Class<T> type);
+    @Nullable
+    <T> RowMapper<? extends T> rowMapperFor(Class<T> type);
 }

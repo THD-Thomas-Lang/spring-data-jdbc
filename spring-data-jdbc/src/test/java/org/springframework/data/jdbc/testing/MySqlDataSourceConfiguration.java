@@ -40,30 +40,30 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 @Profile("mysql")
 class MySqlDataSourceConfiguration extends DataSourceConfiguration {
 
-	private static final MySQLContainer MYSQL_CONTAINER = new MySQLContainer().withConfigurationOverride("");
+    private static final MySQLContainer MYSQL_CONTAINER = new MySQLContainer().withConfigurationOverride("");
 
-	static {
-		MYSQL_CONTAINER.start();
-	}
+    static {
+        MYSQL_CONTAINER.start();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.testing.DataSourceConfiguration#createDataSource()
-	 */
-	@Override
-	protected DataSource createDataSource() {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.testing.DataSourceConfiguration#createDataSource()
+     */
+    @Override
+    protected DataSource createDataSource() {
 
-		MysqlDataSource dataSource = new MysqlDataSource();
-		dataSource.setUrl(MYSQL_CONTAINER.getJdbcUrl());
-		dataSource.setUser(MYSQL_CONTAINER.getUsername());
-		dataSource.setPassword(MYSQL_CONTAINER.getPassword());
-		dataSource.setDatabaseName(MYSQL_CONTAINER.getDatabaseName());
+        MysqlDataSource dataSource = new MysqlDataSource();
+        dataSource.setUrl(MYSQL_CONTAINER.getJdbcUrl());
+        dataSource.setUser(MYSQL_CONTAINER.getUsername());
+        dataSource.setPassword(MYSQL_CONTAINER.getPassword());
+        dataSource.setDatabaseName(MYSQL_CONTAINER.getDatabaseName());
 
-		return dataSource;
-	}
+        return dataSource;
+    }
 
-	@PostConstruct
-	public void initDatabase() throws SQLException, ScriptException {
-		ScriptUtils.executeSqlScript(createDataSource().getConnection(), null, "DROP DATABASE test;CREATE DATABASE test;");
-	}
+    @PostConstruct
+    public void initDatabase() throws SQLException, ScriptException {
+        ScriptUtils.executeSqlScript(createDataSource().getConnection(), null, "DROP DATABASE test;CREATE DATABASE test;");
+    }
 }

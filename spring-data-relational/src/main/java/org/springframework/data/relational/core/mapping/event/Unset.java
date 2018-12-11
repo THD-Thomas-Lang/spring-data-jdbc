@@ -25,14 +25,14 @@ import java.util.Optional;
  */
 enum Unset implements Identifier {
 
-	UNSET;
+    UNSET;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.mapping.event.Identifier#getOptionalValue()
-	 */
-	@Override
-	public Optional<Object> getOptionalValue() {
-		return Optional.empty();
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.mapping.event.Identifier#getOptionalValue()
+     */
+    @Override
+    public Optional<Object> getOptionalValue() {
+        return Optional.empty();
+    }
 }

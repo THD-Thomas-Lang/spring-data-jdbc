@@ -36,42 +36,43 @@ import org.springframework.jdbc.core.RowMapper;
  */
 public class JdbcQueryMethodUnitTests {
 
-	public static final String DUMMY_SELECT = "SELECT something";
+    public static final String DUMMY_SELECT = "SELECT something";
 
-	@Test // DATAJDBC-165
-	public void returnsSqlStatement() throws NoSuchMethodException {
+    @Test // DATAJDBC-165
+    public void returnsSqlStatement() throws NoSuchMethodException {
 
-		RepositoryMetadata metadata = mock(RepositoryMetadata.class);
+        RepositoryMetadata metadata = mock(RepositoryMetadata.class);
 
-		doReturn(String.class).when(metadata).getReturnedDomainClass(any(Method.class));
+        doReturn(String.class).when(metadata).getReturnedDomainClass(any(Method.class));
 
-		JdbcQueryMethod queryMethod = new JdbcQueryMethod(JdbcQueryMethodUnitTests.class.getDeclaredMethod("queryMethod"),
-				metadata, mock(ProjectionFactory.class));
+        JdbcQueryMethod queryMethod = new JdbcQueryMethod(JdbcQueryMethodUnitTests.class.getDeclaredMethod("queryMethod"),
+                metadata, mock(ProjectionFactory.class));
 
-		assertThat(queryMethod.getAnnotatedQuery()).isEqualTo(DUMMY_SELECT);
-	}
+        assertThat(queryMethod.getAnnotatedQuery()).isEqualTo(DUMMY_SELECT);
+    }
 
-	@Test // DATAJDBC-165
-	public void returnsSpecifiedRowMapperClass() throws NoSuchMethodException {
+    @Test // DATAJDBC-165
+    public void returnsSpecifiedRowMapperClass() throws NoSuchMethodException {
 
-		RepositoryMetadata metadata = mock(RepositoryMetadata.class);
+        RepositoryMetadata metadata = mock(RepositoryMetadata.class);
 
-		doReturn(String.class).when(metadata).getReturnedDomainClass(any(Method.class));
+        doReturn(String.class).when(metadata).getReturnedDomainClass(any(Method.class));
 
-		JdbcQueryMethod queryMethod = new JdbcQueryMethod(JdbcQueryMethodUnitTests.class.getDeclaredMethod("queryMethod"),
-				metadata, mock(ProjectionFactory.class));
+        JdbcQueryMethod queryMethod = new JdbcQueryMethod(JdbcQueryMethodUnitTests.class.getDeclaredMethod("queryMethod"),
+                metadata, mock(ProjectionFactory.class));
 
-		assertThat(queryMethod.getRowMapperClass()).isEqualTo(CustomRowMapper.class);
-	}
+        assertThat(queryMethod.getRowMapperClass()).isEqualTo(CustomRowMapper.class);
+    }
 
-	@Query(value = DUMMY_SELECT, rowMapperClass = CustomRowMapper.class)
-	private void queryMethod() {}
+    @Query(value = DUMMY_SELECT, rowMapperClass = CustomRowMapper.class)
+    private void queryMethod() {
+    }
 
-	private class CustomRowMapper implements RowMapper<Object> {
+    private class CustomRowMapper implements RowMapper<Object> {
 
-		@Override
-		public Object mapRow(ResultSet rs, int rowNum) {
-			return null;
-		}
-	}
+        @Override
+        public Object mapRow(ResultSet rs, int rowNum) {
+            return null;
+        }
+    }
 }

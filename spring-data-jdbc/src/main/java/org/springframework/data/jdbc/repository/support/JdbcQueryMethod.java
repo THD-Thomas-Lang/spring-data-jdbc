@@ -35,50 +35,50 @@ import org.springframework.lang.Nullable;
  */
 public class JdbcQueryMethod extends QueryMethod {
 
-	private final Method method;
+    private final Method method;
 
-	public JdbcQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory) {
+    public JdbcQueryMethod(Method method, RepositoryMetadata metadata, ProjectionFactory factory) {
 
-		super(method, metadata, factory);
+        super(method, metadata, factory);
 
-		this.method = method;
-	}
+        this.method = method;
+    }
 
-	/**
-	 * Returns the annotated query if it exists.
-	 *
-	 * @return May be {@code null}.
-	 */
-	@Nullable
-	public String getAnnotatedQuery() {
-		return getMergedAnnotationAttribute("value");
-	}
+    /**
+     * Returns the annotated query if it exists.
+     *
+     * @return May be {@code null}.
+     */
+    @Nullable
+    public String getAnnotatedQuery() {
+        return getMergedAnnotationAttribute("value");
+    }
 
-	/**
-	 * Returns the class to be used as {@link org.springframework.jdbc.core.RowMapper}
-	 *
-	 * @return May be {@code null}.
-	 */
-	@Nullable
-	public Class<?> getRowMapperClass() {
-		return getMergedAnnotationAttribute("rowMapperClass");
-	}
+    /**
+     * Returns the class to be used as {@link org.springframework.jdbc.core.RowMapper}
+     *
+     * @return May be {@code null}.
+     */
+    @Nullable
+    public Class<?> getRowMapperClass() {
+        return getMergedAnnotationAttribute("rowMapperClass");
+    }
 
-	/**
-	 * Returns whether the query method is a modifying one.
-	 *
-	 * @return if it's a modifying query, return {@code true}.
-	 */
-	@Override
-	public boolean isModifyingQuery() {
-		return AnnotationUtils.findAnnotation(method, Modifying.class) != null;
-	}
+    /**
+     * Returns whether the query method is a modifying one.
+     *
+     * @return if it's a modifying query, return {@code true}.
+     */
+    @Override
+    public boolean isModifyingQuery() {
+        return AnnotationUtils.findAnnotation(method, Modifying.class) != null;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Nullable
-	private <T> T getMergedAnnotationAttribute(String attribute) {
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private <T> T getMergedAnnotationAttribute(String attribute) {
 
-		Query queryAnnotation = AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
-		return (T) AnnotationUtils.getValue(queryAnnotation, attribute);
-	}
+        Query queryAnnotation = AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
+        return (T) AnnotationUtils.getValue(queryAnnotation, attribute);
+    }
 }

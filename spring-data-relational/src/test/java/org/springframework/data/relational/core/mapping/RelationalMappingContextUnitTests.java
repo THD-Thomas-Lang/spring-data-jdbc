@@ -32,22 +32,23 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  */
 public class RelationalMappingContextUnitTests {
 
-	@Test // DATAJDBC-229
-	public void uuidPropertyIsNotEntity() {
+    @Test // DATAJDBC-229
+    public void uuidPropertyIsNotEntity() {
 
-		SimpleTypeHolder holder = new SimpleTypeHolder(new HashSet<>(Arrays.asList(UUID.class)), true);
+        SimpleTypeHolder holder = new SimpleTypeHolder(new HashSet<>(Arrays.asList(UUID.class)), true);
 
-		RelationalMappingContext mappingContext = new RelationalMappingContext();
-		mappingContext.setSimpleTypeHolder(holder);
+        RelationalMappingContext mappingContext = new RelationalMappingContext();
+        mappingContext.setSimpleTypeHolder(holder);
 
-		RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(EntityWithUuid.class);
-		RelationalPersistentProperty uuidProperty = entity.getRequiredPersistentProperty("uuid");
+        RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(EntityWithUuid.class);
+        RelationalPersistentProperty uuidProperty = entity.getRequiredPersistentProperty("uuid");
 
-		assertThat(uuidProperty.isEntity()).isFalse();
-	}
+        assertThat(uuidProperty.isEntity()).isFalse();
+    }
 
-	static class EntityWithUuid {
-		@Id UUID uuid;
-	}
+    static class EntityWithUuid {
+        @Id
+        UUID uuid;
+    }
 
 }

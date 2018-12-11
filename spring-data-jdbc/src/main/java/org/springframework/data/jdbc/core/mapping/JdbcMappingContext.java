@@ -35,34 +35,34 @@ import org.springframework.data.util.TypeInformation;
  */
 public class JdbcMappingContext extends RelationalMappingContext {
 
-	/**
-	 * Creates a new {@link JdbcMappingContext}.
-	 */
-	public JdbcMappingContext() {
-		super();
-	}
+    /**
+     * Creates a new {@link JdbcMappingContext}.
+     */
+    public JdbcMappingContext() {
+        super();
+    }
 
-	/**
-	 * Creates a new {@link JdbcMappingContext} using the given {@link NamingStrategy}.
-	 *
-	 * @param namingStrategy must not be {@literal null}.
-	 */
-	public JdbcMappingContext(NamingStrategy namingStrategy) {
-		super(namingStrategy);
-	}
+    /**
+     * Creates a new {@link JdbcMappingContext} using the given {@link NamingStrategy}.
+     *
+     * @param namingStrategy must not be {@literal null}.
+     */
+    public JdbcMappingContext(NamingStrategy namingStrategy) {
+        super(namingStrategy);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(org.springframework.data.mapping.model.Property, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
-	 */
-	@Override
-	protected RelationalPersistentProperty createPersistentProperty(Property property,
-			RelationalPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
-		return new BasicJdbcPersistentProperty(property, owner, simpleTypeHolder, this);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.mapping.context.AbstractMappingContext#createPersistentProperty(org.springframework.data.mapping.model.Property, org.springframework.data.mapping.model.MutablePersistentEntity, org.springframework.data.mapping.model.SimpleTypeHolder)
+     */
+    @Override
+    protected RelationalPersistentProperty createPersistentProperty(Property property,
+                                                                    RelationalPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
+        return new BasicJdbcPersistentProperty(property, owner, simpleTypeHolder, this);
+    }
 
-	@Override
-	protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {
-		return super.shouldCreatePersistentEntityFor(type) && !AggregateReference.class.isAssignableFrom(type.getType());
-	}
+    @Override
+    protected boolean shouldCreatePersistentEntityFor(TypeInformation<?> type) {
+        return super.shouldCreatePersistentEntityFor(type) && !AggregateReference.class.isAssignableFrom(type.getType());
+    }
 }

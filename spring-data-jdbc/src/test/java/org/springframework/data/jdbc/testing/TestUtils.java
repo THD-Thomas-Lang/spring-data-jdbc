@@ -24,19 +24,19 @@ import org.springframework.util.Assert;
  */
 public interface TestUtils {
 
-	/**
-	 * Returns the name of the SQL script to be loaded for the given test class and database type.
-	 *
-	 * @param testClass must not be {@literal null}.
-	 * @param databaseType must not be {@literal null} or empty.
-	 * @return
-	 */
-	public static String createScriptName(Class<?> testClass, String databaseType) {
+    /**
+     * Returns the name of the SQL script to be loaded for the given test class and database type.
+     *
+     * @param testClass    must not be {@literal null}.
+     * @param databaseType must not be {@literal null} or empty.
+     * @return
+     */
+    public static String createScriptName(Class<?> testClass, String databaseType) {
 
-		Assert.notNull(testClass, "Test class must not be null!");
-		Assert.hasText(databaseType, "Database type must not be null or empty!");
+        Assert.notNull(testClass, "Test class must not be null!");
+        Assert.hasText(databaseType, "Database type must not be null or empty!");
 
-		return String.format("%s/%s-%s.sql", testClass.getPackage().getName(), testClass.getSimpleName(),
-				databaseType.toLowerCase());
-	}
+        return String.format("%s/%s-%s.sql", testClass.getPackage().getName(), testClass.getSimpleName(),
+                databaseType.toLowerCase());
+    }
 }

@@ -19,12 +19,8 @@ import java.util.Optional;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mapping.IdentifierAccessor;
-import org.springframework.data.relational.core.conversion.AggregateChange;
+import org.springframework.data.relational.core.conversion.*;
 import org.springframework.data.relational.core.conversion.AggregateChange.Kind;
-import org.springframework.data.relational.core.conversion.Interpreter;
-import org.springframework.data.relational.core.conversion.RelationalConverter;
-import org.springframework.data.relational.core.conversion.RelationalEntityDeleteWriter;
-import org.springframework.data.relational.core.conversion.RelationalEntityWriter;
 import org.springframework.data.relational.core.mapping.RelationalMappingContext;
 import org.springframework.data.relational.core.mapping.RelationalPersistentEntity;
 import org.springframework.data.relational.core.mapping.event.AfterDeleteEvent;
@@ -45,214 +41,248 @@ import org.springframework.util.Assert;
  */
 public class JdbcAggregateTemplate implements JdbcAggregateOperations {
 
-	private final ApplicationEventPublisher publisher;
-	private final RelationalMappingContext context;
-	private final RelationalConverter converter;
-	private final Interpreter interpreter;
+    private final ApplicationEventPublisher publisher;
+    private final RelationalMappingContext context;
+    private final RelationalConverter converter;
+    private final Interpreter interpreter;
 
-	private final RelationalEntityWriter jdbcEntityWriter;
-	private final RelationalEntityDeleteWriter jdbcEntityDeleteWriter;
+    private final RelationalEntityWriter jdbcEntityWriter;
+    private final RelationalEntityDeleteWriter jdbcEntityDeleteWriter;
+    private final RelationalEntityInsertWriter jdbcEntityInsertWriter;
 
-	private final DataAccessStrategy accessStrategy;
+    private final DataAccessStrategy accessStrategy;
 
-	/**
-	 * Creates a new {@link JdbcAggregateTemplate} given {@link ApplicationEventPublisher},
-	 * {@link RelationalMappingContext} and {@link DataAccessStrategy}.
-	 *
-	 * @param publisher must not be {@literal null}.
-	 * @param context must not be {@literal null}.
-	 * @param dataAccessStrategy must not be {@literal null}.
-	 */
-	public JdbcAggregateTemplate(ApplicationEventPublisher publisher, RelationalMappingContext context,
-			RelationalConverter converter, DataAccessStrategy dataAccessStrategy) {
+    private <T> T store(T instance, IdentifierAccessor identifierAccessor, AggregateChange<T> change, RelationalPersistentEntity<?> persistentEntity) {
+        Assert.notNull(instance, "Aggregate instance must not be null!");
+        publisher.publishEvent(new BeforeSaveEvent( //
+                Identifier.ofNullable(identifierAccessor.getIdentifier()), //
+                instance, //
+                change //
+        ));
 
-		Assert.notNull(publisher, "ApplicationEventPublisher must not be null!");
-		Assert.notNull(context, "RelationalMappingContext must not be null!");
-		Assert.notNull(converter, "RelationalConverter must not be null!");
-		Assert.notNull(dataAccessStrategy, "DataAccessStrategy must not be null!");
+        change.executeWith(interpreter, context, converter);
 
-		this.publisher = publisher;
-		this.context = context;
-		this.converter = converter;
-		this.accessStrategy = dataAccessStrategy;
+        Object identifier = persistentEntity.getIdentifierAccessor(change.getEntity()).getIdentifier();
 
-		this.jdbcEntityWriter = new RelationalEntityWriter(context);
-		this.jdbcEntityDeleteWriter = new RelationalEntityDeleteWriter(context);
-		this.interpreter = new DefaultJdbcInterpreter(context, accessStrategy);
-	}
+        Assert.notNull(identifier, "After saving the identifier must not be null");
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#save(java.lang.Object)
-	 */
-	@Override
-	public <T> T save(T instance) {
+        publisher.publishEvent(new AfterSaveEvent( //
+                Identifier.of(identifier), //
+                change.getEntity(), //
+                change //
+        ));
 
-		Assert.notNull(instance, "Aggregate instance must not be null!");
+        return (T) change.getEntity();
+    }
 
-		RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(instance.getClass());
-		IdentifierAccessor identifierAccessor = persistentEntity.getIdentifierAccessor(instance);
+    /**
+     * Creates a new {@link JdbcAggregateTemplate} given {@link ApplicationEventPublisher},
+     * {@link RelationalMappingContext} and {@link DataAccessStrategy}.
+     *
+     * @param publisher          must not be {@literal null}.
+     * @param context            must not be {@literal null}.
+     * @param dataAccessStrategy must not be {@literal null}.
+     */
+    public JdbcAggregateTemplate(ApplicationEventPublisher publisher, RelationalMappingContext context,
+                                 RelationalConverter converter, DataAccessStrategy dataAccessStrategy) {
 
-		AggregateChange<T> change = createChange(instance);
+        Assert.notNull(publisher, "ApplicationEventPublisher must not be null!");
+        Assert.notNull(context, "RelationalMappingContext must not be null!");
+        Assert.notNull(converter, "RelationalConverter must not be null!");
+        Assert.notNull(dataAccessStrategy, "DataAccessStrategy must not be null!");
 
-		publisher.publishEvent(new BeforeSaveEvent( //
-				Identifier.ofNullable(identifierAccessor.getIdentifier()), //
-				instance, //
-				change //
-		));
+        this.publisher = publisher;
+        this.context = context;
+        this.converter = converter;
+        this.accessStrategy = dataAccessStrategy;
 
-		change.executeWith(interpreter, context, converter);
+        this.jdbcEntityWriter = new RelationalEntityWriter(context);
+        this.jdbcEntityDeleteWriter = new RelationalEntityDeleteWriter(context);
+        this.jdbcEntityInsertWriter = new RelationalEntityInsertWriter(context);
+        this.interpreter = new DefaultJdbcInterpreter(context, accessStrategy);
 
-		Object identifier = persistentEntity.getIdentifierAccessor(change.getEntity()).getIdentifier();
+    }
 
-		Assert.notNull(identifier, "After saving the identifier must not be null");
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#save(java.lang.Object)
+     */
+    @Override
+    public <T> T save(T instance) {
 
-		publisher.publishEvent(new AfterSaveEvent( //
-				Identifier.of(identifier), //
-				change.getEntity(), //
-				change //
-		));
+        Assert.notNull(instance, "Aggregate instance must not be null!");
 
-		return (T) change.getEntity();
-	}
+        RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(instance.getClass());
+        IdentifierAccessor identifierAccessor = persistentEntity.getIdentifierAccessor(instance);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#count(java.lang.Class)
-	 */
-	@Override
-	public long count(Class<?> domainType) {
-		return accessStrategy.count(domainType);
-	}
+        AggregateChange<T> change = createChange(instance);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#findById(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public <T> T findById(Object id, Class<T> domainType) {
+        return store(instance, identifierAccessor, change, persistentEntity);
+    }
 
-		T entity = accessStrategy.findById(id, domainType);
-		if (entity != null) {
-			publishAfterLoad(id, entity);
-		}
-		return entity;
-	}
+    /**
+     * Dedicated insert function to do just the insert of an instance of an aggregate, including all the members of the aggregate.
+     *
+     * @param instance the aggregate root of the aggregate to be inserted. Must not be {@code null}.
+     * @return the saved instance.
+     */
+    @Override
+    public <T> T insert(T instance) {
+        Assert.notNull(instance, "Aggregate instance must not be null!");
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#existsById(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public <T> boolean existsById(Object id, Class<T> domainType) {
-		return accessStrategy.existsById(id, domainType);
-	}
+        RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(instance.getClass());
+        IdentifierAccessor identifierAccessor = persistentEntity.getIdentifierAccessor(instance);
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#findAll(java.lang.Class)
-	 */
-	@Override
-	public <T> Iterable<T> findAll(Class<T> domainType) {
+        AggregateChange<T> change = createInsertChange(instance);
 
-		Iterable<T> all = accessStrategy.findAll(domainType);
-		publishAfterLoad(all);
-		return all;
-	}
+        return store(instance, identifierAccessor, change, persistentEntity);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#findAllById(java.lang.Iterable, java.lang.Class)
-	 */
-	@Override
-	public <T> Iterable<T> findAllById(Iterable<?> ids, Class<T> domainType) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#count(java.lang.Class)
+     */
+    @Override
+    public long count(Class<?> domainType) {
+        return accessStrategy.count(domainType);
+    }
 
-		Iterable<T> allById = accessStrategy.findAllById(ids, domainType);
-		publishAfterLoad(allById);
-		return allById;
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#findById(java.lang.Object, java.lang.Class)
+     */
+    @Override
+    public <T> T findById(Object id, Class<T> domainType) {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#delete(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public <S> void delete(S aggregateRoot, Class<S> domainType) {
+        T entity = accessStrategy.findById(id, domainType);
+        if (entity != null) {
+            publishAfterLoad(id, entity);
+        }
+        return entity;
+    }
 
-		IdentifierAccessor identifierAccessor = context.getRequiredPersistentEntity(domainType)
-				.getIdentifierAccessor(aggregateRoot);
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#existsById(java.lang.Object, java.lang.Class)
+     */
+    @Override
+    public <T> boolean existsById(Object id, Class<T> domainType) {
+        return accessStrategy.existsById(id, domainType);
+    }
 
-		deleteTree(identifierAccessor.getRequiredIdentifier(), aggregateRoot, domainType);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#findAll(java.lang.Class)
+     */
+    @Override
+    public <T> Iterable<T> findAll(Class<T> domainType) {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#deleteById(java.lang.Object, java.lang.Class)
-	 */
-	@Override
-	public <S> void deleteById(Object id, Class<S> domainType) {
-		deleteTree(id, null, domainType);
-	}
+        Iterable<T> all = accessStrategy.findAll(domainType);
+        publishAfterLoad(all);
+        return all;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#deleteAll(java.lang.Class)
-	 */
-	@Override
-	public void deleteAll(Class<?> domainType) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#findAllById(java.lang.Iterable, java.lang.Class)
+     */
+    @Override
+    public <T> Iterable<T> findAllById(Iterable<?> ids, Class<T> domainType) {
 
-		AggregateChange<?> change = createDeletingChange(domainType);
-		change.executeWith(interpreter, context, converter);
-	}
+        Iterable<T> allById = accessStrategy.findAllById(ids, domainType);
+        publishAfterLoad(allById);
+        return allById;
+    }
 
-	private void deleteTree(Object id, @Nullable Object entity, Class<?> domainType) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#delete(java.lang.Object, java.lang.Class)
+     */
+    @Override
+    public <S> void delete(S aggregateRoot, Class<S> domainType) {
 
-		AggregateChange<?> change = createDeletingChange(id, entity, domainType);
+        IdentifierAccessor identifierAccessor = context.getRequiredPersistentEntity(domainType)
+                .getIdentifierAccessor(aggregateRoot);
 
-		Specified specifiedId = Identifier.of(id);
-		Optional<Object> optionalEntity = Optional.ofNullable(entity);
-		publisher.publishEvent(new BeforeDeleteEvent(specifiedId, optionalEntity, change));
+        deleteTree(identifierAccessor.getRequiredIdentifier(), aggregateRoot, domainType);
+    }
 
-		change.executeWith(interpreter, context, converter);
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#deleteById(java.lang.Object, java.lang.Class)
+     */
+    @Override
+    public <S> void deleteById(Object id, Class<S> domainType) {
+        deleteTree(id, null, domainType);
+    }
 
-		publisher.publishEvent(new AfterDeleteEvent(specifiedId, optionalEntity, change));
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.JdbcAggregateOperations#deleteAll(java.lang.Class)
+     */
+    @Override
+    public void deleteAll(Class<?> domainType) {
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <T> AggregateChange<T> createChange(T instance) {
+        AggregateChange<?> change = createDeletingChange(domainType);
+        change.executeWith(interpreter, context, converter);
+    }
 
-		AggregateChange<T> aggregateChange = new AggregateChange(Kind.SAVE, instance.getClass(), instance);
-		jdbcEntityWriter.write(instance, aggregateChange);
-		return aggregateChange;
-	}
+    private void deleteTree(Object id, @Nullable Object entity, Class<?> domainType) {
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private AggregateChange<?> createDeletingChange(Object id, @Nullable Object entity, Class<?> domainType) {
+        AggregateChange<?> change = createDeletingChange(id, entity, domainType);
 
-		AggregateChange<?> aggregateChange = new AggregateChange(Kind.DELETE, domainType, entity);
-		jdbcEntityDeleteWriter.write(id, aggregateChange);
-		return aggregateChange;
-	}
+        Specified specifiedId = Identifier.of(id);
+        Optional<Object> optionalEntity = Optional.ofNullable(entity);
+        publisher.publishEvent(new BeforeDeleteEvent(specifiedId, optionalEntity, change));
 
-	private AggregateChange<?> createDeletingChange(Class<?> domainType) {
+        change.executeWith(interpreter, context, converter);
 
-		AggregateChange<?> aggregateChange = new AggregateChange<>(Kind.DELETE, domainType, null);
-		jdbcEntityDeleteWriter.write(null, aggregateChange);
-		return aggregateChange;
-	}
+        publisher.publishEvent(new AfterDeleteEvent(specifiedId, optionalEntity, change));
+    }
 
-	private <T> void publishAfterLoad(Iterable<T> all) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private <T> AggregateChange<T> createChange(T instance) {
 
-		for (T e : all) {
+        AggregateChange<T> aggregateChange = new AggregateChange(Kind.SAVE, instance.getClass(), instance);
+        jdbcEntityWriter.write(instance, aggregateChange);
+        return aggregateChange;
+    }
 
-			RelationalPersistentEntity<?> entity = context.getRequiredPersistentEntity(e.getClass());
-			IdentifierAccessor identifierAccessor = entity.getIdentifierAccessor(e);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private <T> AggregateChange<T> createInsertChange(T instance) {
 
-			publishAfterLoad(identifierAccessor.getRequiredIdentifier(), e);
-		}
-	}
+        AggregateChange<T> aggregateChange = new AggregateChange(Kind.SAVE, instance.getClass(), instance);
+        jdbcEntityInsertWriter.write(instance, aggregateChange);
+        return aggregateChange;
+    }
 
-	private <T> void publishAfterLoad(Object id, T entity) {
-		publisher.publishEvent(new AfterLoadEvent(Identifier.of(id), entity));
-	}
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private AggregateChange<?> createDeletingChange(Object id, @Nullable Object entity, Class<?> domainType) {
+
+        AggregateChange<?> aggregateChange = new AggregateChange(Kind.DELETE, domainType, entity);
+        jdbcEntityDeleteWriter.write(id, aggregateChange);
+        return aggregateChange;
+    }
+
+    private AggregateChange<?> createDeletingChange(Class<?> domainType) {
+
+        AggregateChange<?> aggregateChange = new AggregateChange<>(Kind.DELETE, domainType, null);
+        jdbcEntityDeleteWriter.write(null, aggregateChange);
+        return aggregateChange;
+    }
+
+    private <T> void publishAfterLoad(Iterable<T> all) {
+
+        for (T e : all) {
+
+            RelationalPersistentEntity<?> entity = context.getRequiredPersistentEntity(e.getClass());
+            IdentifierAccessor identifierAccessor = entity.getIdentifierAccessor(e);
+
+            publishAfterLoad(identifierAccessor.getRequiredIdentifier(), e);
+        }
+    }
+
+    private <T> void publishAfterLoad(Object id, T entity) {
+        publisher.publishEvent(new AfterLoadEvent(Identifier.of(id), entity));
+    }
 }

@@ -24,11 +24,11 @@ import org.junit.Test;
  */
 public class DbActionExecutionExceptionTest {
 
-	@Test // DATAJDBC-162
-	public void constructorWorksWithNullPropertyPath() {
+    @Test // DATAJDBC-162
+    public void constructorWorksWithNullPropertyPath() {
 
-		DbAction<?> action = mock(DbAction.class);
-		new DbActionExecutionException(action, null);
-	}
+        DbAction<?> action = mock(DbAction.class);
+        new DbActionExecutionException(action, null);
+    }
 
 }

@@ -45,124 +45,125 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
  */
 public class JdbcRepositoryQueryUnitTests {
 
-	JdbcQueryMethod queryMethod;
+    JdbcQueryMethod queryMethod;
 
-	RowMapper<?> defaultRowMapper;
-	JdbcRepositoryQuery query;
-	NamedParameterJdbcOperations operations;
-	ApplicationEventPublisher publisher;
-	RelationalMappingContext context;
+    RowMapper<?> defaultRowMapper;
+    JdbcRepositoryQuery query;
+    NamedParameterJdbcOperations operations;
+    ApplicationEventPublisher publisher;
+    RelationalMappingContext context;
 
-	@Before
-	public void setup() throws NoSuchMethodException {
+    @Before
+    public void setup() throws NoSuchMethodException {
 
-		this.queryMethod = mock(JdbcQueryMethod.class);
+        this.queryMethod = mock(JdbcQueryMethod.class);
 
-		Parameters<?, ?> parameters = new DefaultParameters(
-				JdbcRepositoryQueryUnitTests.class.getDeclaredMethod("dummyMethod"));
-		doReturn(parameters).when(queryMethod).getParameters();
+        Parameters<?, ?> parameters = new DefaultParameters(
+                JdbcRepositoryQueryUnitTests.class.getDeclaredMethod("dummyMethod"));
+        doReturn(parameters).when(queryMethod).getParameters();
 
-		this.defaultRowMapper = mock(RowMapper.class);
-		this.operations = mock(NamedParameterJdbcOperations.class);
-		this.publisher = mock(ApplicationEventPublisher.class);
-		this.context = mock(RelationalMappingContext.class, RETURNS_DEEP_STUBS);
+        this.defaultRowMapper = mock(RowMapper.class);
+        this.operations = mock(NamedParameterJdbcOperations.class);
+        this.publisher = mock(ApplicationEventPublisher.class);
+        this.context = mock(RelationalMappingContext.class, RETURNS_DEEP_STUBS);
 
-		this.query = new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper);
-	}
+        this.query = new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper);
+    }
 
-	@Test // DATAJDBC-165
-	public void emptyQueryThrowsException() {
+    @Test // DATAJDBC-165
+    public void emptyQueryThrowsException() {
 
-		doReturn(null).when(queryMethod).getAnnotatedQuery();
+        doReturn(null).when(queryMethod).getAnnotatedQuery();
 
-		Assertions.assertThatExceptionOfType(IllegalStateException.class) //
-				.isThrownBy(() -> query.execute(new Object[] {}));
-	}
+        Assertions.assertThatExceptionOfType(IllegalStateException.class) //
+                .isThrownBy(() -> query.execute(new Object[]{}));
+    }
 
-	@Test // DATAJDBC-165
-	public void defaultRowMapperIsUsedByDefault() {
+    @Test // DATAJDBC-165
+    public void defaultRowMapperIsUsedByDefault() {
 
-		doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
-		doReturn(RowMapper.class).when(queryMethod).getRowMapperClass();
+        doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
+        doReturn(RowMapper.class).when(queryMethod).getRowMapperClass();
 
-		query.execute(new Object[] {});
+        query.execute(new Object[]{});
 
-		verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(defaultRowMapper));
-	}
+        verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(defaultRowMapper));
+    }
 
-	@Test // DATAJDBC-165
-	public void defaultRowMapperIsUsedForNull() {
+    @Test // DATAJDBC-165
+    public void defaultRowMapperIsUsedForNull() {
 
-		doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
+        doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
 
-		query.execute(new Object[] {});
+        query.execute(new Object[]{});
 
-		verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(defaultRowMapper));
-	}
+        verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(defaultRowMapper));
+    }
 
-	@Test // DATAJDBC-165
-	public void customRowMapperIsUsedWhenSpecified() {
+    @Test // DATAJDBC-165
+    public void customRowMapperIsUsedWhenSpecified() {
 
-		doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
-		doReturn(CustomRowMapper.class).when(queryMethod).getRowMapperClass();
+        doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
+        doReturn(CustomRowMapper.class).when(queryMethod).getRowMapperClass();
 
-		new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper).execute(new Object[] {});
+        new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper).execute(new Object[]{});
 
-		verify(operations) //
-				.queryForObject(anyString(), any(SqlParameterSource.class), isA(CustomRowMapper.class));
-	}
+        verify(operations) //
+                .queryForObject(anyString(), any(SqlParameterSource.class), isA(CustomRowMapper.class));
+    }
 
-	@Test // DATAJDBC-263
-	public void publishesSingleEventWhenQueryReturnsSingleAggregate() {
+    @Test // DATAJDBC-263
+    public void publishesSingleEventWhenQueryReturnsSingleAggregate() {
 
-		doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
-		doReturn(false).when(queryMethod).isCollectionQuery();
-		doReturn(new DummyEntity(1L)).when(operations).queryForObject(anyString(), any(SqlParameterSource.class), any(RowMapper.class));
-		doReturn(true).when(context).hasPersistentEntityFor(DummyEntity.class);
-		when(context.getRequiredPersistentEntity(DummyEntity.class).getIdentifierAccessor(any()).getRequiredIdentifier()).thenReturn("some identifier");
+        doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
+        doReturn(false).when(queryMethod).isCollectionQuery();
+        doReturn(new DummyEntity(1L)).when(operations).queryForObject(anyString(), any(SqlParameterSource.class), any(RowMapper.class));
+        doReturn(true).when(context).hasPersistentEntityFor(DummyEntity.class);
+        when(context.getRequiredPersistentEntity(DummyEntity.class).getIdentifierAccessor(any()).getRequiredIdentifier()).thenReturn("some identifier");
 
-		new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper).execute(new Object[] {});
+        new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper).execute(new Object[]{});
 
-		verify(publisher).publishEvent(any(AfterLoadEvent.class));
-	}
+        verify(publisher).publishEvent(any(AfterLoadEvent.class));
+    }
 
-	@Test // DATAJDBC-263
-	public void publishesAsManyEventsAsReturnedAggregates() {
+    @Test // DATAJDBC-263
+    public void publishesAsManyEventsAsReturnedAggregates() {
 
-		doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
-		doReturn(true).when(queryMethod).isCollectionQuery();
-		doReturn(Arrays.asList(new DummyEntity(1L), new DummyEntity(1L))).when(operations).query(anyString(), any(SqlParameterSource.class), any(RowMapper.class));
-		doReturn(true).when(context).hasPersistentEntityFor(DummyEntity.class);
-		when(context.getRequiredPersistentEntity(DummyEntity.class).getIdentifierAccessor(any()).getRequiredIdentifier()).thenReturn("some identifier");
+        doReturn("some sql statement").when(queryMethod).getAnnotatedQuery();
+        doReturn(true).when(queryMethod).isCollectionQuery();
+        doReturn(Arrays.asList(new DummyEntity(1L), new DummyEntity(1L))).when(operations).query(anyString(), any(SqlParameterSource.class), any(RowMapper.class));
+        doReturn(true).when(context).hasPersistentEntityFor(DummyEntity.class);
+        when(context.getRequiredPersistentEntity(DummyEntity.class).getIdentifierAccessor(any()).getRequiredIdentifier()).thenReturn("some identifier");
 
-		new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper).execute(new Object[] {});
+        new JdbcRepositoryQuery(publisher, context, queryMethod, operations, defaultRowMapper).execute(new Object[]{});
 
-		verify(publisher, times(2)).publishEvent(any(AfterLoadEvent.class));
-	}
+        verify(publisher, times(2)).publishEvent(any(AfterLoadEvent.class));
+    }
 
-	/**
-	 * The whole purpose of this method is to easily generate a {@link DefaultParameters} instance during test setup.
-	 */
-	@SuppressWarnings("unused")
-	private void dummyMethod() {}
+    /**
+     * The whole purpose of this method is to easily generate a {@link DefaultParameters} instance during test setup.
+     */
+    @SuppressWarnings("unused")
+    private void dummyMethod() {
+    }
 
-	private static class CustomRowMapper implements RowMapper<Object> {
+    private static class CustomRowMapper implements RowMapper<Object> {
 
-		@Override
-		public Object mapRow(ResultSet rs, int rowNum) {
-			return null;
-		}
-	}
+        @Override
+        public Object mapRow(ResultSet rs, int rowNum) {
+            return null;
+        }
+    }
 
-	private static class DummyEntity {
-		private Long id;
+    private static class DummyEntity {
+        private Long id;
 
-		public DummyEntity(Long id) {
-			this.id = id;
-		}
+        public DummyEntity(Long id) {
+            this.id = id;
+        }
 
-		Long getId() {
-			return id;
-		}
-	}
+        Long getId() {
+            return id;
+        }
+    }
 }

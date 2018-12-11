@@ -34,64 +34,64 @@ import org.springframework.data.util.ClassTypeInformation;
  */
 public class BasicRelationalConverterUnitTests {
 
-	RelationalMappingContext context = new RelationalMappingContext();
-	RelationalConverter converter = new BasicRelationalConverter(context);
+    RelationalMappingContext context = new RelationalMappingContext();
+    RelationalConverter converter = new BasicRelationalConverter(context);
 
-	@Test // DATAJDBC-235
-	@SuppressWarnings("unchecked")
-	public void shouldUseConvertingPropertyAccessor() {
+    @Test // DATAJDBC-235
+    @SuppressWarnings("unchecked")
+    public void shouldUseConvertingPropertyAccessor() {
 
-		RelationalPersistentEntity<MyEntity> entity = (RelationalPersistentEntity) context
-				.getRequiredPersistentEntity(MyEntity.class);
+        RelationalPersistentEntity<MyEntity> entity = (RelationalPersistentEntity) context
+                .getRequiredPersistentEntity(MyEntity.class);
 
-		MyEntity instance = new MyEntity();
+        MyEntity instance = new MyEntity();
 
-		PersistentPropertyAccessor<MyEntity> accessor = converter.getPropertyAccessor(entity, instance);
-		RelationalPersistentProperty property = entity.getRequiredPersistentProperty("flag");
-		accessor.setProperty(property, "1");
+        PersistentPropertyAccessor<MyEntity> accessor = converter.getPropertyAccessor(entity, instance);
+        RelationalPersistentProperty property = entity.getRequiredPersistentProperty("flag");
+        accessor.setProperty(property, "1");
 
-		assertThat(instance.isFlag()).isTrue();
-	}
+        assertThat(instance.isFlag()).isTrue();
+    }
 
-	@Test // DATAJDBC-235
-	public void shouldConvertEnumToString() {
+    @Test // DATAJDBC-235
+    public void shouldConvertEnumToString() {
 
-		Object result = converter.writeValue(MyEnum.ON, ClassTypeInformation.from(String.class));
+        Object result = converter.writeValue(MyEnum.ON, ClassTypeInformation.from(String.class));
 
-		assertThat(result).isEqualTo("ON");
-	}
+        assertThat(result).isEqualTo("ON");
+    }
 
-	@Test // DATAJDBC-235
-	public void shouldConvertStringToEnum() {
+    @Test // DATAJDBC-235
+    public void shouldConvertStringToEnum() {
 
-		Object result = converter.readValue("OFF", ClassTypeInformation.from(MyEnum.class));
+        Object result = converter.readValue("OFF", ClassTypeInformation.from(MyEnum.class));
 
-		assertThat(result).isEqualTo(MyEnum.OFF);
-	}
+        assertThat(result).isEqualTo(MyEnum.OFF);
+    }
 
-	@Test // DATAJDBC-235
-	@SuppressWarnings("unchecked")
-	public void shouldCreateInstance() {
+    @Test // DATAJDBC-235
+    @SuppressWarnings("unchecked")
+    public void shouldCreateInstance() {
 
-		RelationalPersistentEntity<MyValue> entity = (RelationalPersistentEntity) context
-				.getRequiredPersistentEntity(MyValue.class);
+        RelationalPersistentEntity<MyValue> entity = (RelationalPersistentEntity) context
+                .getRequiredPersistentEntity(MyValue.class);
 
-		MyValue result = converter.createInstance(entity, it -> "bar");
+        MyValue result = converter.createInstance(entity, it -> "bar");
 
-		assertThat(result.getFoo()).isEqualTo("bar");
-	}
+        assertThat(result.getFoo()).isEqualTo("bar");
+    }
 
-	@Data
-	static class MyEntity {
-		boolean flag;
-	}
+    @Data
+    static class MyEntity {
+        boolean flag;
+    }
 
-	@Value
-	static class MyValue {
-		final String foo;
-	}
+    @Value
+    static class MyValue {
+        final String foo;
+    }
 
-	enum MyEnum {
-		ON, OFF;
-	}
+    enum MyEnum {
+        ON, OFF;
+    }
 }

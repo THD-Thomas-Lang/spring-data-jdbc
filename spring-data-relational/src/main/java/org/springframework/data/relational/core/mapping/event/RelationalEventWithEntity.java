@@ -26,9 +26,9 @@ import org.springframework.data.relational.core.conversion.AggregateChange;
  */
 public class RelationalEventWithEntity extends SimpleRelationalEvent implements WithEntity {
 
-	private static final long serialVersionUID = 4891455396602090638L;
+    private static final long serialVersionUID = 4891455396602090638L;
 
-	RelationalEventWithEntity(Identifier id, Object entity, AggregateChange change) {
-		super(id, Optional.of(entity), change);
-	}
+    RelationalEventWithEntity(Identifier id, Object entity, AggregateChange change) {
+        super(id, Optional.of(entity), change);
+    }
 }

@@ -40,307 +40,308 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
  */
 public class MyBatisDataAccessStrategyUnitTests {
 
-	RelationalMappingContext context = new JdbcMappingContext();
+    RelationalMappingContext context = new JdbcMappingContext();
 
-	SqlSession session = mock(SqlSession.class);
-	ArgumentCaptor<MyBatisContext> captor = ArgumentCaptor.forClass(MyBatisContext.class);
+    SqlSession session = mock(SqlSession.class);
+    ArgumentCaptor<MyBatisContext> captor = ArgumentCaptor.forClass(MyBatisContext.class);
 
-	MyBatisDataAccessStrategy accessStrategy = new MyBatisDataAccessStrategy(session);
+    MyBatisDataAccessStrategy accessStrategy = new MyBatisDataAccessStrategy(session);
 
-	PersistentPropertyPath<RelationalPersistentProperty> path(String path, Class source) {
+    PersistentPropertyPath<RelationalPersistentProperty> path(String path, Class source) {
 
-		RelationalMappingContext context = this.context;
-		return PropertyPathUtils.toPath(path, source, context);
-	}
+        RelationalMappingContext context = this.context;
+        return PropertyPathUtils.toPath(path, source, context);
+    }
 
-	@Before
-	public void before() {
+    @Before
+    public void before() {
 
-		doReturn(false).when(session).selectOne(any(), any());
-	}
+        doReturn(false).when(session).selectOne(any(), any());
+    }
 
-	@Test // DATAJDBC-123
-	public void insert() {
+    @Test // DATAJDBC-123
+    public void insert() {
 
-		accessStrategy.insert("x", String.class, Collections.singletonMap("key", "value"));
+        accessStrategy.insert("x", String.class, Collections.singletonMap("key", "value"));
 
-		verify(session).insert(eq("java.lang.StringMapper.insert"), captor.capture());
+        verify(session).insert(eq("java.lang.StringMapper.insert"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						"x", //
-						null, //
-						String.class, //
-						"value" //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                "x", //
+                null, //
+                String.class, //
+                "value" //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void update() {
+    @Test // DATAJDBC-123
+    public void update() {
 
-		accessStrategy.update("x", String.class);
+        accessStrategy.update("x", String.class);
 
-		verify(session).update(eq("java.lang.StringMapper.update"), captor.capture());
+        verify(session).update(eq("java.lang.StringMapper.update"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						"x", //
-						null, //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                "x", //
+                null, //
+                String.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void delete() {
+    @Test // DATAJDBC-123
+    public void delete() {
 
-		accessStrategy.delete("an-id", String.class);
+        accessStrategy.delete("an-id", String.class);
 
-		verify(session).delete(eq("java.lang.StringMapper.delete"), captor.capture());
+        verify(session).delete(eq("java.lang.StringMapper.delete"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						"an-id", //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                "an-id", //
+                String.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void deleteAllByPath() {
+    @Test // DATAJDBC-123
+    public void deleteAllByPath() {
 
-		accessStrategy.deleteAll(path("one.two", DummyEntity.class));
+        accessStrategy.deleteAll(path("one.two", DummyEntity.class));
 
-		verify(session).delete(
-				eq("org.springframework.data.jdbc.core.MyBatisDataAccessStrategyUnitTests$DummyEntityMapper.deleteAll-one-two"),
-				captor.capture());
+        verify(session).delete(
+                eq("org.springframework.data.jdbc.core.MyBatisDataAccessStrategyUnitTests$DummyEntityMapper.deleteAll-one-two"),
+                captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						null, //
-						ChildTwo.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                null, //
+                ChildTwo.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void deleteAllByType() {
+    @Test // DATAJDBC-123
+    public void deleteAllByType() {
 
-		accessStrategy.deleteAll(String.class);
+        accessStrategy.deleteAll(String.class);
 
-		verify(session).delete(eq("java.lang.StringMapper.deleteAll"), captor.capture());
+        verify(session).delete(eq("java.lang.StringMapper.deleteAll"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						null, //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                null, //
+                String.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void deleteByPath() {
+    @Test // DATAJDBC-123
+    public void deleteByPath() {
 
-		accessStrategy.delete("rootid", path("one.two", DummyEntity.class));
+        accessStrategy.delete("rootid", path("one.two", DummyEntity.class));
 
-		verify(session).delete(
-				eq("org.springframework.data.jdbc.core.MyBatisDataAccessStrategyUnitTests$DummyEntityMapper.delete-one-two"),
-				captor.capture());
+        verify(session).delete(
+                eq("org.springframework.data.jdbc.core.MyBatisDataAccessStrategyUnitTests$DummyEntityMapper.delete-one-two"),
+                captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, "rootid", //
-						ChildTwo.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, "rootid", //
+                ChildTwo.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void findById() {
+    @Test // DATAJDBC-123
+    public void findById() {
 
-		accessStrategy.findById("an-id", String.class);
+        accessStrategy.findById("an-id", String.class);
 
-		verify(session).selectOne(eq("java.lang.StringMapper.findById"), captor.capture());
+        verify(session).selectOne(eq("java.lang.StringMapper.findById"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, "an-id", //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, "an-id", //
+                String.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void findAll() {
+    @Test // DATAJDBC-123
+    public void findAll() {
 
-		accessStrategy.findAll(String.class);
+        accessStrategy.findAll(String.class);
 
-		verify(session).selectList(eq("java.lang.StringMapper.findAll"), captor.capture());
+        verify(session).selectList(eq("java.lang.StringMapper.findAll"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						null, //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                null, //
+                String.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void findAllById() {
+    @Test // DATAJDBC-123
+    public void findAllById() {
 
-		accessStrategy.findAllById(asList("id1", "id2"), String.class);
+        accessStrategy.findAllById(asList("id1", "id2"), String.class);
 
-		verify(session).selectList(eq("java.lang.StringMapper.findAllById"), captor.capture());
+        verify(session).selectList(eq("java.lang.StringMapper.findAllById"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						asList("id1", "id2"), //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                asList("id1", "id2"), //
+                String.class, //
+                null //
+        );
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test // DATAJDBC-123
-	public void findAllByProperty() {
+    @SuppressWarnings("unchecked")
+    @Test // DATAJDBC-123
+    public void findAllByProperty() {
 
-		RelationalPersistentProperty property = mock(RelationalPersistentProperty.class, Mockito.RETURNS_DEEP_STUBS);
+        RelationalPersistentProperty property = mock(RelationalPersistentProperty.class, Mockito.RETURNS_DEEP_STUBS);
 
-		when(property.getOwner().getType()).thenReturn((Class) String.class);
-		doReturn(Number.class).when(property).getType();
-		doReturn("propertyName").when(property).getName();
+        when(property.getOwner().getType()).thenReturn((Class) String.class);
+        doReturn(Number.class).when(property).getType();
+        doReturn("propertyName").when(property).getName();
 
-		accessStrategy.findAllByProperty("id", property);
+        accessStrategy.findAllByProperty("id", property);
 
-		verify(session).selectList(eq("java.lang.StringMapper.findAllByProperty-propertyName"), captor.capture());
+        verify(session).selectList(eq("java.lang.StringMapper.findAllByProperty-propertyName"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						"id", //
-						Number.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                "id", //
+                Number.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-123
-	public void existsById() {
+    @Test // DATAJDBC-123
+    public void existsById() {
 
-		accessStrategy.existsById("id", String.class);
+        accessStrategy.existsById("id", String.class);
 
-		verify(session).selectOne(eq("java.lang.StringMapper.existsById"), captor.capture());
+        verify(session).selectOne(eq("java.lang.StringMapper.existsById"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						"id", //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                "id", //
+                String.class, //
+                null //
+        );
+    }
 
-	@Test // DATAJDBC-157
-	public void count() {
+    @Test // DATAJDBC-157
+    public void count() {
 
-		doReturn(0L).when(session).selectOne(anyString(), any());
+        doReturn(0L).when(session).selectOne(anyString(), any());
 
-		accessStrategy.count(String.class);
+        accessStrategy.count(String.class);
 
-		verify(session).selectOne(eq("java.lang.StringMapper.count"), captor.capture());
+        verify(session).selectOne(eq("java.lang.StringMapper.count"), captor.capture());
 
-		assertThat(captor.getValue()) //
-				.isNotNull() //
-				.extracting( //
-						MyBatisContext::getInstance, //
-						MyBatisContext::getId, //
-						MyBatisContext::getDomainType, //
-						c -> c.get("key") //
-				).containsExactly( //
-						null, //
-						null, //
-						String.class, //
-						null //
-				);
-	}
+        assertThat(captor.getValue()) //
+                .isNotNull() //
+                .extracting( //
+                        MyBatisContext::getInstance, //
+                        MyBatisContext::getId, //
+                        MyBatisContext::getDomainType, //
+                        c -> c.get("key") //
+                ).containsExactly( //
+                null, //
+                null, //
+                String.class, //
+                null //
+        );
+    }
 
-	private static class DummyEntity {
-		ChildOne one;
-	}
+    private static class DummyEntity {
+        ChildOne one;
+    }
 
-	private static class ChildOne {
-		ChildTwo two;
-	}
+    private static class ChildOne {
+        ChildTwo two;
+    }
 
-	private static class ChildTwo {}
+    private static class ChildTwo {
+    }
 }

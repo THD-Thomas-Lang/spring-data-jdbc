@@ -22,32 +22,34 @@ import org.springframework.data.annotation.Id;
 
 /**
  * Unit tests for {@link RelationalPersistentEntityImpl}.
- * 
+ *
  * @author Oliver Gierke
  * @author Kazuki Shimizu
  */
 public class RelationalPersistentEntityImplUnitTests {
 
-	RelationalMappingContext mappingContext = new RelationalMappingContext();
+    RelationalMappingContext mappingContext = new RelationalMappingContext();
 
-	@Test // DATAJDBC-106
-	public void discoversAnnotatedTableName() {
+    @Test // DATAJDBC-106
+    public void discoversAnnotatedTableName() {
 
-		RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(DummySubEntity.class);
+        RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(DummySubEntity.class);
 
-		assertThat(entity.getTableName()).isEqualTo("dummy_sub_entity");
-	}
+        assertThat(entity.getTableName()).isEqualTo("dummy_sub_entity");
+    }
 
-	@Test // DATAJDBC-294
-	public void considerIdColumnName() {
+    @Test // DATAJDBC-294
+    public void considerIdColumnName() {
 
-		RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(DummySubEntity.class);
+        RelationalPersistentEntity<?> entity = mappingContext.getPersistentEntity(DummySubEntity.class);
 
-		assertThat(entity.getIdColumn()).isEqualTo("renamedId");
-	}
+        assertThat(entity.getIdColumn()).isEqualTo("renamedId");
+    }
 
-	@Table("dummy_sub_entity")
-	static class DummySubEntity {
-		@Id @Column("renamedId") Long id;
-	}
+    @Table("dummy_sub_entity")
+    static class DummySubEntity {
+        @Id
+        @Column("renamedId")
+        Long id;
+    }
 }

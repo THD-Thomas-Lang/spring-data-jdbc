@@ -28,14 +28,14 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
 @UtilityClass
 public class PersistentPropertyPathTestUtils {
 
-	@NotNull
-	public static PersistentPropertyPath<RelationalPersistentProperty> getPath(RelationalMappingContext context,
-			String path, Class<?> baseType) {
+    @NotNull
+    public static PersistentPropertyPath<RelationalPersistentProperty> getPath(RelationalMappingContext context,
+                                                                               String path, Class<?> baseType) {
 
-		return context.findPersistentPropertyPaths(baseType, p -> p.isEntity()) //
-				.filter(p -> p.toDotPath().equals(path)) //
-				.stream() //
-				.findFirst() //
-				.orElseThrow(() -> new IllegalArgumentException(String.format("No path for %s based on %s", path, baseType)));
-	}
+        return context.findPersistentPropertyPaths(baseType, p -> p.isEntity()) //
+                .filter(p -> p.toDotPath().equals(path)) //
+                .stream() //
+                .findFirst() //
+                .orElseThrow(() -> new IllegalArgumentException(String.format("No path for %s based on %s", path, baseType)));
+    }
 }

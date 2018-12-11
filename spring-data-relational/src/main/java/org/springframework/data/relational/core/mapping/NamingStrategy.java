@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
  * <p>
  * NOTE: Can also be used as an adapter. Create a lambda or an anonymous subclass and override any settings to implement
  * a different strategy on the fly.
- * 
+ *
  * @author Greg Turnquist
  * @author Michael Simons
  * @author Kazuki Shimizu
@@ -33,71 +33,72 @@ import org.springframework.util.Assert;
  */
 public interface NamingStrategy {
 
-	/**
-	 * Empty implementation of the interface utilizing only the default implementation.
-	 * <p>
-	 * Using this avoids creating essentially the same class over and over again.
-	 */
-	NamingStrategy INSTANCE = new NamingStrategy() {};
+    /**
+     * Empty implementation of the interface utilizing only the default implementation.
+     * <p>
+     * Using this avoids creating essentially the same class over and over again.
+     */
+    NamingStrategy INSTANCE = new NamingStrategy() {
+    };
 
-	/**
-	 * Defaults to no schema.
-	 *
-	 * @return Empty String representing no schema
-	 */
-	default String getSchema() {
-		return "";
-	}
+    /**
+     * Defaults to no schema.
+     *
+     * @return Empty String representing no schema
+     */
+    default String getSchema() {
+        return "";
+    }
 
-	/**
-	 * The name of the table to be used for persisting entities having the type passed as an argument. The default
-	 * implementation takes the {@code type.getSimpleName()} and separates camel case parts with '_'.
-	 */
-	default String getTableName(Class<?> type) {
+    /**
+     * The name of the table to be used for persisting entities having the type passed as an argument. The default
+     * implementation takes the {@code type.getSimpleName()} and separates camel case parts with '_'.
+     */
+    default String getTableName(Class<?> type) {
 
-		Assert.notNull(type, "Type must not be null.");
+        Assert.notNull(type, "Type must not be null.");
 
-		return ParsingUtils.reconcatenateCamelCase(type.getSimpleName(), "_");
-	}
+        return ParsingUtils.reconcatenateCamelCase(type.getSimpleName(), "_");
+    }
 
-	/**
-	 * Defaults to return the given {@link RelationalPersistentProperty}'s name with the parts of a camel case name
-	 * separated by '_';
-	 */
-	default String getColumnName(RelationalPersistentProperty property) {
+    /**
+     * Defaults to return the given {@link RelationalPersistentProperty}'s name with the parts of a camel case name
+     * separated by '_';
+     */
+    default String getColumnName(RelationalPersistentProperty property) {
 
-		Assert.notNull(property, "Property must not be null.");
+        Assert.notNull(property, "Property must not be null.");
 
-		return ParsingUtils.reconcatenateCamelCase(property.getName(), "_");
-	}
+        return ParsingUtils.reconcatenateCamelCase(property.getName(), "_");
+    }
 
-	default String getQualifiedTableName(Class<?> type) {
-		return this.getSchema() + (this.getSchema().equals("") ? "" : ".") + this.getTableName(type);
-	}
+    default String getQualifiedTableName(Class<?> type) {
+        return this.getSchema() + (this.getSchema().equals("") ? "" : ".") + this.getTableName(type);
+    }
 
-	/**
-	 * For a reference A -&gt; B this is the name in the table for B which references A.
-	 *
-	 * @param property The property who's column name in the owner table is required
-	 * @return a column name. Must not be {@code null}.
-	 */
-	default String getReverseColumnName(RelationalPersistentProperty property) {
+    /**
+     * For a reference A -&gt; B this is the name in the table for B which references A.
+     *
+     * @param property The property who's column name in the owner table is required
+     * @return a column name. Must not be {@code null}.
+     */
+    default String getReverseColumnName(RelationalPersistentProperty property) {
 
-		Assert.notNull(property, "Property must not be null.");
+        Assert.notNull(property, "Property must not be null.");
 
-		return property.getOwner().getTableName();
-	}
+        return property.getOwner().getTableName();
+    }
 
-	/**
-	 * For a map valued reference A -> Map&gt;X,B&lt; this is the name of the column in the table for B holding the key of
-	 * the map.
-	 * 
-	 * @return name of the key column. Must not be {@code null}.
-	 */
-	default String getKeyColumn(RelationalPersistentProperty property) {
+    /**
+     * For a map valued reference A -> Map&gt;X,B&lt; this is the name of the column in the table for B holding the key of
+     * the map.
+     *
+     * @return name of the key column. Must not be {@code null}.
+     */
+    default String getKeyColumn(RelationalPersistentProperty property) {
 
-		Assert.notNull(property, "Property must not be null.");
+        Assert.notNull(property, "Property must not be null.");
 
-		return getReverseColumnName(property) + "_key";
-	}
+        return getReverseColumnName(property) + "_key";
+    }
 }

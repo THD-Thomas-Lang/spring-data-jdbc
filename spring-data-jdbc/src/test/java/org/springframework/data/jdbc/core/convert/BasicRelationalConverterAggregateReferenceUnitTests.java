@@ -38,41 +38,42 @@ import org.springframework.data.util.ClassTypeInformation;
  */
 public class BasicRelationalConverterAggregateReferenceUnitTests {
 
-	SoftAssertions softly = new SoftAssertions();
+    SoftAssertions softly = new SoftAssertions();
 
-	ConversionService conversionService = new DefaultConversionService();
+    ConversionService conversionService = new DefaultConversionService();
 
-	JdbcMappingContext context = new JdbcMappingContext();
-	RelationalConverter converter = new BasicJdbcConverter(context);
+    JdbcMappingContext context = new JdbcMappingContext();
+    RelationalConverter converter = new BasicJdbcConverter(context);
 
-	RelationalPersistentEntity<?> entity = context.getRequiredPersistentEntity(DummyEntity.class);
+    RelationalPersistentEntity<?> entity = context.getRequiredPersistentEntity(DummyEntity.class);
 
-	@Test // DATAJDBC-221
-	public void convertsToAggregateReference() {
+    @Test // DATAJDBC-221
+    public void convertsToAggregateReference() {
 
-		final RelationalPersistentProperty property = entity.getRequiredPersistentProperty("reference");
+        final RelationalPersistentProperty property = entity.getRequiredPersistentProperty("reference");
 
-		Object readValue = converter.readValue(23, property.getTypeInformation());
+        Object readValue = converter.readValue(23, property.getTypeInformation());
 
-		Assertions.assertThat(readValue).isInstanceOf(AggregateReference.class);
-		assertThat(((AggregateReference<DummyEntity, Long>) readValue).getId()).isEqualTo(23L);
-	}
+        Assertions.assertThat(readValue).isInstanceOf(AggregateReference.class);
+        assertThat(((AggregateReference<DummyEntity, Long>) readValue).getId()).isEqualTo(23L);
+    }
 
-	@Test // DATAJDBC-221
-	public void convertsFromAggregateReference() {
+    @Test // DATAJDBC-221
+    public void convertsFromAggregateReference() {
 
-		final RelationalPersistentProperty property = entity.getRequiredPersistentProperty("reference");
+        final RelationalPersistentProperty property = entity.getRequiredPersistentProperty("reference");
 
-		AggregateReference<Object, Integer> reference = AggregateReference.to(23);
+        AggregateReference<Object, Integer> reference = AggregateReference.to(23);
 
-		Object writeValue = converter.writeValue(reference, ClassTypeInformation.from(property.getColumnType()));
+        Object writeValue = converter.writeValue(reference, ClassTypeInformation.from(property.getColumnType()));
 
-		Assertions.assertThat(writeValue).isEqualTo(23L);
-	}
+        Assertions.assertThat(writeValue).isEqualTo(23L);
+    }
 
-	private static class DummyEntity {
+    private static class DummyEntity {
 
-		@Id Long simple;
-		AggregateReference<DummyEntity, Long> reference;
-	}
+        @Id
+        Long simple;
+        AggregateReference<DummyEntity, Long> reference;
+    }
 }

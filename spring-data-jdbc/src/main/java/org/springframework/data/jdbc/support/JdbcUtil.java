@@ -37,38 +37,38 @@ import org.springframework.jdbc.support.JdbcUtils;
 @UtilityClass
 public class JdbcUtil {
 
-	private static final Map<Class<?>, Integer> sqlTypeMappings = new HashMap<>();
+    private static final Map<Class<?>, Integer> sqlTypeMappings = new HashMap<>();
 
-	static {
+    static {
 
-		sqlTypeMappings.put(String.class, Types.VARCHAR);
-		sqlTypeMappings.put(BigInteger.class, Types.BIGINT);
-		sqlTypeMappings.put(BigDecimal.class, Types.DECIMAL);
-		sqlTypeMappings.put(Byte.class, Types.TINYINT);
-		sqlTypeMappings.put(byte.class, Types.TINYINT);
-		sqlTypeMappings.put(Short.class, Types.SMALLINT);
-		sqlTypeMappings.put(short.class, Types.SMALLINT);
-		sqlTypeMappings.put(Integer.class, Types.INTEGER);
-		sqlTypeMappings.put(int.class, Types.INTEGER);
-		sqlTypeMappings.put(Long.class, Types.BIGINT);
-		sqlTypeMappings.put(long.class, Types.BIGINT);
-		sqlTypeMappings.put(Double.class, Types.DOUBLE);
-		sqlTypeMappings.put(double.class, Types.DOUBLE);
-		sqlTypeMappings.put(Float.class, Types.REAL);
-		sqlTypeMappings.put(float.class, Types.REAL);
-		sqlTypeMappings.put(Boolean.class, Types.BIT);
-		sqlTypeMappings.put(boolean.class, Types.BIT);
-		sqlTypeMappings.put(byte[].class, Types.VARBINARY);
-		sqlTypeMappings.put(Date.class, Types.DATE);
-		sqlTypeMappings.put(Time.class, Types.TIME);
-		sqlTypeMappings.put(Timestamp.class, Types.TIMESTAMP);
-	}
+        sqlTypeMappings.put(String.class, Types.VARCHAR);
+        sqlTypeMappings.put(BigInteger.class, Types.BIGINT);
+        sqlTypeMappings.put(BigDecimal.class, Types.DECIMAL);
+        sqlTypeMappings.put(Byte.class, Types.TINYINT);
+        sqlTypeMappings.put(byte.class, Types.TINYINT);
+        sqlTypeMappings.put(Short.class, Types.SMALLINT);
+        sqlTypeMappings.put(short.class, Types.SMALLINT);
+        sqlTypeMappings.put(Integer.class, Types.INTEGER);
+        sqlTypeMappings.put(int.class, Types.INTEGER);
+        sqlTypeMappings.put(Long.class, Types.BIGINT);
+        sqlTypeMappings.put(long.class, Types.BIGINT);
+        sqlTypeMappings.put(Double.class, Types.DOUBLE);
+        sqlTypeMappings.put(double.class, Types.DOUBLE);
+        sqlTypeMappings.put(Float.class, Types.REAL);
+        sqlTypeMappings.put(float.class, Types.REAL);
+        sqlTypeMappings.put(Boolean.class, Types.BIT);
+        sqlTypeMappings.put(boolean.class, Types.BIT);
+        sqlTypeMappings.put(byte[].class, Types.VARBINARY);
+        sqlTypeMappings.put(Date.class, Types.DATE);
+        sqlTypeMappings.put(Time.class, Types.TIME);
+        sqlTypeMappings.put(Timestamp.class, Types.TIMESTAMP);
+    }
 
-	public static int sqlTypeFor(Class<?> type) {
-		return sqlTypeMappings.keySet().stream() //
-				.filter(k -> k.isAssignableFrom(type)) //
-				.findFirst() //
-				.map(sqlTypeMappings::get) //
-				.orElse(JdbcUtils.TYPE_UNKNOWN);
-	}
+    public static int sqlTypeFor(Class<?> type) {
+        return sqlTypeMappings.keySet().stream() //
+                .filter(k -> k.isAssignableFrom(type)) //
+                .findFirst() //
+                .map(sqlTypeMappings::get) //
+                .orElse(JdbcUtils.TYPE_UNKNOWN);
+    }
 }

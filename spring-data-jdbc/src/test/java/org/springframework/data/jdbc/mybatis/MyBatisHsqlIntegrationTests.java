@@ -56,73 +56,77 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MyBatisHsqlIntegrationTests {
 
-	@org.springframework.context.annotation.Configuration
-	@Import(TestConfiguration.class)
-	@EnableJdbcRepositories(considerNestedRepositories = true)
-	static class Config {
+    @org.springframework.context.annotation.Configuration
+    @Import(TestConfiguration.class)
+    @EnableJdbcRepositories(considerNestedRepositories = true)
+    static class Config {
 
-		@Bean
-		Class<?> testClass() {
-			return MyBatisHsqlIntegrationTests.class;
-		}
+        @Bean
+        Class<?> testClass() {
+            return MyBatisHsqlIntegrationTests.class;
+        }
 
-		@Bean
-		SqlSessionFactoryBean createSessionFactory(EmbeddedDatabase db) {
+        @Bean
+        SqlSessionFactoryBean createSessionFactory(EmbeddedDatabase db) {
 
-			Configuration configuration = new Configuration();
-			configuration.getTypeAliasRegistry().registerAlias("MyBatisContext", MyBatisContext.class);
+            Configuration configuration = new Configuration();
+            configuration.getTypeAliasRegistry().registerAlias("MyBatisContext", MyBatisContext.class);
 
-			configuration.getTypeAliasRegistry().registerAlias(DummyEntity.class);
-			configuration.addMapper(DummyEntityMapper.class);
+            configuration.getTypeAliasRegistry().registerAlias(DummyEntity.class);
+            configuration.addMapper(DummyEntityMapper.class);
 
-			SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
-			sqlSessionFactoryBean.setDataSource(db);
-			sqlSessionFactoryBean.setConfiguration(configuration);
+            SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+            sqlSessionFactoryBean.setDataSource(db);
+            sqlSessionFactoryBean.setConfiguration(configuration);
 
-			return sqlSessionFactoryBean;
-		}
+            return sqlSessionFactoryBean;
+        }
 
-		@Bean
-		SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory factory) {
-			return new SqlSessionTemplate(factory);
-		}
+        @Bean
+        SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory factory) {
+            return new SqlSessionTemplate(factory);
+        }
 
-		@Bean
-		DataAccessStrategy dataAccessStrategy(RelationalMappingContext context, RelationalConverter converter,
-				SqlSession sqlSession, EmbeddedDatabase db) {
-			return MyBatisDataAccessStrategy.createCombinedAccessStrategy(context, converter,
-					new NamedParameterJdbcTemplate(db), sqlSession);
-		}
-	}
+        @Bean
+        DataAccessStrategy dataAccessStrategy(RelationalMappingContext context, RelationalConverter converter,
+                                              SqlSession sqlSession, EmbeddedDatabase db) {
+            return MyBatisDataAccessStrategy.createCombinedAccessStrategy(context, converter,
+                    new NamedParameterJdbcTemplate(db), sqlSession);
+        }
+    }
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
 
-	@Autowired SqlSessionFactory sqlSessionFactory;
-	@Autowired DummyEntityRepository repository;
+    @Autowired
+    SqlSessionFactory sqlSessionFactory;
+    @Autowired
+    DummyEntityRepository repository;
 
-	@Test // DATAJDBC-123
-	public void mybatisSelfTest() {
+    @Test // DATAJDBC-123
+    public void mybatisSelfTest() {
 
-		SqlSession session = sqlSessionFactory.openSession();
+        SqlSession session = sqlSessionFactory.openSession();
 
-		session.selectList("org.springframework.data.jdbc.mybatis.DummyEntityMapper.findById");
-	}
+        session.selectList("org.springframework.data.jdbc.mybatis.DummyEntityMapper.findById");
+    }
 
-	@Test // DATAJDBC-123
-	public void myBatisGetsUsedForInsertAndSelect() {
+    @Test // DATAJDBC-123
+    public void myBatisGetsUsedForInsertAndSelect() {
 
-		DummyEntity entity = new DummyEntity(null, "some name");
-		DummyEntity saved = repository.save(entity);
+        DummyEntity entity = new DummyEntity(null, "some name");
+        DummyEntity saved = repository.save(entity);
 
-		assertThat(saved.id).isNotNull();
+        assertThat(saved.id).isNotNull();
 
-		DummyEntity reloaded = repository.findById(saved.id).orElseThrow(AssertionFailedError::new);
+        DummyEntity reloaded = repository.findById(saved.id).orElseThrow(AssertionFailedError::new);
 
-		assertThat(reloaded).isNotNull().extracting(e -> e.id, e -> e.name);
-	}
+        assertThat(reloaded).isNotNull().extracting(e -> e.id, e -> e.name);
+    }
 
-	interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
+    interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
 
-	}
+    }
 }

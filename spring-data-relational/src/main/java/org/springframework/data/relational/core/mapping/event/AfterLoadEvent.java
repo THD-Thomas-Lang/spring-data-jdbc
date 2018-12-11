@@ -25,13 +25,13 @@ import org.springframework.data.relational.core.mapping.event.Identifier.Specifi
  */
 public class AfterLoadEvent extends RelationalEventWithIdAndEntity {
 
-	private static final long serialVersionUID = -4185777271143436728L;
+    private static final long serialVersionUID = -4185777271143436728L;
 
-	/**
-	 * @param id of the entity
-	 * @param entity the newly instantiated entity.
-	 */
-	public AfterLoadEvent(Specified id, Object entity) {
-		super(id, entity, null);
-	}
+    /**
+     * @param id     of the entity
+     * @param entity the newly instantiated entity.
+     */
+    public AfterLoadEvent(Specified id, Object entity) {
+        super(id, entity, null);
+    }
 }

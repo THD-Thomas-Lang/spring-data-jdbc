@@ -33,64 +33,65 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentEnti
  */
 public class NamingStrategyUnitTests {
 
-	private final NamingStrategy target = NamingStrategy.INSTANCE;
-	private final RelationalMappingContext context = new RelationalMappingContext(target);
-	private final RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(DummyEntity.class);
+    private final NamingStrategy target = NamingStrategy.INSTANCE;
+    private final RelationalMappingContext context = new RelationalMappingContext(target);
+    private final RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(DummyEntity.class);
 
-	@Test
-	public void getTableName() {
+    @Test
+    public void getTableName() {
 
-		assertThat(target.getTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
-		assertThat(target.getTableName(DummySubEntity.class)).isEqualTo("dummy_sub_entity");
-	}
+        assertThat(target.getTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
+        assertThat(target.getTableName(DummySubEntity.class)).isEqualTo("dummy_sub_entity");
+    }
 
-	@Test
-	public void getColumnName() {
+    @Test
+    public void getColumnName() {
 
-		assertThat(target.getColumnName(persistentEntity.getPersistentProperty("id"))).isEqualTo("id");
-		assertThat(target.getColumnName(persistentEntity.getPersistentProperty("createdAt"))).isEqualTo("created_at");
-		assertThat(target.getColumnName(persistentEntity.getPersistentProperty("dummySubEntities")))
-				.isEqualTo("dummy_sub_entities");
-	}
+        assertThat(target.getColumnName(persistentEntity.getPersistentProperty("id"))).isEqualTo("id");
+        assertThat(target.getColumnName(persistentEntity.getPersistentProperty("createdAt"))).isEqualTo("created_at");
+        assertThat(target.getColumnName(persistentEntity.getPersistentProperty("dummySubEntities")))
+                .isEqualTo("dummy_sub_entities");
+    }
 
-	@Test
-	public void getReverseColumnName() {
+    @Test
+    public void getReverseColumnName() {
 
-		assertThat(target.getReverseColumnName(persistentEntity.getPersistentProperty("dummySubEntities")))
-				.isEqualTo("dummy_entity");
-	}
+        assertThat(target.getReverseColumnName(persistentEntity.getPersistentProperty("dummySubEntities")))
+                .isEqualTo("dummy_entity");
+    }
 
-	@Test
-	public void getKeyColumn() {
+    @Test
+    public void getKeyColumn() {
 
-		assertThat(target.getKeyColumn(persistentEntity.getPersistentProperty("dummySubEntities")))
-				.isEqualTo("dummy_entity_key");
-	}
+        assertThat(target.getKeyColumn(persistentEntity.getPersistentProperty("dummySubEntities")))
+                .isEqualTo("dummy_entity_key");
+    }
 
-	@Test
-	public void getSchema() {
-		assertThat(target.getSchema()).isEmpty();
-	}
+    @Test
+    public void getSchema() {
+        assertThat(target.getSchema()).isEmpty();
+    }
 
-	@Test
-	public void getQualifiedTableName() {
+    @Test
+    public void getQualifiedTableName() {
 
-		assertThat(target.getQualifiedTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
+        assertThat(target.getQualifiedTableName(persistentEntity.getType())).isEqualTo("dummy_entity");
 
-		NamingStrategy strategy = new NamingStrategy() {
-			@Override
-			public String getSchema() {
-				return "schema";
-			}
-		};
+        NamingStrategy strategy = new NamingStrategy() {
+            @Override
+            public String getSchema() {
+                return "schema";
+            }
+        };
 
-		assertThat(strategy.getQualifiedTableName(persistentEntity.getType())).isEqualTo("schema.dummy_entity");
-	}
+        assertThat(strategy.getQualifiedTableName(persistentEntity.getType())).isEqualTo("schema.dummy_entity");
+    }
 
-	static class DummyEntity {
+    static class DummyEntity {
 
-		@Id int id;
-		LocalDateTime createdAt, lastUpdatedAt;
-		List<DummySubEntity> dummySubEntities;
-	}
+        @Id
+        int id;
+        LocalDateTime createdAt, lastUpdatedAt;
+        List<DummySubEntity> dummySubEntities;
+    }
 }

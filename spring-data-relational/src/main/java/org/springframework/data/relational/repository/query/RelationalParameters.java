@@ -30,51 +30,51 @@ import org.springframework.data.repository.query.Parameters;
  */
 public class RelationalParameters extends Parameters<RelationalParameters, RelationalParameter> {
 
-	/**
-	 * Creates a new {@link RelationalParameters} instance from the given {@link Method}.
-	 *
-	 * @param method must not be {@literal null}.
-	 */
-	public RelationalParameters(Method method) {
-		super(method);
-	}
+    /**
+     * Creates a new {@link RelationalParameters} instance from the given {@link Method}.
+     *
+     * @param method must not be {@literal null}.
+     */
+    public RelationalParameters(Method method) {
+        super(method);
+    }
 
-	private RelationalParameters(List<RelationalParameter> parameters) {
-		super(parameters);
-	}
+    private RelationalParameters(List<RelationalParameter> parameters) {
+        super(parameters);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.Parameters#createParameter(org.springframework.core.MethodParameter)
-	 */
-	@Override
-	protected RelationalParameter createParameter(MethodParameter parameter) {
-		return new RelationalParameter(parameter);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.query.Parameters#createParameter(org.springframework.core.MethodParameter)
+     */
+    @Override
+    protected RelationalParameter createParameter(MethodParameter parameter) {
+        return new RelationalParameter(parameter);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.query.Parameters#createFrom(java.util.List)
-	 */
-	@Override
-	protected RelationalParameters createFrom(List<RelationalParameter> parameters) {
-		return new RelationalParameters(parameters);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.query.Parameters#createFrom(java.util.List)
+     */
+    @Override
+    protected RelationalParameters createFrom(List<RelationalParameter> parameters) {
+        return new RelationalParameters(parameters);
+    }
 
-	/**
-	 * Custom {@link Parameter} implementation.
-	 *
-	 * @author Mark Paluch
-	 */
-	public static class RelationalParameter extends Parameter {
+    /**
+     * Custom {@link Parameter} implementation.
+     *
+     * @author Mark Paluch
+     */
+    public static class RelationalParameter extends Parameter {
 
-		/**
-		 * Creates a new {@link RelationalParameter}.
-		 *
-		 * @param parameter must not be {@literal null}.
-		 */
-		RelationalParameter(MethodParameter parameter) {
-			super(parameter);
-		}
-	}
+        /**
+         * Creates a new {@link RelationalParameter}.
+         *
+         * @param parameter must not be {@literal null}.
+         */
+        RelationalParameter(MethodParameter parameter) {
+            super(parameter);
+        }
+    }
 }

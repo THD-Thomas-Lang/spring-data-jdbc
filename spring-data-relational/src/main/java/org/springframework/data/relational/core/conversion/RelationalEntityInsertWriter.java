@@ -16,14 +16,6 @@
 package org.springframework.data.relational.core.conversion;
 
 import lombok.Value;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyPath;
@@ -34,17 +26,21 @@ import org.springframework.data.util.Pair;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import java.util.*;
+
 /**
  * Converts an aggregate represented by its root into an {@link AggregateChange}.
+ * Does not do any isNew checks.
  *
  * @author Jens Schauder
  * @author Mark Paluch
+ * @author Thomas Lang
  */
-public class RelationalEntityWriter implements EntityWriter<Object, AggregateChange<?>> {
+public class RelationalEntityInsertWriter implements EntityWriter<Object, AggregateChange<?>> {
 
     private final RelationalMappingContext context;
 
-    public RelationalEntityWriter(RelationalMappingContext context) {
+    public RelationalEntityInsertWriter(RelationalMappingContext context) {
         this.context = context;
     }
 
@@ -80,20 +76,17 @@ public class RelationalEntityWriter implements EntityWriter<Object, AggregateCha
             this.paths = context.findPersistentPropertyPaths(entityType, PersistentProperty::isEntity);
         }
 
+        /**
+         * Leaves out the isNew check as defined in #DATAJDBC-282
+         *
+         * @return List of {@link DbAction}s
+         * @see <a href="https://jira.spring.io/browse/DATAJDBC-282">DAJDBC-282</a>
+         */
         private List<DbAction<?>> write() {
 
             List<DbAction<?>> actions = new ArrayList<>();
-            if (isNew(root)) {
-
-                actions.add(setRootAction(new DbAction.InsertRoot<>(entity)));
-                actions.addAll(insertReferenced());
-            } else {
-
-                actions.addAll(deleteReferenced());
-                actions.add(setRootAction(new DbAction.UpdateRoot<>(entity)));
-                actions.addAll(insertReferenced());
-            }
-
+            actions.add(setRootAction(new DbAction.InsertRoot<>(entity)));
+            actions.addAll(insertReferenced());
             return actions;
         }
 
@@ -175,10 +168,10 @@ public class RelationalEntityWriter implements EntityWriter<Object, AggregateCha
 
             return null;
         }
-
-        private boolean isNew(Object o) {
-            return context.getRequiredPersistentEntity(o.getClass()).isNew(o);
-        }
+//        commented as of #DATAJDBC-282
+//        private boolean isNew(Object o) {
+//            return context.getRequiredPersistentEntity(o.getClass()).isNew(o);
+//        }
 
         private List<PathNode> from(PersistentPropertyPath<RelationalPersistentProperty> path) {
 

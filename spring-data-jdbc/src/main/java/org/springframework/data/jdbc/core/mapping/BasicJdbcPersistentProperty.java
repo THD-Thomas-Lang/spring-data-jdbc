@@ -28,27 +28,27 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
  */
 public class BasicJdbcPersistentProperty extends BasicRelationalPersistentProperty {
 
-	/**
-	 * Creates a new {@link BasicJdbcPersistentProperty}.
-	 *
-	 * @param property must not be {@literal null}.
-	 * @param owner must not be {@literal null}.
-	 * @param simpleTypeHolder must not be {@literal null}.
-	 * @param context must not be {@literal null}
-	 */
-	public BasicJdbcPersistentProperty(Property property, PersistentEntity<?, RelationalPersistentProperty> owner,
-			SimpleTypeHolder simpleTypeHolder, RelationalMappingContext context) {
-		super(property, owner, simpleTypeHolder, context);
-	}
+    /**
+     * Creates a new {@link BasicJdbcPersistentProperty}.
+     *
+     * @param property         must not be {@literal null}.
+     * @param owner            must not be {@literal null}.
+     * @param simpleTypeHolder must not be {@literal null}.
+     * @param context          must not be {@literal null}
+     */
+    public BasicJdbcPersistentProperty(Property property, PersistentEntity<?, RelationalPersistentProperty> owner,
+                                       SimpleTypeHolder simpleTypeHolder, RelationalMappingContext context) {
+        super(property, owner, simpleTypeHolder, context);
+    }
 
-	@Override
-	public int getSqlType() {
-		return JdbcUtil.sqlTypeFor(getColumnType());
-	}
+    @Override
+    public int getSqlType() {
+        return JdbcUtil.sqlTypeFor(getColumnType());
+    }
 
-	@Override
-	public boolean isReference() {
-		return AggregateReference.class.isAssignableFrom(getRawType());
-	}
+    @Override
+    public boolean isReference() {
+        return AggregateReference.class.isAssignableFrom(getRawType());
+    }
 
 }

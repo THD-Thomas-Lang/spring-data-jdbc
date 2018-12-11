@@ -36,97 +36,99 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
  */
 public class AggregateChangeUnitTests {
 
-	DummyEntity entity = new DummyEntity();
-	Content content = new Content();
+    DummyEntity entity = new DummyEntity();
+    Content content = new Content();
 
-	RelationalMappingContext context = new RelationalMappingContext();
-	RelationalConverter converter = new BasicRelationalConverter(context);
+    RelationalMappingContext context = new RelationalMappingContext();
+    RelationalConverter converter = new BasicRelationalConverter(context);
 
-	PersistentPropertyAccessor<DummyEntity> propertyAccessor = context.getRequiredPersistentEntity(DummyEntity.class)
-			.getPropertyAccessor(entity);
-	Object id = 23;
+    PersistentPropertyAccessor<DummyEntity> propertyAccessor = context.getRequiredPersistentEntity(DummyEntity.class)
+            .getPropertyAccessor(entity);
+    Object id = 23;
 
-	DbAction.WithEntity<?> rootInsert = new DbAction.InsertRoot<>(entity);
+    DbAction.WithEntity<?> rootInsert = new DbAction.InsertRoot<>(entity);
 
-	DbAction.Insert<?> createInsert(String propertyName, Object value, Object key) {
+    DbAction.Insert<?> createInsert(String propertyName, Object value, Object key) {
 
-		DbAction.Insert<Object> insert = new DbAction.Insert<>(value,
-				context.getPersistentPropertyPath(propertyName, DummyEntity.class), rootInsert);
-		insert.getAdditionalValues().put("dummy_entity_key", key);
+        DbAction.Insert<Object> insert = new DbAction.Insert<>(value,
+                context.getPersistentPropertyPath(propertyName, DummyEntity.class), rootInsert);
+        insert.getAdditionalValues().put("dummy_entity_key", key);
 
-		return insert;
-	}
+        return insert;
+    }
 
-	@Test // DATAJDBC-241
-	public void setIdForSimpleReference() {
+    @Test // DATAJDBC-241
+    public void setIdForSimpleReference() {
 
-		entity.single = content;
+        entity.single = content;
 
-		DbAction.Insert<?> insert = createInsert("single", content, null);
+        DbAction.Insert<?> insert = createInsert("single", content, null);
 
-		AggregateChange.setId(context, converter, propertyAccessor, insert, id);
+        AggregateChange.setId(context, converter, propertyAccessor, insert, id);
 
-		DummyEntity result = propertyAccessor.getBean();
+        DummyEntity result = propertyAccessor.getBean();
 
-		assertThat(result.single.id).isEqualTo(id);
-	}
+        assertThat(result.single.id).isEqualTo(id);
+    }
 
-	@Test // DATAJDBC-241
-	public void setIdForSingleElementSet() {
+    @Test // DATAJDBC-241
+    public void setIdForSingleElementSet() {
 
-		entity.contentSet.add(content);
+        entity.contentSet.add(content);
 
-		DbAction.Insert<?> insert = createInsert("contentSet", content, null);
+        DbAction.Insert<?> insert = createInsert("contentSet", content, null);
 
-		AggregateChange.setId(context, converter, propertyAccessor, insert, id);
+        AggregateChange.setId(context, converter, propertyAccessor, insert, id);
 
-		DummyEntity result = propertyAccessor.getBean();
-		assertThat(result.contentSet).isNotNull();
-		assertThat(result.contentSet).extracting(c -> c == null ? "null" : c.id).containsExactlyInAnyOrder(23);
-	}
+        DummyEntity result = propertyAccessor.getBean();
+        assertThat(result.contentSet).isNotNull();
+        assertThat(result.contentSet).extracting(c -> c == null ? "null" : c.id).containsExactlyInAnyOrder(23);
+    }
 
-	@Test // DATAJDBC-241
-	public void setIdForSingleElementList() {
+    @Test // DATAJDBC-241
+    public void setIdForSingleElementList() {
 
-		entity.contentList.add(content);
+        entity.contentList.add(content);
 
-		DbAction.Insert<?> insert = createInsert("contentList", content, 0);
+        DbAction.Insert<?> insert = createInsert("contentList", content, 0);
 
-		AggregateChange.setId(context, converter, propertyAccessor, insert, id);
+        AggregateChange.setId(context, converter, propertyAccessor, insert, id);
 
-		DummyEntity result = propertyAccessor.getBean();
-		assertThat(result.contentList).extracting(c -> c.id).containsExactlyInAnyOrder(23);
-	}
+        DummyEntity result = propertyAccessor.getBean();
+        assertThat(result.contentList).extracting(c -> c.id).containsExactlyInAnyOrder(23);
+    }
 
-	@Test // DATAJDBC-241
-	public void setIdForSingleElementMap() {
+    @Test // DATAJDBC-241
+    public void setIdForSingleElementMap() {
 
-		entity.contentMap.put("one", content);
+        entity.contentMap.put("one", content);
 
-		DbAction.Insert<?> insert = createInsert("contentMap", content, "one");
+        DbAction.Insert<?> insert = createInsert("contentMap", content, "one");
 
-		AggregateChange.setId(context, converter, propertyAccessor, insert, id);
+        AggregateChange.setId(context, converter, propertyAccessor, insert, id);
 
-		DummyEntity result = propertyAccessor.getBean();
-		assertThat(result.contentMap.entrySet()).extracting(e -> e.getKey(), e -> e.getValue().id)
-				.containsExactlyInAnyOrder(tuple("one", 23));
-	}
+        DummyEntity result = propertyAccessor.getBean();
+        assertThat(result.contentMap.entrySet()).extracting(e -> e.getKey(), e -> e.getValue().id)
+                .containsExactlyInAnyOrder(tuple("one", 23));
+    }
 
-	private static class DummyEntity {
+    private static class DummyEntity {
 
-		@Id Integer rootId;
+        @Id
+        Integer rootId;
 
-		Content single;
+        Content single;
 
-		Set<Content> contentSet = new HashSet<>();
+        Set<Content> contentSet = new HashSet<>();
 
-		List<Content> contentList = new ArrayList<>();
+        List<Content> contentList = new ArrayList<>();
 
-		Map<String, Content> contentMap = new HashMap<>();
-	}
+        Map<String, Content> contentMap = new HashMap<>();
+    }
 
-	private static class Content {
+    private static class Content {
 
-		@Id Integer id;
-	}
+        @Id
+        Integer id;
+    }
 }

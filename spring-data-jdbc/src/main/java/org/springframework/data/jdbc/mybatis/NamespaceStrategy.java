@@ -23,18 +23,19 @@ package org.springframework.data.jdbc.mybatis;
  */
 public interface NamespaceStrategy {
 
-	NamespaceStrategy DEFAULT_INSTANCE = new NamespaceStrategy() {};
+    NamespaceStrategy DEFAULT_INSTANCE = new NamespaceStrategy() {
+    };
 
-	/**
-	 * Get a namespace that corresponds to the given domain type.
-	 * <p>
-	 * By default, the namespace is based on the class of the entity plus the suffix "Mapper".
-	 *
-	 * @param domainType Must be non {@literal null}.
-	 * @return a namespace that correspond domain type
-	 */
-	default String getNamespace(Class<?> domainType) {
-		return domainType.getName() + "Mapper";
-	}
+    /**
+     * Get a namespace that corresponds to the given domain type.
+     * <p>
+     * By default, the namespace is based on the class of the entity plus the suffix "Mapper".
+     *
+     * @param domainType Must be non {@literal null}.
+     * @return a namespace that correspond domain type
+     */
+    default String getNamespace(Class<?> domainType) {
+        return domainType.getName() + "Mapper";
+    }
 
 }

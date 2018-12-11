@@ -30,38 +30,38 @@ import org.springframework.lang.Nullable;
  */
 class SimpleRelationalEvent extends ApplicationEvent implements RelationalEvent {
 
-	private static final long serialVersionUID = -1798807778668751659L;
+    private static final long serialVersionUID = -1798807778668751659L;
 
-	private final Object entity;
-	private final AggregateChange change;
+    private final Object entity;
+    private final AggregateChange change;
 
-	SimpleRelationalEvent(Identifier id, Optional<Object> entity, @Nullable AggregateChange change) {
+    SimpleRelationalEvent(Identifier id, Optional<Object> entity, @Nullable AggregateChange change) {
 
-		super(id);
+        super(id);
 
-		this.entity = entity.orElse(null);
-		this.change = change;
-	}
+        this.entity = entity.orElse(null);
+        this.change = change;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.mapping.event.JdbcEvent#getId()
-	 */
-	@Override
-	public Identifier getId() {
-		return (Identifier) getSource();
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.mapping.event.JdbcEvent#getId()
+     */
+    @Override
+    public Identifier getId() {
+        return (Identifier) getSource();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.core.mapping.event.JdbcEvent#getOptionalEntity()
-	 */
-	@Override
-	public Optional<Object> getOptionalEntity() {
-		return Optional.ofNullable(entity);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.core.mapping.event.JdbcEvent#getOptionalEntity()
+     */
+    @Override
+    public Optional<Object> getOptionalEntity() {
+        return Optional.ofNullable(entity);
+    }
 
-	public AggregateChange getChange() {
-		return change;
-	}
+    public AggregateChange getChange() {
+        return change;
+    }
 }

@@ -32,22 +32,22 @@ import org.springframework.lang.NonNull;
  */
 class MapEntityRowMapper<T> implements RowMapper<Map.Entry<Object, T>> {
 
-	private final RowMapper<T> delegate;
-	private final String keyColumn;
+    private final RowMapper<T> delegate;
+    private final String keyColumn;
 
-	/**
-	 * @param delegate rowmapper used as a delegate for obtaining the map values.
-	 * @param keyColumn the name of the key column.
-	 */
-	MapEntityRowMapper(RowMapper<T> delegate, String keyColumn) {
+    /**
+     * @param delegate  rowmapper used as a delegate for obtaining the map values.
+     * @param keyColumn the name of the key column.
+     */
+    MapEntityRowMapper(RowMapper<T> delegate, String keyColumn) {
 
-		this.delegate = delegate;
-		this.keyColumn = keyColumn;
-	}
+        this.delegate = delegate;
+        this.keyColumn = keyColumn;
+    }
 
-	@NonNull
-	@Override
-	public Map.Entry<Object, T> mapRow(ResultSet rs, int rowNum) throws SQLException {
-		return new HashMap.SimpleEntry<>(rs.getObject(keyColumn), delegate.mapRow(rs, rowNum));
-	}
+    @NonNull
+    @Override
+    public Map.Entry<Object, T> mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return new HashMap.SimpleEntry<>(rs.getObject(keyColumn), delegate.mapRow(rs, rowNum));
+    }
 }

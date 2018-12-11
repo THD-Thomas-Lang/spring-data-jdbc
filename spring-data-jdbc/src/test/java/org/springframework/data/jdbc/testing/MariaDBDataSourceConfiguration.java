@@ -29,38 +29,38 @@ import org.testcontainers.jdbc.ext.ScriptUtils;
 
 /**
  * {@link DataSource} setup for MariaDB. Starts a Docker-container with a MariaDB database, and sets up database "test".
- * 
+ *
  * @author Christoph Preißner
  */
 @Configuration
 @Profile("mariadb")
 class MariaDBDataSourceConfiguration extends DataSourceConfiguration {
 
-	private static final MariaDBContainer MARIADB_CONTAINER = new MariaDBContainer().withConfigurationOverride("");
+    private static final MariaDBContainer MARIADB_CONTAINER = new MariaDBContainer().withConfigurationOverride("");
 
-	static {
-		MARIADB_CONTAINER.start();
-	}
+    static {
+        MARIADB_CONTAINER.start();
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.jdbc.testing.DataSourceConfiguration#createDataSource()
-	 */
-	@Override
-	protected DataSource createDataSource() {
-		try {
-			MariaDbDataSource dataSource = new MariaDbDataSource();
-			dataSource.setUrl(MARIADB_CONTAINER.getJdbcUrl());
-			dataSource.setUser(MARIADB_CONTAINER.getUsername());
-			dataSource.setPassword(MARIADB_CONTAINER.getPassword());
-			return dataSource;
-		} catch (SQLException sqlex) {
-			throw new RuntimeException(sqlex);
-		}
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.jdbc.testing.DataSourceConfiguration#createDataSource()
+     */
+    @Override
+    protected DataSource createDataSource() {
+        try {
+            MariaDbDataSource dataSource = new MariaDbDataSource();
+            dataSource.setUrl(MARIADB_CONTAINER.getJdbcUrl());
+            dataSource.setUser(MARIADB_CONTAINER.getUsername());
+            dataSource.setPassword(MARIADB_CONTAINER.getPassword());
+            return dataSource;
+        } catch (SQLException sqlex) {
+            throw new RuntimeException(sqlex);
+        }
+    }
 
-	@PostConstruct
-	public void initDatabase() throws SQLException, ScriptException {
-		ScriptUtils.executeSqlScript(createDataSource().getConnection(), null, "DROP DATABASE test;CREATE DATABASE test;");
-	}
+    @PostConstruct
+    public void initDatabase() throws SQLException, ScriptException {
+        ScriptUtils.executeSqlScript(createDataSource().getConnection(), null, "DROP DATABASE test;CREATE DATABASE test;");
+    }
 }

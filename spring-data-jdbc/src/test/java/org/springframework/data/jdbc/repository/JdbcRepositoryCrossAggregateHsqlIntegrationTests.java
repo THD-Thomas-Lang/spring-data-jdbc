@@ -48,74 +48,83 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class JdbcRepositoryCrossAggregateHsqlIntegrationTests {
 
-	private static final long TWO_ID = 23L;
+    private static final long TWO_ID = 23L;
 
-	@Configuration
-	@Import(TestConfiguration.class)
-	@EnableJdbcRepositories(considerNestedRepositories = true)
-	static class Config {
+    @Configuration
+    @Import(TestConfiguration.class)
+    @EnableJdbcRepositories(considerNestedRepositories = true)
+    static class Config {
 
-		@Autowired JdbcRepositoryFactory factory;
+        @Autowired
+        JdbcRepositoryFactory factory;
 
-		@Bean
-		Class<?> testClass() {
-			return JdbcRepositoryCrossAggregateHsqlIntegrationTests.class;
-		}
-	}
+        @Bean
+        Class<?> testClass() {
+            return JdbcRepositoryCrossAggregateHsqlIntegrationTests.class;
+        }
+    }
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
 
-	@Autowired NamedParameterJdbcTemplate template;
-	@Autowired Ones ones;
-	@Autowired RelationalMappingContext context;
+    @Autowired
+    NamedParameterJdbcTemplate template;
+    @Autowired
+    Ones ones;
+    @Autowired
+    RelationalMappingContext context;
 
-	@SuppressWarnings("ConstantConditions")
-	@Test // DATAJDBC-221
-	public void savesAndRead() {
+    @SuppressWarnings("ConstantConditions")
+    @Test // DATAJDBC-221
+    public void savesAndRead() {
 
-		AggregateOne one = new AggregateOne();
-		one.name = "Aggregate - 1";
-		one.two = AggregateReference.to(TWO_ID);
+        AggregateOne one = new AggregateOne();
+        one.name = "Aggregate - 1";
+        one.two = AggregateReference.to(TWO_ID);
 
-		one = ones.save(one);
+        one = ones.save(one);
 
-		AggregateOne reloaded = ones.findById(one.id).get();
-		assertThat(reloaded.two.getId()).isEqualTo(TWO_ID);
-	}
+        AggregateOne reloaded = ones.findById(one.id).get();
+        assertThat(reloaded.two.getId()).isEqualTo(TWO_ID);
+    }
 
-	@Test // DATAJDBC-221
-	public void savesAndUpdate() {
+    @Test // DATAJDBC-221
+    public void savesAndUpdate() {
 
-		AggregateOne one = new AggregateOne();
-		one.name = "Aggregate - 1";
-		one.two = AggregateReference.to(42L);
-		one = ones.save(one);
+        AggregateOne one = new AggregateOne();
+        one.name = "Aggregate - 1";
+        one.two = AggregateReference.to(42L);
+        one = ones.save(one);
 
-		one.two = AggregateReference.to(TWO_ID);
+        one.two = AggregateReference.to(TWO_ID);
 
-		ones.save(one);
+        ones.save(one);
 
-		assertThat( //
-				JdbcTestUtils.countRowsInTableWhere( //
-						(JdbcTemplate) template.getJdbcOperations(), //
-						"aggregate_one", //
-						"two = " + TWO_ID) //
-		).isEqualTo(1);
-	}
+        assertThat( //
+                JdbcTestUtils.countRowsInTableWhere( //
+                        (JdbcTemplate) template.getJdbcOperations(), //
+                        "aggregate_one", //
+                        "two = " + TWO_ID) //
+        ).isEqualTo(1);
+    }
 
-	interface Ones extends CrudRepository<AggregateOne, Long> {}
+    interface Ones extends CrudRepository<AggregateOne, Long> {
+    }
 
-	static class AggregateOne {
+    static class AggregateOne {
 
-		@Id Long id;
-		String name;
-		AggregateReference<AggregateTwo, Long> two;
-	}
+        @Id
+        Long id;
+        String name;
+        AggregateReference<AggregateTwo, Long> two;
+    }
 
-	static class AggregateTwo {
+    static class AggregateTwo {
 
-		@Id Long id;
-		String name;
-	}
+        @Id
+        Long id;
+        String name;
+    }
 }

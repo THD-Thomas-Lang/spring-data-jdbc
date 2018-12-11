@@ -37,68 +37,68 @@ import org.springframework.util.Assert;
  */
 public class DtoInstantiatingConverter implements Converter<Object, Object> {
 
-	private final Class<?> targetType;
-	private final MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> context;
-	private final EntityInstantiator instantiator;
+    private final Class<?> targetType;
+    private final MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> context;
+    private final EntityInstantiator instantiator;
 
-	/**
-	 * Creates a new {@link Converter} to instantiate DTOs.
-	 *
-	 * @param dtoType must not be {@literal null}.
-	 * @param context must not be {@literal null}.
-	 * @param instantiators must not be {@literal null}.
-	 */
-	public DtoInstantiatingConverter(Class<?> dtoType,
-									 MappingContext<? extends RelationalPersistentEntity<?>, ? extends RelationalPersistentProperty> context,
-									 EntityInstantiators instantiator) {
+    /**
+     * Creates a new {@link Converter} to instantiate DTOs.
+     *
+     * @param dtoType       must not be {@literal null}.
+     * @param context       must not be {@literal null}.
+     * @param instantiators must not be {@literal null}.
+     */
+    public DtoInstantiatingConverter(Class<?> dtoType,
+                                     MappingContext<? extends RelationalPersistentEntity<?>, ? extends RelationalPersistentProperty> context,
+                                     EntityInstantiators instantiator) {
 
-		Assert.notNull(dtoType, "DTO type must not be null!");
-		Assert.notNull(context, "MappingContext must not be null!");
-		Assert.notNull(instantiator, "EntityInstantiators must not be null!");
+        Assert.notNull(dtoType, "DTO type must not be null!");
+        Assert.notNull(context, "MappingContext must not be null!");
+        Assert.notNull(instantiator, "EntityInstantiators must not be null!");
 
-		this.targetType = dtoType;
-		this.context = context;
-		this.instantiator = instantiator.getInstantiatorFor(context.getRequiredPersistentEntity(dtoType));
-	}
+        this.targetType = dtoType;
+        this.context = context;
+        this.instantiator = instantiator.getInstantiatorFor(context.getRequiredPersistentEntity(dtoType));
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
-	 */
-	@Override
-	public Object convert(Object source) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.core.convert.converter.Converter#convert(java.lang.Object)
+     */
+    @Override
+    public Object convert(Object source) {
 
-		if (targetType.isInterface()) {
-			return source;
-		}
+        if (targetType.isInterface()) {
+            return source;
+        }
 
-		final PersistentEntity<?, ?> sourceEntity = context.getRequiredPersistentEntity(source.getClass());
-		final PersistentPropertyAccessor sourceAccessor = sourceEntity.getPropertyAccessor(source);
-		final PersistentEntity<?, ?> targetEntity = context.getRequiredPersistentEntity(targetType);
-		final PreferredConstructor<?, ? extends PersistentProperty<?>> constructor = targetEntity
-				.getPersistenceConstructor();
+        final PersistentEntity<?, ?> sourceEntity = context.getRequiredPersistentEntity(source.getClass());
+        final PersistentPropertyAccessor sourceAccessor = sourceEntity.getPropertyAccessor(source);
+        final PersistentEntity<?, ?> targetEntity = context.getRequiredPersistentEntity(targetType);
+        final PreferredConstructor<?, ? extends PersistentProperty<?>> constructor = targetEntity
+                .getPersistenceConstructor();
 
-		@SuppressWarnings({"rawtypes", "unchecked"})
-		Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        Object dto = instantiator.createInstance(targetEntity, new ParameterValueProvider() {
 
-			@Override
-			public Object getParameterValue(Parameter parameter) {
-				return sourceAccessor.getProperty(sourceEntity.getPersistentProperty(parameter.getName()));
-			}
-		});
+            @Override
+            public Object getParameterValue(Parameter parameter) {
+                return sourceAccessor.getProperty(sourceEntity.getPersistentProperty(parameter.getName()));
+            }
+        });
 
-		final PersistentPropertyAccessor dtoAccessor = targetEntity.getPropertyAccessor(dto);
+        final PersistentPropertyAccessor dtoAccessor = targetEntity.getPropertyAccessor(dto);
 
-		targetEntity.doWithProperties((SimplePropertyHandler) property -> {
+        targetEntity.doWithProperties((SimplePropertyHandler) property -> {
 
-			if (constructor.isConstructorParameter(property)) {
-				return;
-			}
+            if (constructor.isConstructorParameter(property)) {
+                return;
+            }
 
-			dtoAccessor.setProperty(property,
-					sourceAccessor.getProperty(sourceEntity.getPersistentProperty(property.getName())));
-		});
+            dtoAccessor.setProperty(property,
+                    sourceAccessor.getProperty(sourceEntity.getPersistentProperty(property.getName())));
+        });
 
-		return dto;
-	}
+        return dto;
+    }
 }

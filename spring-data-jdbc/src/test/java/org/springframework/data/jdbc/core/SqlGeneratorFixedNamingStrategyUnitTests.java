@@ -36,178 +36,181 @@ import org.springframework.data.relational.core.mapping.RelationalPersistentProp
  */
 public class SqlGeneratorFixedNamingStrategyUnitTests {
 
-	final NamingStrategy fixedCustomTablePrefixStrategy = new NamingStrategy() {
+    final NamingStrategy fixedCustomTablePrefixStrategy = new NamingStrategy() {
 
-		@Override
-		public String getSchema() {
-			return "FixedCustomSchema";
-		}
+        @Override
+        public String getSchema() {
+            return "FixedCustomSchema";
+        }
 
-		@Override
-		public String getTableName(Class<?> type) {
-			return "FixedCustomTablePrefix_" + type.getSimpleName();
-		}
+        @Override
+        public String getTableName(Class<?> type) {
+            return "FixedCustomTablePrefix_" + type.getSimpleName();
+        }
 
-		@Override
-		public String getColumnName(RelationalPersistentProperty property) {
-			return "FixedCustomPropertyPrefix_" + property.getName();
-		}
-	};
+        @Override
+        public String getColumnName(RelationalPersistentProperty property) {
+            return "FixedCustomPropertyPrefix_" + property.getName();
+        }
+    };
 
-	final NamingStrategy upperCaseLowerCaseStrategy = new NamingStrategy() {
+    final NamingStrategy upperCaseLowerCaseStrategy = new NamingStrategy() {
 
-		@Override
-		public String getTableName(Class<?> type) {
-			return type.getSimpleName().toUpperCase();
-		}
+        @Override
+        public String getTableName(Class<?> type) {
+            return type.getSimpleName().toUpperCase();
+        }
 
-		@Override
-		public String getColumnName(RelationalPersistentProperty property) {
-			return property.getName().toLowerCase();
-		}
-	};
+        @Override
+        public String getColumnName(RelationalPersistentProperty property) {
+            return property.getName().toLowerCase();
+        }
+    };
 
-	private RelationalMappingContext context = new JdbcMappingContext();
+    private RelationalMappingContext context = new JdbcMappingContext();
 
-	@Test // DATAJDBC-107
-	public void findOneWithOverriddenFixedTableName() {
+    @Test // DATAJDBC-107
+    public void findOneWithOverriddenFixedTableName() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
 
-		String sql = sqlGenerator.getFindOne();
+        String sql = sqlGenerator.getFindOne();
 
-		SoftAssertions softAssertions = new SoftAssertions();
-		softAssertions.assertThat(sql) //
-				.startsWith("SELECT") //
-				.contains(
-						"FixedCustomSchema.FixedCustomTablePrefix_DummyEntity.FixedCustomPropertyPrefix_id AS FixedCustomPropertyPrefix_id,") //
-				.contains(
-						"FixedCustomSchema.FixedCustomTablePrefix_DummyEntity.FixedCustomPropertyPrefix_name AS FixedCustomPropertyPrefix_name,") //
-				.contains("ref.FixedCustomPropertyPrefix_l1id AS ref_FixedCustomPropertyPrefix_l1id") //
-				.contains("ref.FixedCustomPropertyPrefix_content AS ref_FixedCustomPropertyPrefix_content") //
-				.contains("FROM FixedCustomSchema.FixedCustomTablePrefix_DummyEntity");
-		softAssertions.assertAll();
-	}
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions.assertThat(sql) //
+                .startsWith("SELECT") //
+                .contains(
+                        "FixedCustomSchema.FixedCustomTablePrefix_DummyEntity.FixedCustomPropertyPrefix_id AS FixedCustomPropertyPrefix_id,") //
+                .contains(
+                        "FixedCustomSchema.FixedCustomTablePrefix_DummyEntity.FixedCustomPropertyPrefix_name AS FixedCustomPropertyPrefix_name,") //
+                .contains("ref.FixedCustomPropertyPrefix_l1id AS ref_FixedCustomPropertyPrefix_l1id") //
+                .contains("ref.FixedCustomPropertyPrefix_content AS ref_FixedCustomPropertyPrefix_content") //
+                .contains("FROM FixedCustomSchema.FixedCustomTablePrefix_DummyEntity");
+        softAssertions.assertAll();
+    }
 
-	@Test // DATAJDBC-107
-	public void findOneWithUppercasedTablesAndLowercasedColumns() {
+    @Test // DATAJDBC-107
+    public void findOneWithUppercasedTablesAndLowercasedColumns() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(upperCaseLowerCaseStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(upperCaseLowerCaseStrategy);
 
-		String sql = sqlGenerator.getFindOne();
+        String sql = sqlGenerator.getFindOne();
 
-		SoftAssertions softAssertions = new SoftAssertions();
-		softAssertions.assertThat(sql) //
-				.startsWith("SELECT") //
-				.contains("DUMMYENTITY.id AS id,") //
-				.contains("DUMMYENTITY.name AS name,") //
-				.contains("ref.l1id AS ref_l1id") //
-				.contains("ref.content AS ref_content") //
-				.contains("FROM DUMMYENTITY");
-		softAssertions.assertAll();
-	}
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions.assertThat(sql) //
+                .startsWith("SELECT") //
+                .contains("DUMMYENTITY.id AS id,") //
+                .contains("DUMMYENTITY.name AS name,") //
+                .contains("ref.l1id AS ref_l1id") //
+                .contains("ref.content AS ref_content") //
+                .contains("FROM DUMMYENTITY");
+        softAssertions.assertAll();
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteFirstLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteFirstLevel() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
 
-		String sql = sqlGenerator.createDeleteByPath(getPath("ref", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteByPath(getPath("ref", DummyEntity.class));
 
-		assertThat(sql).isEqualTo(
-				"DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity = :rootId");
-	}
+        assertThat(sql).isEqualTo(
+                "DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity = :rootId");
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteAllSecondLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteAllSecondLevel() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
 
-		String sql = sqlGenerator.createDeleteByPath(getPath("ref.further", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteByPath(getPath("ref.further", DummyEntity.class));
 
-		assertThat(sql).isEqualTo("DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_SecondLevelReferencedEntity "
-				+ "WHERE referenced_entity IN " + "(SELECT FixedCustomPropertyPrefix_l1id "
-				+ "FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity = :rootId)");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_SecondLevelReferencedEntity "
+                + "WHERE referenced_entity IN " + "(SELECT FixedCustomPropertyPrefix_l1id "
+                + "FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity = :rootId)");
+    }
 
-	@Test // DATAJDBC-107
-	public void deleteAll() {
+    @Test // DATAJDBC-107
+    public void deleteAll() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
 
-		String sql = sqlGenerator.createDeleteAllSql(null);
+        String sql = sqlGenerator.createDeleteAllSql(null);
 
-		assertThat(sql).isEqualTo("DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_DummyEntity");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_DummyEntity");
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteAllFirstLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteAllFirstLevel() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
 
-		String sql = sqlGenerator.createDeleteAllSql(getPath("ref", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteAllSql(getPath("ref", DummyEntity.class));
 
-		assertThat(sql).isEqualTo(
-				"DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity IS NOT NULL");
-	}
+        assertThat(sql).isEqualTo(
+                "DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity IS NOT NULL");
+    }
 
-	@Test // DATAJDBC-107
-	public void cascadingDeleteSecondLevel() {
+    @Test // DATAJDBC-107
+    public void cascadingDeleteSecondLevel() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
 
-		String sql = sqlGenerator.createDeleteAllSql(getPath("ref.further", DummyEntity.class));
+        String sql = sqlGenerator.createDeleteAllSql(getPath("ref.further", DummyEntity.class));
 
-		assertThat(sql).isEqualTo("DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_SecondLevelReferencedEntity "
-				+ "WHERE referenced_entity IN " + "(SELECT FixedCustomPropertyPrefix_l1id "
-				+ "FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity IS NOT NULL)");
-	}
+        assertThat(sql).isEqualTo("DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_SecondLevelReferencedEntity "
+                + "WHERE referenced_entity IN " + "(SELECT FixedCustomPropertyPrefix_l1id "
+                + "FROM FixedCustomSchema.FixedCustomTablePrefix_ReferencedEntity " + "WHERE dummy_entity IS NOT NULL)");
+    }
 
-	@Test // DATAJDBC-113
-	public void deleteByList() {
+    @Test // DATAJDBC-113
+    public void deleteByList() {
 
-		SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
+        SqlGenerator sqlGenerator = configureSqlGenerator(fixedCustomTablePrefixStrategy);
 
-		String sql = sqlGenerator.getDeleteByList();
+        String sql = sqlGenerator.getDeleteByList();
 
-		assertThat(sql).isEqualTo(
-				"DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_DummyEntity WHERE FixedCustomPropertyPrefix_id IN (:ids)");
-	}
+        assertThat(sql).isEqualTo(
+                "DELETE FROM FixedCustomSchema.FixedCustomTablePrefix_DummyEntity WHERE FixedCustomPropertyPrefix_id IN (:ids)");
+    }
 
-	private PersistentPropertyPath<RelationalPersistentProperty> getPath(String path, Class<?> baseType) {
-		return PersistentPropertyPathTestUtils.getPath(context, path, baseType);
-	}
+    private PersistentPropertyPath<RelationalPersistentProperty> getPath(String path, Class<?> baseType) {
+        return PersistentPropertyPathTestUtils.getPath(context, path, baseType);
+    }
 
-	/**
-	 * Plug in a custom {@link NamingStrategy} for this test case.
-	 *
-	 * @param namingStrategy
-	 */
-	private SqlGenerator configureSqlGenerator(NamingStrategy namingStrategy) {
+    /**
+     * Plug in a custom {@link NamingStrategy} for this test case.
+     *
+     * @param namingStrategy
+     */
+    private SqlGenerator configureSqlGenerator(NamingStrategy namingStrategy) {
 
-		RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
-		RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(DummyEntity.class);
-		return new SqlGenerator(context, persistentEntity, new SqlGeneratorSource(context));
-	}
+        RelationalMappingContext context = new JdbcMappingContext(namingStrategy);
+        RelationalPersistentEntity<?> persistentEntity = context.getRequiredPersistentEntity(DummyEntity.class);
+        return new SqlGenerator(context, persistentEntity, new SqlGeneratorSource(context));
+    }
 
-	static class DummyEntity {
+    static class DummyEntity {
 
-		@Id Long id;
-		String name;
-		ReferencedEntity ref;
-	}
+        @Id
+        Long id;
+        String name;
+        ReferencedEntity ref;
+    }
 
-	static class ReferencedEntity {
+    static class ReferencedEntity {
 
-		@Id Long l1id;
-		String content;
-		SecondLevelReferencedEntity further;
-	}
+        @Id
+        Long l1id;
+        String content;
+        SecondLevelReferencedEntity further;
+    }
 
-	static class SecondLevelReferencedEntity {
+    static class SecondLevelReferencedEntity {
 
-		@Id Long l2id;
-		String something;
-	}
+        @Id
+        Long l2id;
+        String something;
+    }
 
 }

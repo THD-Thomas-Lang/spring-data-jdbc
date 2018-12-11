@@ -32,44 +32,44 @@ import org.springframework.util.Assert;
  */
 class IterableOfEntryToMapConverter implements ConditionalConverter, Converter<Iterable<?>, Map<?, ?>> {
 
-	@SuppressWarnings("unchecked")
-	@Nullable
-	@Override
-	public Map<?, ?> convert(Iterable<?> source) {
+    @SuppressWarnings("unchecked")
+    @Nullable
+    @Override
+    public Map<?, ?> convert(Iterable<?> source) {
 
-		Map result = new HashMap();
+        Map result = new HashMap();
 
-		source.forEach(element -> {
+        source.forEach(element -> {
 
-			if (!(element instanceof Entry)) {
-				throw new IllegalArgumentException(String.format("Cannot convert %s to Map.Entry", element.getClass()));
-			}
+            if (!(element instanceof Entry)) {
+                throw new IllegalArgumentException(String.format("Cannot convert %s to Map.Entry", element.getClass()));
+            }
 
-			Entry entry = (Entry) element;
-			result.put(entry.getKey(), entry.getValue());
-		});
+            Entry entry = (Entry) element;
+            result.put(entry.getKey(), entry.getValue());
+        });
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Tries to determine if the {@literal sourceType} can be converted to a {@link Map}. If this can not be determined,
-	 * because the sourceTyppe does not contain information about the element type it returns {@literal true}.
-	 *
-	 * @param sourceType {@link TypeDescriptor} to convert from.
-	 * @param targetType {@link TypeDescriptor} to convert to.
-	 * @return if the sourceType can be converted to a Map.
-	 */
-	@Override
-	public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
+    /**
+     * Tries to determine if the {@literal sourceType} can be converted to a {@link Map}. If this can not be determined,
+     * because the sourceTyppe does not contain information about the element type it returns {@literal true}.
+     *
+     * @param sourceType {@link TypeDescriptor} to convert from.
+     * @param targetType {@link TypeDescriptor} to convert to.
+     * @return if the sourceType can be converted to a Map.
+     */
+    @Override
+    public boolean matches(TypeDescriptor sourceType, TypeDescriptor targetType) {
 
-		Assert.notNull(sourceType, "Source type must not be null.");
-		Assert.notNull(targetType, "Target type must not be null.");
+        Assert.notNull(sourceType, "Source type must not be null.");
+        Assert.notNull(targetType, "Target type must not be null.");
 
-		if (!sourceType.isAssignableTo(TypeDescriptor.valueOf(Iterable.class)))
-			return false;
+        if (!sourceType.isAssignableTo(TypeDescriptor.valueOf(Iterable.class)))
+            return false;
 
-		TypeDescriptor elementDescriptor = sourceType.getElementTypeDescriptor();
-		return elementDescriptor == null || elementDescriptor.isAssignableTo(TypeDescriptor.valueOf(Entry.class));
-	}
+        TypeDescriptor elementDescriptor = sourceType.getElementTypeDescriptor();
+        return elementDescriptor == null || elementDescriptor.isAssignableTo(TypeDescriptor.valueOf(Entry.class));
+    }
 }

@@ -31,9 +31,9 @@ import org.springframework.lang.Nullable;
 @Getter
 public class RelationalEventWithIdAndEntity extends RelationalEventWithId implements WithEntity {
 
-	private static final long serialVersionUID = -3194462549552515519L;
+    private static final long serialVersionUID = -3194462549552515519L;
 
-	public RelationalEventWithIdAndEntity(Specified id, Object entity, @Nullable AggregateChange change) {
-		super(id, Optional.of(entity), change);
-	}
+    public RelationalEventWithIdAndEntity(Specified id, Object entity, @Nullable AggregateChange change) {
+        super(id, Optional.of(entity), change);
+    }
 }

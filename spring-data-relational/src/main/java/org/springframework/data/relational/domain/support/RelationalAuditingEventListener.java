@@ -34,15 +34,15 @@ import org.springframework.data.relational.core.mapping.event.BeforeSaveEvent;
 @RequiredArgsConstructor
 public class RelationalAuditingEventListener implements ApplicationListener<BeforeSaveEvent> {
 
-	private final IsNewAwareAuditingHandler handler;
+    private final IsNewAwareAuditingHandler handler;
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param event a notification event for indicating before save
-	 */
-	@Override
-	public void onApplicationEvent(BeforeSaveEvent event) {
-		handler.markAudited(event.getEntity());
-	}
+    /**
+     * {@inheritDoc}
+     *
+     * @param event a notification event for indicating before save
+     */
+    @Override
+    public void onApplicationEvent(BeforeSaveEvent event) {
+        handler.markAudited(event.getEntity());
+    }
 }

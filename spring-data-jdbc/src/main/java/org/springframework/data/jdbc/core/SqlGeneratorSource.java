@@ -31,13 +31,13 @@ import org.springframework.data.relational.core.mapping.RelationalMappingContext
 @RequiredArgsConstructor
 public class SqlGeneratorSource {
 
-	private final Map<Class, SqlGenerator> sqlGeneratorCache = new HashMap<>();
-	private final RelationalMappingContext context;
+    private final Map<Class, SqlGenerator> sqlGeneratorCache = new HashMap<>();
+    private final RelationalMappingContext context;
 
-	SqlGenerator getSqlGenerator(Class<?> domainType) {
+    SqlGenerator getSqlGenerator(Class<?> domainType) {
 
-		return sqlGeneratorCache.computeIfAbsent(domainType,
-				t -> new SqlGenerator(context, context.getRequiredPersistentEntity(t), this));
+        return sqlGeneratorCache.computeIfAbsent(domainType,
+                t -> new SqlGenerator(context, context.getRequiredPersistentEntity(t), this));
 
-	}
+    }
 }

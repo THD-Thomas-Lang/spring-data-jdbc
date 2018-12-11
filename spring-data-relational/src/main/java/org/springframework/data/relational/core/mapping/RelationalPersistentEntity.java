@@ -26,17 +26,17 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  */
 public interface RelationalPersistentEntity<T> extends MutablePersistentEntity<T, RelationalPersistentProperty> {
 
-	/**
-	 * Returns the name of the table backing the given entity.
-	 *
-	 * @return the table name.
-	 */
-	String getTableName();
+    /**
+     * Returns the name of the table backing the given entity.
+     *
+     * @return the table name.
+     */
+    String getTableName();
 
-	/**
-	 * Returns the column representing the identifier.
-	 *
-	 * @return will never be {@literal null}.
-	 */
-	String getIdColumn();
+    /**
+     * Returns the column representing the identifier.
+     *
+     * @return will never be {@literal null}.
+     */
+    String getIdColumn();
 }

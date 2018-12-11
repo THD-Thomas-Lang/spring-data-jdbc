@@ -25,8 +25,8 @@ import org.springframework.data.relational.core.mapping.event.Identifier.Specifi
  */
 public interface WithId extends RelationalEvent {
 
-	/**
-	 * Events with an identifier will always return a {@link Specified} one.
-	 */
-	Specified getId();
+    /**
+     * Events with an identifier will always return a {@link Specified} one.
+     */
+    Specified getId();
 }

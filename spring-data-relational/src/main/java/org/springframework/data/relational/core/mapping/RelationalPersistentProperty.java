@@ -26,46 +26,46 @@ import org.springframework.lang.Nullable;
  */
 public interface RelationalPersistentProperty extends PersistentProperty<RelationalPersistentProperty> {
 
-	boolean isReference();
+    boolean isReference();
 
-	/**
-	 * Returns the name of the column backing this property.
-	 *
-	 * @return the name of the column backing this property.
-	 */
-	String getColumnName();
+    /**
+     * Returns the name of the column backing this property.
+     *
+     * @return the name of the column backing this property.
+     */
+    String getColumnName();
 
-	/**
-	 * The type to be used to store this property in the database.
-	 *
-	 * @return a {@link Class} that is suitable for usage with JDBC drivers.
-	 */
-	Class<?> getColumnType();
+    /**
+     * The type to be used to store this property in the database.
+     *
+     * @return a {@link Class} that is suitable for usage with JDBC drivers.
+     */
+    Class<?> getColumnType();
 
-	/**
-	 * The SQL type constant used when using this property as a parameter for a SQL statement.
-	 * 
-	 * @return Must not be {@code null}.
-	 * @see java.sql.Types
-	 */
-	int getSqlType();
+    /**
+     * The SQL type constant used when using this property as a parameter for a SQL statement.
+     *
+     * @return Must not be {@code null}.
+     * @see java.sql.Types
+     */
+    int getSqlType();
 
-	@Override
-	RelationalPersistentEntity<?> getOwner();
+    @Override
+    RelationalPersistentEntity<?> getOwner();
 
-	String getReverseColumnName();
+    String getReverseColumnName();
 
-	@Nullable
-	String getKeyColumn();
+    @Nullable
+    String getKeyColumn();
 
-	/**
-	 * Returns if this property is a qualified property, i.e. a property referencing multiple elements that can get picked
-	 * by a key or an index.
-	 */
-	boolean isQualified();
+    /**
+     * Returns if this property is a qualified property, i.e. a property referencing multiple elements that can get picked
+     * by a key or an index.
+     */
+    boolean isQualified();
 
-	/**
-	 * Returns whether this property is an ordered property.
-	 */
-	boolean isOrdered();
+    /**
+     * Returns whether this property is an ordered property.
+     */
+    boolean isOrdered();
 }

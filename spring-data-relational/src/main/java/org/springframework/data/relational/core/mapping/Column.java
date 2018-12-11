@@ -28,17 +28,17 @@ import java.lang.annotation.Target;
  * @author Florian Lüdiger
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE })
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Documented
 public @interface Column {
 
-	/**
-	 * The mapping column name.
-	 */
-	String value() default "";
+    /**
+     * The mapping column name.
+     */
+    String value() default "";
 
-	/**
-	 * The column name for key columns of List or Map collections.
-	 */
-	String keyColumn() default "";
+    /**
+     * The column name for key columns of List or Map collections.
+     */
+    String keyColumn() default "";
 }

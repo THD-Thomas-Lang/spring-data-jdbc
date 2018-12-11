@@ -28,31 +28,31 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
  */
 public class JdbcRepositoryConfigExtension extends RepositoryConfigurationExtensionSupport {
 
-	/*
-	* (non-Javadoc)
-	* @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getModuleName()
-	 */
-	@Override
-	public String getModuleName() {
-		return "JDBC";
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.config.RepositoryConfigurationExtension#getModuleName()
+     */
+    @Override
+    public String getModuleName() {
+        return "JDBC";
+    }
 
-	/*
-	* (non-Javadoc)
-	* @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getRepositoryFactoryBeanClassName()
-	 */
-	@Override
-	public String getRepositoryFactoryBeanClassName() {
-		return JdbcRepositoryFactoryBean.class.getName();
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getRepositoryFactoryBeanClassName()
+     */
+    @Override
+    public String getRepositoryFactoryBeanClassName() {
+        return JdbcRepositoryFactoryBean.class.getName();
+    }
 
-	/*
-	* (non-Javadoc)
-	* @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModulePrefix()
-	 */
-	@Override
-	protected String getModulePrefix() {
-		return getModuleName().toLowerCase(Locale.US);
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#getModulePrefix()
+     */
+    @Override
+    protected String getModulePrefix() {
+        return getModuleName().toLowerCase(Locale.US);
+    }
 
 }

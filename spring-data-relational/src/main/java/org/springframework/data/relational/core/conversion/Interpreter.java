@@ -35,27 +35,27 @@ import org.springframework.data.relational.core.conversion.DbAction.UpdateRoot;
  */
 public interface Interpreter {
 
-	<T> void interpret(Insert<T> insert);
+    <T> void interpret(Insert<T> insert);
 
-	<T> void interpret(InsertRoot<T> insert);
+    <T> void interpret(InsertRoot<T> insert);
 
-	/**
-	 * Interpret an {@link Update}. Interpreting normally means "executing".
-	 *
-	 * @param <T> the type of entity to work on.
-	 * @param update the {@link Update} to be executed
-	 */
-	<T> void interpret(Update<T> update);
+    /**
+     * Interpret an {@link Update}. Interpreting normally means "executing".
+     *
+     * @param <T>    the type of entity to work on.
+     * @param update the {@link Update} to be executed
+     */
+    <T> void interpret(Update<T> update);
 
-	<T> void interpret(UpdateRoot<T> update);
+    <T> void interpret(UpdateRoot<T> update);
 
-	<T> void interpret(Merge<T> update);
+    <T> void interpret(Merge<T> update);
 
-	<T> void interpret(Delete<T> delete);
+    <T> void interpret(Delete<T> delete);
 
-	<T> void interpret(DeleteRoot<T> deleteRoot);
+    <T> void interpret(DeleteRoot<T> deleteRoot);
 
-	<T> void interpret(DeleteAll<T> delete);
+    <T> void interpret(DeleteAll<T> delete);
 
-	<T> void interpret(DeleteAllRoot<T> DeleteAllRoot);
+    <T> void interpret(DeleteAllRoot<T> DeleteAllRoot);
 }

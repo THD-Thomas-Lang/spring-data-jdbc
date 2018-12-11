@@ -45,94 +45,94 @@ import org.springframework.util.Assert;
  */
 public class JdbcRepositoryFactory extends RepositoryFactorySupport {
 
-	private final RelationalMappingContext context;
-	private final RelationalConverter converter;
-	private final ApplicationEventPublisher publisher;
-	private final DataAccessStrategy accessStrategy;
-	private final NamedParameterJdbcOperations operations;
+    private final RelationalMappingContext context;
+    private final RelationalConverter converter;
+    private final ApplicationEventPublisher publisher;
+    private final DataAccessStrategy accessStrategy;
+    private final NamedParameterJdbcOperations operations;
 
-	private RowMapperMap rowMapperMap = RowMapperMap.EMPTY;
+    private RowMapperMap rowMapperMap = RowMapperMap.EMPTY;
 
-	/**
-	 * Creates a new {@link JdbcRepositoryFactory} for the given {@link DataAccessStrategy},
-	 * {@link RelationalMappingContext} and {@link ApplicationEventPublisher}.
-	 *
-	 * @param dataAccessStrategy must not be {@literal null}.
-	 * @param context must not be {@literal null}.
-	 * @param converter must not be {@literal null}.
-	 * @param publisher must not be {@literal null}.
-	 * @param operations must not be {@literal null}.
-	 */
-	public JdbcRepositoryFactory(DataAccessStrategy dataAccessStrategy, RelationalMappingContext context,
-			RelationalConverter converter, ApplicationEventPublisher publisher, NamedParameterJdbcOperations operations) {
+    /**
+     * Creates a new {@link JdbcRepositoryFactory} for the given {@link DataAccessStrategy},
+     * {@link RelationalMappingContext} and {@link ApplicationEventPublisher}.
+     *
+     * @param dataAccessStrategy must not be {@literal null}.
+     * @param context            must not be {@literal null}.
+     * @param converter          must not be {@literal null}.
+     * @param publisher          must not be {@literal null}.
+     * @param operations         must not be {@literal null}.
+     */
+    public JdbcRepositoryFactory(DataAccessStrategy dataAccessStrategy, RelationalMappingContext context,
+                                 RelationalConverter converter, ApplicationEventPublisher publisher, NamedParameterJdbcOperations operations) {
 
-		Assert.notNull(dataAccessStrategy, "DataAccessStrategy must not be null!");
-		Assert.notNull(context, "RelationalMappingContext must not be null!");
-		Assert.notNull(converter, "RelationalConverter must not be null!");
-		Assert.notNull(publisher, "ApplicationEventPublisher must not be null!");
+        Assert.notNull(dataAccessStrategy, "DataAccessStrategy must not be null!");
+        Assert.notNull(context, "RelationalMappingContext must not be null!");
+        Assert.notNull(converter, "RelationalConverter must not be null!");
+        Assert.notNull(publisher, "ApplicationEventPublisher must not be null!");
 
-		this.publisher = publisher;
-		this.context = context;
-		this.converter = converter;
-		this.accessStrategy = dataAccessStrategy;
-		this.operations = operations;
-	}
+        this.publisher = publisher;
+        this.context = context;
+        this.converter = converter;
+        this.accessStrategy = dataAccessStrategy;
+        this.operations = operations;
+    }
 
-	/**
-	 * @param rowMapperMap must not be {@literal null} consider {@link RowMapperMap#EMPTY} instead.
-	 */
-	public void setRowMapperMap(RowMapperMap rowMapperMap) {
+    /**
+     * @param rowMapperMap must not be {@literal null} consider {@link RowMapperMap#EMPTY} instead.
+     */
+    public void setRowMapperMap(RowMapperMap rowMapperMap) {
 
-		Assert.notNull(rowMapperMap, "RowMapperMap must not be null!");
+        Assert.notNull(rowMapperMap, "RowMapperMap must not be null!");
 
-		this.rowMapperMap = rowMapperMap;
-	}
+        this.rowMapperMap = rowMapperMap;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> aClass) {
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> aClass) {
 
-		RelationalPersistentEntity<?> entity = context.getRequiredPersistentEntity(aClass);
+        RelationalPersistentEntity<?> entity = context.getRequiredPersistentEntity(aClass);
 
-		return (EntityInformation<T, ID>) new PersistentEntityInformation<>(entity);
-	}
+        return (EntityInformation<T, ID>) new PersistentEntityInformation<>(entity);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
-	 */
-	@Override
-	protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getTargetRepository(org.springframework.data.repository.core.RepositoryInformation)
+     */
+    @Override
+    protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
 
-		JdbcAggregateTemplate template = new JdbcAggregateTemplate(publisher, context, converter, accessStrategy);
+        JdbcAggregateTemplate template = new JdbcAggregateTemplate(publisher, context, converter, accessStrategy);
 
-		return new SimpleJdbcRepository<>(template, context.getPersistentEntity(repositoryInformation.getDomainType()));
-	}
+        return new SimpleJdbcRepository<>(template, context.getPersistentEntity(repositoryInformation.getDomainType()));
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
-	 */
-	@Override
-	protected Class<?> getRepositoryBaseClass(RepositoryMetadata repositoryMetadata) {
-		return SimpleJdbcRepository.class;
-	}
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getRepositoryBaseClass(org.springframework.data.repository.core.RepositoryMetadata)
+     */
+    @Override
+    protected Class<?> getRepositoryBaseClass(RepositoryMetadata repositoryMetadata) {
+        return SimpleJdbcRepository.class;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
-	 */
-	@Override
-	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable QueryLookupStrategy.Key key,
-			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.repository.core.support.RepositoryFactorySupport#getQueryLookupStrategy(org.springframework.data.repository.query.QueryLookupStrategy.Key, org.springframework.data.repository.query.EvaluationContextProvider)
+     */
+    @Override
+    protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable QueryLookupStrategy.Key key,
+                                                                   QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
-		if (key != null //
-				&& key != QueryLookupStrategy.Key.USE_DECLARED_QUERY //
-				&& key != QueryLookupStrategy.Key.CREATE_IF_NOT_FOUND //
-		) {
-			throw new IllegalArgumentException(String.format("Unsupported query lookup strategy %s!", key));
-		}
+        if (key != null //
+                && key != QueryLookupStrategy.Key.USE_DECLARED_QUERY //
+                && key != QueryLookupStrategy.Key.CREATE_IF_NOT_FOUND //
+        ) {
+            throw new IllegalArgumentException(String.format("Unsupported query lookup strategy %s!", key));
+        }
 
-		return Optional.of(new JdbcQueryLookupStrategy(publisher, context, converter, accessStrategy, rowMapperMap, operations));
-	}
+        return Optional.of(new JdbcQueryLookupStrategy(publisher, context, converter, accessStrategy, rowMapperMap, operations));
+    }
 }

@@ -54,71 +54,76 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class MyBatisCustomizingNamespaceHsqlIntegrationTests {
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
 
-	@Autowired SqlSessionFactory sqlSessionFactory;
-	@Autowired DummyEntityRepository repository;
+    @Autowired
+    SqlSessionFactory sqlSessionFactory;
+    @Autowired
+    DummyEntityRepository repository;
 
-	@Test // DATAJDBC-178
-	public void myBatisGetsUsedForInsertAndSelect() {
+    @Test // DATAJDBC-178
+    public void myBatisGetsUsedForInsertAndSelect() {
 
-		DummyEntity entity = new DummyEntity(null, "some name");
-		DummyEntity saved = repository.save(entity);
+        DummyEntity entity = new DummyEntity(null, "some name");
+        DummyEntity saved = repository.save(entity);
 
-		assertThat(saved.id).isNotNull();
+        assertThat(saved.id).isNotNull();
 
-		DummyEntity reloaded = repository.findById(saved.id).orElseThrow(AssertionFailedError::new);
+        DummyEntity reloaded = repository.findById(saved.id).orElseThrow(AssertionFailedError::new);
 
-		assertThat(reloaded.name).isEqualTo("name " + saved.id);
-	}
+        assertThat(reloaded.name).isEqualTo("name " + saved.id);
+    }
 
-	@org.springframework.context.annotation.Configuration
-	@Import(TestConfiguration.class)
-	@EnableJdbcRepositories(considerNestedRepositories = true)
-	static class Config {
+    @org.springframework.context.annotation.Configuration
+    @Import(TestConfiguration.class)
+    @EnableJdbcRepositories(considerNestedRepositories = true)
+    static class Config {
 
-		@Bean
-		Class<?> testClass() {
-			return MyBatisCustomizingNamespaceHsqlIntegrationTests.class;
-		}
+        @Bean
+        Class<?> testClass() {
+            return MyBatisCustomizingNamespaceHsqlIntegrationTests.class;
+        }
 
-		@Bean
-		SqlSessionFactoryBean createSessionFactory(EmbeddedDatabase db) throws IOException {
+        @Bean
+        SqlSessionFactoryBean createSessionFactory(EmbeddedDatabase db) throws IOException {
 
-			Configuration configuration = new Configuration();
-			configuration.getTypeAliasRegistry().registerAlias("MyBatisContext", MyBatisContext.class);
-			configuration.getTypeAliasRegistry().registerAlias(DummyEntity.class);
+            Configuration configuration = new Configuration();
+            configuration.getTypeAliasRegistry().registerAlias("MyBatisContext", MyBatisContext.class);
+            configuration.getTypeAliasRegistry().registerAlias(DummyEntity.class);
 
-			SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
-			sqlSessionFactoryBean.setDataSource(db);
-			sqlSessionFactoryBean.setConfiguration(configuration);
-			sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
-					.getResources("classpath*:org/springframework/data/jdbc/mybatis/mapper/*Mapper.xml"));
+            SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+            sqlSessionFactoryBean.setDataSource(db);
+            sqlSessionFactoryBean.setConfiguration(configuration);
+            sqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
+                    .getResources("classpath*:org/springframework/data/jdbc/mybatis/mapper/*Mapper.xml"));
 
-			return sqlSessionFactoryBean;
-		}
+            return sqlSessionFactoryBean;
+        }
 
-		@Bean
-		SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory factory) {
-			return new SqlSessionTemplate(factory);
-		}
+        @Bean
+        SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory factory) {
+            return new SqlSessionTemplate(factory);
+        }
 
-		@Bean
-		MyBatisDataAccessStrategy dataAccessStrategy(SqlSession sqlSession) {
+        @Bean
+        MyBatisDataAccessStrategy dataAccessStrategy(SqlSession sqlSession) {
 
-			MyBatisDataAccessStrategy strategy = new MyBatisDataAccessStrategy(sqlSession);
+            MyBatisDataAccessStrategy strategy = new MyBatisDataAccessStrategy(sqlSession);
 
-			strategy.setNamespaceStrategy(new NamespaceStrategy() {
-				@Override
-				public String getNamespace(Class<?> domainType) {
-					return domainType.getPackage().getName() + ".mapper." + domainType.getSimpleName() + "Mapper";
-				}
-			});
+            strategy.setNamespaceStrategy(new NamespaceStrategy() {
+                @Override
+                public String getNamespace(Class<?> domainType) {
+                    return domainType.getPackage().getName() + ".mapper." + domainType.getSimpleName() + "Mapper";
+                }
+            });
 
-			return strategy;
-		}
-	}
+            return strategy;
+        }
+    }
 
-	interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {}
+    interface DummyEntityRepository extends CrudRepository<DummyEntity, Long> {
+    }
 }

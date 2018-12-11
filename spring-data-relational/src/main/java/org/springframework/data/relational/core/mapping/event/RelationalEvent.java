@@ -25,18 +25,18 @@ import java.util.Optional;
  */
 public interface RelationalEvent {
 
-	/**
-	 * The identifier of the aggregate root, triggering this event.
-	 *
-	 * @return the source of the event as an {@link Identifier}. Guaranteed to be not {@code null}.
-	 */
-	Identifier getId();
+    /**
+     * The identifier of the aggregate root, triggering this event.
+     *
+     * @return the source of the event as an {@link Identifier}. Guaranteed to be not {@code null}.
+     */
+    Identifier getId();
 
-	/**
-	 * Returns the aggregate root the event was triggered for.
-	 *
-	 * @return will never be {@code null}.
-	 */
-	Optional<Object> getOptionalEntity();
+    /**
+     * Returns the aggregate root the event was triggered for.
+     *
+     * @return will never be {@code null}.
+     */
+    Optional<Object> getOptionalEntity();
 
 }

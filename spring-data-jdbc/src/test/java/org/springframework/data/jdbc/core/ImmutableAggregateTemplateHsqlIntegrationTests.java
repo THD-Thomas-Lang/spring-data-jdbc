@@ -48,225 +48,230 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ImmutableAggregateTemplateHsqlIntegrationTests {
 
-	@ClassRule public static final SpringClassRule classRule = new SpringClassRule();
-	@Rule public SpringMethodRule methodRule = new SpringMethodRule();
-	@Autowired JdbcAggregateOperations template;
+    @ClassRule
+    public static final SpringClassRule classRule = new SpringClassRule();
+    @Rule
+    public SpringMethodRule methodRule = new SpringMethodRule();
+    @Autowired
+    JdbcAggregateOperations template;
 
-	@Test // DATAJDBC-241
-	public void saveWithGeneratedIdCreatesNewInstance() {
+    @Test // DATAJDBC-241
+    public void saveWithGeneratedIdCreatesNewInstance() {
 
-		LegoSet legoSet = createLegoSet(createManual());
+        LegoSet legoSet = createLegoSet(createManual());
 
-		LegoSet saved = template.save(legoSet);
+        LegoSet saved = template.save(legoSet);
 
-		SoftAssertions softly = new SoftAssertions();
+        SoftAssertions softly = new SoftAssertions();
 
-		softly.assertThat(legoSet).isNotSameAs(saved);
-		softly.assertThat(legoSet.getId()).isNull();
+        softly.assertThat(legoSet).isNotSameAs(saved);
+        softly.assertThat(legoSet.getId()).isNull();
 
-		softly.assertThat(saved.getId()).isNotNull();
-		softly.assertThat(saved.name).isNotNull();
-		softly.assertThat(saved.manual).isNotNull();
-		softly.assertThat(saved.manual.content).isNotNull();
+        softly.assertThat(saved.getId()).isNotNull();
+        softly.assertThat(saved.name).isNotNull();
+        softly.assertThat(saved.manual).isNotNull();
+        softly.assertThat(saved.manual.content).isNotNull();
 
-		softly.assertAll();
-	}
+        softly.assertAll();
+    }
 
-	@Test // DATAJDBC-241
-	public void saveAndLoadAnEntityWithReferencedEntityById() {
+    @Test // DATAJDBC-241
+    public void saveAndLoadAnEntityWithReferencedEntityById() {
 
-		LegoSet saved = template.save(createLegoSet(createManual()));
+        LegoSet saved = template.save(createLegoSet(createManual()));
 
-		assertThat(saved.manual.id).describedAs("id of stored manual").isNotNull();
+        assertThat(saved.manual.id).describedAs("id of stored manual").isNotNull();
 
-		LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
+        LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
 
-		assertThat(reloadedLegoSet.manual).isNotNull();
+        assertThat(reloadedLegoSet.manual).isNotNull();
 
-		SoftAssertions softly = new SoftAssertions();
+        SoftAssertions softly = new SoftAssertions();
 
-		softly.assertThat(reloadedLegoSet.manual.getId()) //
-				.isEqualTo(saved.getManual().getId()) //
-				.isNotNull();
-		softly.assertThat(reloadedLegoSet.manual.getContent()).isEqualTo(saved.getManual().getContent());
+        softly.assertThat(reloadedLegoSet.manual.getId()) //
+                .isEqualTo(saved.getManual().getId()) //
+                .isNotNull();
+        softly.assertThat(reloadedLegoSet.manual.getContent()).isEqualTo(saved.getManual().getContent());
 
-		softly.assertAll();
-	}
+        softly.assertAll();
+    }
 
-	@Test // DATAJDBC-241
-	public void saveAndLoadManyEntitiesWithReferencedEntity() {
+    @Test // DATAJDBC-241
+    public void saveAndLoadManyEntitiesWithReferencedEntity() {
 
-		LegoSet legoSet = createLegoSet(createManual());
+        LegoSet legoSet = createLegoSet(createManual());
 
-		LegoSet savedLegoSet = template.save(legoSet);
+        LegoSet savedLegoSet = template.save(legoSet);
 
-		Iterable<LegoSet> reloadedLegoSets = template.findAll(LegoSet.class);
+        Iterable<LegoSet> reloadedLegoSets = template.findAll(LegoSet.class);
 
-		assertThat(reloadedLegoSets).hasSize(1).extracting("id", "manual.id", "manual.content")
-				.contains(tuple(savedLegoSet.getId(), savedLegoSet.getManual().getId(), savedLegoSet.getManual().getContent()));
-	}
+        assertThat(reloadedLegoSets).hasSize(1).extracting("id", "manual.id", "manual.content")
+                .contains(tuple(savedLegoSet.getId(), savedLegoSet.getManual().getId(), savedLegoSet.getManual().getContent()));
+    }
 
-	@Test // DATAJDBC-241
-	public void saveAndLoadManyEntitiesByIdWithReferencedEntity() {
+    @Test // DATAJDBC-241
+    public void saveAndLoadManyEntitiesByIdWithReferencedEntity() {
 
-		LegoSet saved = template.save(createLegoSet(createManual()));
+        LegoSet saved = template.save(createLegoSet(createManual()));
 
-		Iterable<LegoSet> reloadedLegoSets = template.findAllById(singletonList(saved.getId()), LegoSet.class);
+        Iterable<LegoSet> reloadedLegoSets = template.findAllById(singletonList(saved.getId()), LegoSet.class);
 
-		assertThat(reloadedLegoSets).hasSize(1).extracting("id", "manual.id", "manual.content")
-				.contains(tuple(saved.getId(), saved.getManual().getId(), saved.getManual().getContent()));
-	}
+        assertThat(reloadedLegoSets).hasSize(1).extracting("id", "manual.id", "manual.content")
+                .contains(tuple(saved.getId(), saved.getManual().getId(), saved.getManual().getContent()));
+    }
 
-	@Test // DATAJDBC-241
-	public void saveAndLoadAnEntityWithReferencedNullEntity() {
+    @Test // DATAJDBC-241
+    public void saveAndLoadAnEntityWithReferencedNullEntity() {
 
-		LegoSet saved = template.save(createLegoSet(null));
+        LegoSet saved = template.save(createLegoSet(null));
 
-		LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
+        LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
 
-		assertThat(reloadedLegoSet.manual).isNull();
-	}
+        assertThat(reloadedLegoSet.manual).isNull();
+    }
 
-	@Test // DATAJDBC-241
-	public void saveAndDeleteAnEntityWithReferencedEntity() {
+    @Test // DATAJDBC-241
+    public void saveAndDeleteAnEntityWithReferencedEntity() {
 
-		LegoSet legoSet = createLegoSet(createManual());
+        LegoSet legoSet = createLegoSet(createManual());
 
-		LegoSet saved = template.save(legoSet);
+        LegoSet saved = template.save(legoSet);
 
-		template.delete(saved, LegoSet.class);
+        template.delete(saved, LegoSet.class);
 
-		SoftAssertions softly = new SoftAssertions();
+        SoftAssertions softly = new SoftAssertions();
 
-		softly.assertThat(template.findAll(LegoSet.class)).isEmpty();
-		softly.assertThat(template.findAll(Manual.class)).isEmpty();
+        softly.assertThat(template.findAll(LegoSet.class)).isEmpty();
+        softly.assertThat(template.findAll(Manual.class)).isEmpty();
 
-		softly.assertAll();
-	}
+        softly.assertAll();
+    }
 
-	@Test // DATAJDBC-241
-	public void saveAndDeleteAllWithReferencedEntity() {
+    @Test // DATAJDBC-241
+    public void saveAndDeleteAllWithReferencedEntity() {
 
-		template.save(createLegoSet(createManual()));
+        template.save(createLegoSet(createManual()));
 
-		template.deleteAll(LegoSet.class);
+        template.deleteAll(LegoSet.class);
 
-		SoftAssertions softly = new SoftAssertions();
+        SoftAssertions softly = new SoftAssertions();
 
-		assertThat(template.findAll(LegoSet.class)).isEmpty();
-		assertThat(template.findAll(Manual.class)).isEmpty();
+        assertThat(template.findAll(LegoSet.class)).isEmpty();
+        assertThat(template.findAll(Manual.class)).isEmpty();
 
-		softly.assertAll();
-	}
+        softly.assertAll();
+    }
 
-	@Test // DATAJDBC-241
-	public void updateReferencedEntityFromNull() {
+    @Test // DATAJDBC-241
+    public void updateReferencedEntityFromNull() {
 
-		LegoSet saved = template.save(createLegoSet(null));
+        LegoSet saved = template.save(createLegoSet(null));
 
-		LegoSet changedLegoSet = new LegoSet(saved.id, saved.name, new Manual(23L, "Some content"));
+        LegoSet changedLegoSet = new LegoSet(saved.id, saved.name, new Manual(23L, "Some content"));
 
-		template.save(changedLegoSet);
+        template.save(changedLegoSet);
 
-		LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
+        LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
 
-		assertThat(reloadedLegoSet.manual.content).isEqualTo("Some content");
-	}
+        assertThat(reloadedLegoSet.manual.content).isEqualTo("Some content");
+    }
 
-	@Test // DATAJDBC-241
-	public void updateReferencedEntityToNull() {
+    @Test // DATAJDBC-241
+    public void updateReferencedEntityToNull() {
 
-		LegoSet saved = template.save(createLegoSet(null));
+        LegoSet saved = template.save(createLegoSet(null));
 
-		LegoSet changedLegoSet = new LegoSet(saved.id, saved.name, null);
+        LegoSet changedLegoSet = new LegoSet(saved.id, saved.name, null);
 
-		template.save(changedLegoSet);
+        template.save(changedLegoSet);
 
-		LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
+        LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
 
-		SoftAssertions softly = new SoftAssertions();
+        SoftAssertions softly = new SoftAssertions();
 
-		softly.assertThat(reloadedLegoSet.manual).isNull();
-		softly.assertThat(template.findAll(Manual.class)).describedAs("Manuals failed to delete").isEmpty();
+        softly.assertThat(reloadedLegoSet.manual).isNull();
+        softly.assertThat(template.findAll(Manual.class)).describedAs("Manuals failed to delete").isEmpty();
 
-		softly.assertAll();
-	}
+        softly.assertAll();
+    }
 
-	@Test // DATAJDBC-241
-	public void replaceReferencedEntity() {
+    @Test // DATAJDBC-241
+    public void replaceReferencedEntity() {
 
-		LegoSet saved = template.save(createLegoSet(null));
+        LegoSet saved = template.save(createLegoSet(null));
 
-		LegoSet changedLegoSet = new LegoSet(saved.id, saved.name, new Manual(null, "other content"));
+        LegoSet changedLegoSet = new LegoSet(saved.id, saved.name, new Manual(null, "other content"));
 
-		template.save(changedLegoSet);
+        template.save(changedLegoSet);
 
-		LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
+        LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
 
-		SoftAssertions softly = new SoftAssertions();
+        SoftAssertions softly = new SoftAssertions();
 
-		softly.assertThat(reloadedLegoSet.manual.content).isEqualTo("other content");
-		softly.assertThat(template.findAll(Manual.class)).describedAs("There should be only one manual").hasSize(1);
+        softly.assertThat(reloadedLegoSet.manual.content).isEqualTo("other content");
+        softly.assertThat(template.findAll(Manual.class)).describedAs("There should be only one manual").hasSize(1);
 
-		softly.assertAll();
-	}
+        softly.assertAll();
+    }
 
-	@Test // DATAJDBC-241
-	public void changeReferencedEntity() {
+    @Test // DATAJDBC-241
+    public void changeReferencedEntity() {
 
-		LegoSet saved = template.save(createLegoSet(createManual()));
+        LegoSet saved = template.save(createLegoSet(createManual()));
 
-		LegoSet changedLegoSet = saved.withManual(saved.manual.withContent("new content"));
+        LegoSet changedLegoSet = saved.withManual(saved.manual.withContent("new content"));
 
-		template.save(changedLegoSet);
+        template.save(changedLegoSet);
 
-		LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
+        LegoSet reloadedLegoSet = template.findById(saved.getId(), LegoSet.class);
 
-		Manual manual = reloadedLegoSet.manual;
-		assertThat(manual).isNotNull();
-		assertThat(manual.content).isEqualTo("new content");
-	}
+        Manual manual = reloadedLegoSet.manual;
+        assertThat(manual).isNotNull();
+        assertThat(manual.content).isEqualTo("new content");
+    }
 
-	private static LegoSet createLegoSet(Manual manual) {
+    private static LegoSet createLegoSet(Manual manual) {
 
-		return new LegoSet(null, "Star Destroyer", manual);
-	}
+        return new LegoSet(null, "Star Destroyer", manual);
+    }
 
-	private static Manual createManual() {
-		return new Manual(null,
-				"Accelerates to 99% of light speed. Destroys almost everything. See https://what-if.xkcd.com/1/");
-	}
+    private static Manual createManual() {
+        return new Manual(null,
+                "Accelerates to 99% of light speed. Destroys almost everything. See https://what-if.xkcd.com/1/");
+    }
 
-	@Value
-	@Wither
-	static class LegoSet {
+    @Value
+    @Wither
+    static class LegoSet {
 
-		@Id Long id;
-		String name;
-		Manual manual;
-	}
+        @Id
+        Long id;
+        String name;
+        Manual manual;
+    }
 
-	@Value
-	@Wither
-	static class Manual {
+    @Value
+    @Wither
+    static class Manual {
 
-		@Id Long id;
-		String content;
-	}
+        @Id
+        Long id;
+        String content;
+    }
 
-	@Configuration
-	@Import(TestConfiguration.class)
-	static class Config {
+    @Configuration
+    @Import(TestConfiguration.class)
+    static class Config {
 
-		@Bean
-		Class<?> testClass() {
-			return ImmutableAggregateTemplateHsqlIntegrationTests.class;
-		}
+        @Bean
+        Class<?> testClass() {
+            return ImmutableAggregateTemplateHsqlIntegrationTests.class;
+        }
 
-		@Bean
-		JdbcAggregateOperations operations(ApplicationEventPublisher publisher, RelationalMappingContext context,
-				DataAccessStrategy dataAccessStrategy, RelationalConverter converter) {
-			return new JdbcAggregateTemplate(publisher, context, converter, dataAccessStrategy);
-		}
-	}
+        @Bean
+        JdbcAggregateOperations operations(ApplicationEventPublisher publisher, RelationalMappingContext context,
+                                           DataAccessStrategy dataAccessStrategy, RelationalConverter converter) {
+            return new JdbcAggregateTemplate(publisher, context, converter, dataAccessStrategy);
+        }
+    }
 }
