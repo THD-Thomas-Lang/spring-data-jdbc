@@ -32,15 +32,10 @@ import org.springframework.util.Assert;
  * @author Jens Schauder
  * @author Mark Paluch
  */
-public class RelationalEntityDeleteWriter implements EntityWriter<Object, AggregateChange<?>> {
-
-    private final RelationalMappingContext context;
+public class RelationalEntityDeleteWriter extends AbstractRelationalEntityWriter {
 
     public RelationalEntityDeleteWriter(RelationalMappingContext context) {
-
-        Assert.notNull(context, "Context must not be null");
-
-        this.context = context;
+        super(context);
     }
 
     /**
