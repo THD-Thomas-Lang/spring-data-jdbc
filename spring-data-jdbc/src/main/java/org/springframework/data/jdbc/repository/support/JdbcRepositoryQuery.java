@@ -87,7 +87,6 @@ class JdbcRepositoryQuery implements RepositoryQuery {
 				determineResultSetExtractor(rowMapper != defaultRowMapper ? rowMapper : null), //
 				rowMapper //
 		);
-
 	}
 
 	private QueryExecutor<Object> createExecutor(JdbcQueryMethod queryMethod, @Nullable ResultSetExtractor extractor,
@@ -118,6 +117,7 @@ class JdbcRepositoryQuery implements RepositoryQuery {
 
 		return executor.execute(bindParameters(objects));
 	}
+
 
 	private QueryExecutor<Object> createObjectQueryExecutor(QueryExecutor executor) {
 
@@ -165,6 +165,9 @@ class JdbcRepositoryQuery implements RepositoryQuery {
 		};
 	}
 
+	// QueryExecutor = Innenleben (Query)
+	// kriegt Parameter, unterschiedlich
+	// 3 Varianten
 	private QueryExecutor<Object> createListRowMapperQueryExecutor(String query, RowMapper<?> rowMapper) {
 		return parameters -> operations.query(query, parameters, rowMapper);
 	}
@@ -214,7 +217,8 @@ class JdbcRepositoryQuery implements RepositoryQuery {
 	@Nullable
 	private ResultSetExtractor determineResultSetExtractor(@Nullable RowMapper<?> rowMapper) {
 
-		Class<? extends ResultSetExtractor> resultSetExtractorClass = (Class<? extends ResultSetExtractor>) queryMethod.getResultSetExtractorClass();
+		Class<? extends ResultSetExtractor> resultSetExtractorClass = (Class<? extends ResultSetExtractor>) queryMethod
+				.getResultSetExtractorClass();
 
 		if (isUnconfigured(resultSetExtractorClass, ResultSetExtractor.class)) {
 			return null;

@@ -15,17 +15,14 @@
  */
 package org.springframework.data.jdbc.repository.support;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import java.lang.reflect.Method;
-import java.text.NumberFormat;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Wither;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.jdbc.core.convert.DataAccessStrategy;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.jdbc.core.convert.JdbcConverter;
 import org.springframework.data.jdbc.repository.QueryMappingConfiguration;
 import org.springframework.data.jdbc.repository.config.DefaultQueryMappingConfiguration;
@@ -40,6 +37,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Method;
+import java.text.NumberFormat;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 /**
  * Unit tests for {@link JdbcQueryLookupStrategy}.
  *
@@ -51,51 +56,93 @@ import org.springframework.util.ReflectionUtils;
  */
 public class JdbcQueryLookupStrategyUnitTests {
 
-	ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
-	RelationalMappingContext mappingContext = mock(RelationalMappingContext.class, RETURNS_DEEP_STUBS);
-	JdbcConverter converter = mock(JdbcConverter.class);
-	DataAccessStrategy accessStrategy = mock(DataAccessStrategy.class);
-	ProjectionFactory projectionFactory = mock(ProjectionFactory.class);
-	RepositoryMetadata metadata;
-	NamedQueries namedQueries = mock(NamedQueries.class);
-	NamedParameterJdbcOperations operations = mock(NamedParameterJdbcOperations.class);
+    ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+    RelationalMappingContext mappingContext = mock(RelationalMappingContext.class, RETURNS_DEEP_STUBS);
+    JdbcConverter converter = mock(JdbcConverter.class);
+    ProjectionFactory projectionFactory = mock(ProjectionFactory.class);
+    RepositoryMetadata metadata;
+    NamedQueries namedQueries = mock(NamedQueries.class);
+    NamedParameterJdbcOperations operations = mock(NamedParameterJdbcOperations.class);
 
-	@Before
-	public void setup() {
+    @Before
+    public void setup() {
+        this.metadata = mock(RepositoryMetadata.class);
+    }
 
-		this.metadata = mock(RepositoryMetadata.class);
+    @Test // DATAJDBC-166
+    @SuppressWarnings("unchecked")
+    public void typeBasedRowMapperGetsUsedForQuery() {
 
-		doReturn(NumberFormat.class).when(metadata).getReturnedDomainClass(any(Method.class));
-	}
+        doReturn(NumberFormat.class).when(metadata).getReturnedDomainClass(any(Method.class));
 
-	@Test // DATAJDBC-166
-	@SuppressWarnings("unchecked")
-	public void typeBasedRowMapperGetsUsedForQuery() {
+        RowMapper<? extends NumberFormat> numberFormatMapper = mock(RowMapper.class);
+        QueryMappingConfiguration mappingConfiguration = new DefaultQueryMappingConfiguration()
+                .registerRowMapper(NumberFormat.class, numberFormatMapper);
 
-		RowMapper<? extends NumberFormat> numberFormatMapper = mock(RowMapper.class);
-		QueryMappingConfiguration mappingConfiguration = new DefaultQueryMappingConfiguration()
-				.registerRowMapper(NumberFormat.class, numberFormatMapper);
+        RepositoryQuery repositoryQuery = getRepositoryQuery("returningNumberFormat", mappingConfiguration);
 
-		RepositoryQuery repositoryQuery = getRepositoryQuery("returningNumberFormat", mappingConfiguration);
+        repositoryQuery.execute(new Object[]{});
 
-		repositoryQuery.execute(new Object[] {});
+        verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(numberFormatMapper));
+    }
 
-		verify(operations).queryForObject(anyString(), any(SqlParameterSource.class), eq(numberFormatMapper));
-	}
+    @Test // DATAJDBC-318
+    public void usageOfPartTreeQuery() {
 
-	private RepositoryQuery getRepositoryQuery(String name, QueryMappingConfiguration mappingConfiguration) {
+        when(metadata.getReturnedDomainClass(any(Method.class))).thenReturn((Class) Person.class);
+        QueryMappingConfiguration mappingConfiguration = new DefaultQueryMappingConfiguration();
+        RepositoryQuery repositoryQuery = getRepositoryQuery("findByFirstNameAndLastName", mappingConfiguration, String.class, String.class);
 
-		JdbcQueryLookupStrategy queryLookupStrategy = new JdbcQueryLookupStrategy(publisher, mappingContext, converter,
-				mappingConfiguration, operations);
+        assertThat(repositoryQuery).isInstanceOf(PartTreeJdbcRepositoryQuery.class);
+    }
 
-		Method method = ReflectionUtils.findMethod(MyRepository.class, name);
-		return queryLookupStrategy.resolveQuery(method, metadata, projectionFactory, namedQueries);
-	}
+    private RepositoryQuery getRepositoryQuery(String name, QueryMappingConfiguration mappingConfiguration) {
 
-	interface MyRepository {
+        JdbcQueryLookupStrategy queryLookupStrategy = new JdbcQueryLookupStrategy(publisher, mappingContext, converter,
+                mappingConfiguration, operations);
 
-		// NumberFormat is just used as an arbitrary non simple type.
-		@Query("some SQL")
-		NumberFormat returningNumberFormat();
-	}
+        Method method = ReflectionUtils.findMethod(MyRepository.class, name);
+        return queryLookupStrategy.resolveQuery(method, metadata, projectionFactory, namedQueries);
+    }
+
+    private RepositoryQuery getRepositoryQuery(String name, QueryMappingConfiguration mappingConfiguration, Class<?>... params) {
+
+        JdbcQueryLookupStrategy queryLookupStrategy = new JdbcQueryLookupStrategy(publisher, mappingContext, converter,
+                mappingConfiguration, operations);
+
+        Method method = ReflectionUtils.findMethod(MyRepository.class, name, params);
+        return queryLookupStrategy.resolveQuery(method, metadata, projectionFactory, namedQueries);
+    }
+
+    interface MyRepository {
+
+        // NumberFormat is just used as an arbitrary non simple type.
+        @Query("some SQL")
+        NumberFormat returningNumberFormat();
+
+        List<Person> findByFirstNameAndLastName(String firstName, String lastName);
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    private class Person {
+        @Wither
+        @Id
+        private final long personId;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private Animal animal;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    private class Animal {
+        @Wither
+        @Id
+        private final long personId;
+        private String nickName;
+    }
 }

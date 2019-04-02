@@ -64,7 +64,10 @@ class JdbcQueryLookupStrategy implements QueryLookupStrategy {
 
 		RowMapper<?> mapper = queryMethod.isModifyingQuery() ? null : createMapper(queryMethod);
 
-		return new JdbcRepositoryQuery(publisher, context, queryMethod, operations, mapper);
+		if (queryMethod.hasAnnotatedQuery())
+			return new JdbcRepositoryQuery(publisher, context, queryMethod, operations, mapper);
+
+		return new PartTreeJdbcRepositoryQuery(publisher, context, queryMethod, operations, mapper);
 	}
 
 	private RowMapper<?> createMapper(JdbcQueryMethod queryMethod) {
