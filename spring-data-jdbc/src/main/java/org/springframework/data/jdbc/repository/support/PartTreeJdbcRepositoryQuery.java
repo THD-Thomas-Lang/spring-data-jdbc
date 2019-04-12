@@ -90,10 +90,7 @@ class PartTreeJdbcRepositoryQuery extends AbstractRepositoryQuery implements Rep
 			throw new IllegalStateException(
 					"Derived Queries do only work in simple mode, which is from Aggregate Root to Child!");
 
-		//RowMapper rowMapper = determineRowMapper(defaultRowMapper);
-		//executor = new QueryExecutorImpl(queryMethod, determineResultSetExtractor(rowMapper),
-		//		rowMapper, operations, context, publisher, rowMapper);
-		executor = null;
+		executor = new PartTreeExecutor(tree, defaultRowMapper);
 	}
 
 	/**
