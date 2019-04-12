@@ -21,9 +21,21 @@ import lombok.Setter;
 import lombok.experimental.Wither;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.relational.core.mapping.RelationalMappingContext;
+import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Method;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link PartTreeJdbcRepositoryQuery}.
@@ -33,36 +45,55 @@ import static org.assertj.core.api.Assertions.*;
 @Slf4j
 public class PartTreeJdbcRepositoryQueryUnitTests {
 
-	// DATAJDBC-318
-	@Test
-	public void testDedicatedPartTreeClassInSimpleMode(){
-		try{
-			JdbcPartTree jdbcPartTree = new JdbcPartTree("findByFirstName", Person.class);
-			assertThat(jdbcPartTree).isNotNull();
-		} catch(IllegalArgumentException illegalArgumentException){
-			illegalArgumentException.printStackTrace();
-			assertThat(true).isFalse();
-		}
+	ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+	RelationalMappingContext context = new JdbcMappingContext();
+	NamedParameterJdbcOperations jdbcOperations = mock(NamedParameterJdbcOperations.class);
+	RowMapper<?> defaultRowMapper = mock(RowMapper.class);
+	private ProjectionFactory projectionFactory = mock(ProjectionFactory.class);
+	private RepositoryMetadata repositoryMetadata = mock(RepositoryMetadata.class);
+
+
+	@Test // DATAJDBC-318
+	public void canInstantiateWithSimplePropertyReference() {
+
+		when(repositoryMetadata.getReturnedDomainClass(any(Method.class))).thenReturn((Class) Person.class);
+
+		JdbcQueryMethod queryMethod = createQueryMethod("findByFirstName");
+		new PartTreeJdbcRepositoryQuery(publisher, context, queryMethod, jdbcOperations, defaultRowMapper);
 
 	}
 
-	// DATAJDBC-318
-	@Test
-	public void testDedicatedPartTreeClassInComplicatedMode(){
-		try{
-			JdbcPartTree jdbcPartTree = new JdbcPartTree("findByAnimalNickName", Person.class);
-			assertThat(jdbcPartTree).isNotNull();
-		} catch(IllegalArgumentException illegalArgumentException){
-			illegalArgumentException.printStackTrace();
-			assertThat(true).isTrue();
-		}
+	@Test // DATAJDBC-318
+	public void canNotInstantiateWithPathPropertyReference() {
 
+		when(repositoryMetadata.getReturnedDomainClass(any(Method.class))).thenReturn((Class) Person.class);
+
+		JdbcQueryMethod queryMethod = createQueryMethod("findByAnimalNickName");
+
+		assertThatThrownBy(() ->
+				new PartTreeJdbcRepositoryQuery(publisher, context, queryMethod, jdbcOperations, defaultRowMapper)).isInstanceOf(IllegalStateException.class);
+
+	}
+
+	private JdbcQueryMethod createQueryMethod(String name) {
+
+		Method method = ReflectionUtils.findMethod(PartTreeJdbcRepositoryQueryUnitTests.class, name, String.class);
+		return new JdbcQueryMethod(method, repositoryMetadata, projectionFactory);
+	}
+
+
+	List<Person> findByFirstName(String firstName) {
+		return null;
+	}
+
+	List<Person> findByAnimalNickName(String nickName) {
+		return null;
 	}
 
 	@Getter
 	@Setter
 	@AllArgsConstructor
-	private class Person{
+	private class Person {
 		@Wither
 		@Id
 		private final long personId;
@@ -74,7 +105,7 @@ public class PartTreeJdbcRepositoryQueryUnitTests {
 	@Getter
 	@Setter
 	@AllArgsConstructor
-	private class Animal{
+	private class Animal {
 		@Wither
 		@Id
 		private final long personId;

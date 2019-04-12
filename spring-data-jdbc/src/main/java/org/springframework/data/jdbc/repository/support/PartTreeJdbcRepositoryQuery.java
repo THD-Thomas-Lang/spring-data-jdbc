@@ -87,13 +87,13 @@ class PartTreeJdbcRepositoryQuery extends AbstractRepositoryQuery implements Rep
 		this.tree = new PartTree(queryMethod.getName(), processor.getReturnedType().getDomainType());
 
 		if (this.isFatherChildMode(domainType, this.tree))
-			throw new IllegalArgumentException(
+			throw new IllegalStateException(
 					"Derived Queries do only work in simple mode, which is from Aggregate Root to Child!");
 
-		RowMapper rowMapper = determineRowMapper(defaultRowMapper);
-		executor = new QueryExecutorImpl(queryMethod, Objects.requireNonNull(determineResultSetExtractor(rowMapper)),
-				rowMapper, operations, context, publisher, rowMapper);
-
+		//RowMapper rowMapper = determineRowMapper(defaultRowMapper);
+		//executor = new QueryExecutorImpl(queryMethod, determineResultSetExtractor(rowMapper),
+		//		rowMapper, operations, context, publisher, rowMapper);
+		executor = null;
 	}
 
 	/**

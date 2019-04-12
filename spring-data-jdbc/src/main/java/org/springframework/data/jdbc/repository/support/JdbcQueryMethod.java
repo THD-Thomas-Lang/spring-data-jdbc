@@ -95,4 +95,13 @@ public class JdbcQueryMethod extends QueryMethod {
 		Query queryAnnotation = AnnotatedElementUtils.findMergedAnnotation(method, Query.class);
 		return (T) AnnotationUtils.getValue(queryAnnotation, attribute);
 	}
+
+	/**
+	 * Returns whether the method has an annotated query.
+	 *
+	 * @return if it´s a annotated query, return {@code true}.
+	 */
+	public boolean hasAnnotatedQuery() {
+		return AnnotatedElementUtils.findMergedAnnotation(method, Query.class) != null;
+	}
 }
